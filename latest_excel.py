@@ -1,6 +1,4 @@
-import pandas as pd
-import os
-
+#Code -1
 # Load the data from the Excel sheets
 excel_data = pd.DataFrame(xl("Part_Data[#All]"))
 excel_data.columns = excel_data.iloc[0]  # Set the first row as column headers
@@ -25,22 +23,24 @@ def build_tree(data, part_name, recipe_type, target_quantity, visited=None):
     visited.add((part_name, recipe_type))
     
     tree = {}
-    
-    # Determine the correct recipe type (default to _Standard if no alternate is selected)
-    alternate_recipe_row = alternate_data[(alternate_data['Name'] == part_name) & (alternate_data['Selection'] == True)]
-    alternate_recipe = alternate_recipe_row['Alternate_Recipe'].iloc[0] if not alternate_recipe_row.empty else recipe_type
-    
 
-    # Filter the dataset for the specified part and recipe type
-    part_data = data[(data['Name'] == part_name) & (data['Recipe'] == alternate_recipe)]
+    # Determine the correct recipe type for the part itself (default to _Standard if no alternate specified)
+    alternate_recipe_row = alternate_data[(alternate_data['Name'] == part_name) & (alternate_data['Selection'] == True)]
+    current_recipe = alternate_recipe_row['Alternate_Recipe'].iloc[0] if not alternate_recipe_row.empty else recipe_type
+    
+     # Filter the dataset for the specified part and recipe type
+    part_data = data[(data['Name'] == part_name) & (data['Recipe'] == current_recipe)]
     if part_data.empty:
         return {
-             "Error": f"Part '{part_name}' with recipe '{alternate_recipe}' not found.",
-            "Required Quantity": 0,
-            "Produced In": "Unknown",
-            "No. of Machines": 0,
-            "Subtree": {}
+        "Error": f"Part '{part_name}' with recipe '{current_recipe}' not found.",
+        "Required Quantity": 0,
+        "Produced In": "Unknown",
+        "No. of Machines": 0,
+        "Recipe": current_recipe,
+        "Subtree": {}
         }
+    
+   
         
     # Iterate over base inputs for the given part
     for _, row in part_data.iterrows():
@@ -48,48 +48,46 @@ def build_tree(data, part_name, recipe_type, target_quantity, visited=None):
         source_level = row['Source Level']
         base_demand = row['Base Demand p/m']
         base_supply = row['Base Supply p/m']
-        produced_in = row['Produced In (Automated)']
         
-       # Perform lookup for Produced In based on Base Input and Recipe
-        produced_in_row = data[(data['Name'] == base_input_name) & (data['Recipe'] == alternate_recipe)]
-        produced_in = produced_in_row['Produced In (Automated)'].iloc[0] if not produced_in_row.empty else "Unknown"
+        # Determine the correct recipe type for the base input (default to _Standard if no alternate specified)
+        base_alternate_recipe_row = alternate_data[(alternate_data['Name'] == base_input_name) & (alternate_data['Selection'] == True)]
+        base_recipe = base_alternate_recipe_row['Alternate_Recipe'].iloc[0] if not base_alternate_recipe_row.empty else "_Standard"
 
-        #print(produced_in, base_input_name)
+        # Perform lookup for Produced In based on Base Input and Recipe
+        produced_in_row = data[(data['Name'] == base_input_name) & (data['Recipe'] == base_recipe)]
         
+        produced_in = produced_in_row['Produced In (Automated)'].iloc[0] if not produced_in_row.empty else "Unknown"
         # Skip parts with source_level == -2
         if source_level == -2 and base_input_name == 0:
             continue
         
         # Calculate required input quantity for the target output
         if pd.notna(base_demand) and pd.notna(base_supply) and base_supply > 0:
+            #required_quantity = base_demand * target_quantity
             required_quantity = (base_demand / base_supply) * target_quantity
         else:
             required_quantity = 0
-        
-        # Debugging print
-        #print(f"Part: {base_input_name}, Base Demand: {base_demand}, Base Supply: {base_supply}, Required Quantity: {required_quantity}")
+
+        # Debugging print to verify values
+        print(f"Base Input: {base_input_name}, Required Quantity: {required_quantity}, Base Demand: {base_demand}, Base Supply: {base_supply}")
         
         # Calculate the number of machines needed to produce the required amount
         no_of_machines = required_quantity / base_supply if base_supply else 0
-        
-        # Debugging print
-        #print(f"Node: {base_input_name}, Produced In: {produced_in}, No. of Machines: {no_of_machines}")
-        #print(f"Tree Node: {tree[base_input_name]}")
 
         # Recursively build the tree for the base input
-        subtree = build_tree(data, base_input_name, alternate_recipe, required_quantity, visited)
+        subtree = build_tree(data, base_input_name, base_recipe, required_quantity, visited)
         tree[base_input_name] = {
             "Required Quantity": required_quantity,
             "Produced In": produced_in,
             "No. of Machines": no_of_machines,
+            "Recipe": current_recipe,  # Add the recipe name for the base input
             "Subtree": subtree
         }
     
     # Unmark this part and recipe after processing
     visited.remove((part_name, recipe_type))
     
-    return tree
-    
+    return tree    
 
 
 # Run the dependency tree function
@@ -114,7 +112,8 @@ def flatten_tree(tree, parent="", level=0):
                 "Tree Level": level,
                 "Required Quantity": "Error or Invalid Data",
                 "Produced In": "Error or Invalid Data",
-                "No of Machines": "Error or Invalid Data"
+                "No of Machines": "Error or Invalid Data",
+                "Recipe": "Error or Invalid Data"
             })
             continue
 
@@ -125,15 +124,16 @@ def flatten_tree(tree, parent="", level=0):
             "Tree Level": level,
             "Required Quantity": value.get("Required Quantity", 0),
             "Produced In": value.get("Produced In", "Unknown"),
-            "No. of Machines": value.get("No. of Machines", 0)
-        })
+            "No. of Machines": value.get("No. of Machines", 0),
+            "Recipe": value.get("Recipe", "Unknown")
+            })
         
         # Recursively process child nodes
         if isinstance(value.get("Subtree"), dict):
             rows.extend(flatten_tree(value["Subtree"], parent=key, level=level + 1))
     return rows
     
- # Flatten the tree
+# Flatten the tree
 flat_tree = flatten_tree(result) 
 
 # Convert to DataFrame

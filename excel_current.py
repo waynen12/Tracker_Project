@@ -1,4 +1,4 @@
-#Code -1
+#Current version of the code that reads the data from the Excel sheets and builds the dependency tree for the given part and quantity.
 # Load the data from the Excel sheets
 excel_data = pd.DataFrame(xl("Part_Data[#All]"))
 excel_data.columns = excel_data.iloc[0]  # Set the first row as column headers
@@ -55,27 +55,33 @@ def build_tree(data, part_name, recipe_type, target_quantity, visited=None):
 
         # Perform lookup for Produced In based on Base Input and Recipe
         produced_in_row = data[(data['Name'] == base_input_name) & (data['Recipe'] == base_recipe)]
-        
         produced_in = produced_in_row['Produced In (Automated)'].iloc[0] if not produced_in_row.empty else "Unknown"
+        
+        # Calculate required input quantity for the base input
+        required_quantity = base_demand * target_quantity
+
+        # Lookup base input data to get its supply rate and produced in machine
+        base_input_data = data[(data['Name'] == base_input_name) & (data['Recipe'] == base_recipe)]
+        if base_input_data.empty:
+            base_supply = 0
+            produced_in = "Unknown"
+        else:
+            base_supply = base_input_data['Base Supply p/m'].iloc[0]
+            produced_in = base_input_data['Produced In (Automated)'].iloc[0]
+            
+        
         # Skip parts with source_level == -2
         if source_level == -2 and base_input_name == 0:
             continue
         
-        # Calculate required input quantity for the target output
-        if pd.notna(base_demand) and pd.notna(base_supply) and base_supply > 0:
-            #required_quantity = base_demand * target_quantity
-            required_quantity = (base_demand / base_supply) * target_quantity
-        else:
-            required_quantity = 0
-
-        # Debugging print to verify values
-        print(f"Base Input: {base_input_name}, Required Quantity: {required_quantity}, Base Demand: {base_demand}, Base Supply: {base_supply}")
-        
+      
         # Calculate the number of machines needed to produce the required amount
         no_of_machines = required_quantity / base_supply if base_supply else 0
 
+        # Debugging print to verify values
+        print(f"Base Input: {base_input_name}, Required Quantity: {required_quantity}, Base Demand: {base_demand}, Base Supply: {base_supply}, Target Quantity: {target_quantity}, No.of Machines {no_of_machines}")
         # Recursively build the tree for the base input
-        subtree = build_tree(data, base_input_name, base_recipe, required_quantity, visited)
+        subtree = build_tree(data, base_input_name, base_recipe, target_quantity, visited)
         tree[base_input_name] = {
             "Required Quantity": required_quantity,
             "Produced In": produced_in,

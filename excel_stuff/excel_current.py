@@ -1,17 +1,46 @@
-#Current version of the code that reads the data from the Excel sheets and builds the dependency tree for the given part and quantity.
+# The following import statements are pre-loaded.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels as sm
+import seaborn as sns
+import excel
+import warnings
+warnings.simplefilter('ignore')
+# Set default conversions for the xl() function.
+excel.set_xl_scalar_conversion(excel.convert_to_scalar)
+#excel.set_xl_array_conversion(excel.convert_to_dataframexl("I12"))
+
+#Current version of the =PY code that reads the data from the Excel sheets and builds the dependency tree for the given part and quantity.
 # Load the data from the Excel sheets
+#Parts Data
 excel_data = pd.DataFrame(xl("Part_Data[#All]"))
 excel_data.columns = excel_data.iloc[0]  # Set the first row as column headers
 excel_data = excel_data[1:]  # Remove the first row from the data
 
+#Alternate Recipes
 alternate_data = pd.DataFrame(xl("Alt_Recipe_Selection[#All]"))
 alternate_data.columns = alternate_data.iloc[0] # Set the first row as column headers
 alternate_data = alternate_data[1:] # Remove the first row from the data
-
 # Convert the 'Selection' column to boolean if necessary
 alternate_data['Selection'] = alternate_data['Selection'].astype(bool)
 
+#Miner Supply - TODO: Integrage this data into the dependency tree
+miner_data = pd.DataFrame(xl("Miner_Supply[#All]"))
+miner_data.columns = miner_data.iloc[0] # Set the first row as column headers
+miner_data = miner_data[1:] # Remove the first row from the data
+
+#Power shards - TODO: Integrage this data into the dependency tree
+power_shard_data = pd.DataFrame(xl("Power_Shards[#All]"))
+power_shard_data.columns = power_shard_data.iloc[0] # Set the first row as column headers
+power_shard_data = power_shard_data[1:] # Remove the first row from the data
+
+
+
 def build_tree(data, part_name, recipe_type, target_quantity, visited=None):
+    if part_name == "All":
+        exit()
+    
     if visited is None:
         visited = set()
 
@@ -106,7 +135,7 @@ def flatten_tree(tree, parent="", level=0):
     """
     rows = []
     for key, value in tree.items():
-        
+        xl("E3")
         # Set the current parent node
         current_parent = parent
         

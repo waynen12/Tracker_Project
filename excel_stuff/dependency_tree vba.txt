@@ -1,6 +1,6 @@
-Sub Dependency_Tree_Format()
+Sub Dependency_Tree()
 '
-' Dependency_Tree_Format Macro
+' Dependency_Tree_Format Macro - This script uses data provided by the Python formula, formats it and displays it to the user.
 '
     Dim ws As Worksheet
     Dim lookupValue As String
@@ -18,10 +18,19 @@ Sub Dependency_Tree_Format()
     'Clear the Sheet
     Clear_Sheet
     
+    Set ws = ThisWorkbook.Sheets("Dependency Tree")
+    If ws.Cells(1, 2).Value = "(All)" Then
+        MsgBox "Please select a single part from the drop-down.", vbExclamation, "Invalid Part"
+        ws.Range("A2").Select
+        Exit Sub
+    End If
+    
+    
     ' Set the worksheet to get the data from
     Set ws = ThisWorkbook.Sheets("Python Init")
      ' Find the last used row in column A starting from A5
     lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+
 
     ' Define the range starting from J6 to the last row
     Set DataRange = ws.Range("I6:N" & lastRow)
@@ -127,12 +136,15 @@ SkipToNext:
     'Format the worksheet
     FormatWorksheet
     
+    ActiveWorkbook.RefreshAll
+    
     Set DataRange = ws.Range("A4")
     DataRange.Select
     MsgBox "Job done.", vbInformation
    
     
 End Sub
+
 
 Sub Clear_Sheet()
 
@@ -155,23 +167,12 @@ Sub Clear_Sheet()
 
 End Sub
 
-Sub Call_Python()
-
-Dim vbaShell As Object
-
-Set vbaShell = VBA.CreateObject("Wsscript.Shell")
-
-vbaShell.Run """F:\Python\Installation\python.exe""" & """C:\Users\catst\OneDrive\Documents\Satisfactory\Dependency Finder\excel_current.py"""
-
-End Sub
-
-
 Sub FormatWorksheet()
     Dim ws As Worksheet
     Dim lastRow As Long
 
     ' Define your worksheet, adjust the name as necessary
-    Set ws = ThisWorkbook.Sheets("Sheet1")
+    Set ws = ThisWorkbook.Sheets("Dependency Tree")
 
     ' Determine the last row (adjust the column as needed)
     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
@@ -205,8 +206,11 @@ Sub FormatWorksheet()
         .Range("B1").HorizontalAlignment = xlLeft
         .Range("B2").HorizontalAlignment = xlCenter
         .Range("A5:H5").HorizontalAlignment = xlCenter
+        .Range("A5:H5").VerticalAlignment = xlCenter
+        
     End With
 End Sub
+
 
 Sub Choose_Alternate_Recipes()
     Sheets("Alt_Recipe_Selection").Select

@@ -201,10 +201,10 @@ Sub FormatWorksheet()
             .VerticalAlignment = xlCenter
         End With
 
-        ' Format specific cells B1 and B2
+        ' Format specific cells B1, B2 and A5:H5
         .Range("B1").HorizontalAlignment = xlLeft
         .Range("B2").HorizontalAlignment = xlCenter
-        '.Range("A4").Select
+        .Range("A5:H5").HorizontalAlignment = xlCenter
     End With
 End Sub
 

@@ -28,7 +28,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently -k -n \"CLIENT,SERVER\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run client\" \"npm run server\"",
+    "start": "npm run client",
     "client": "react-scripts start",
     "server": "python run.py",
     "stop": "node bar.js",

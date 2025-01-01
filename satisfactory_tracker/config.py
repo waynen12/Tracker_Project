@@ -27,6 +27,8 @@ elif Config.RUN_MODE == 'docker':
     REACT_BUILD_DIR = f'{os.path.join(basedir, "app", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "app", "build", "static")}'
 else:
+    #TODO: Add prod config
+    #TODO: replace sqlite with MySQL
     # Throw an error if the run_mode is not set
     raise ValueError('RUN_MODE environment variable not set. Please set RUN_MODE to "local" or "docker"')
 
@@ -36,17 +38,7 @@ else:
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = os.getenv('SECRET_KEY') or 'dev_default_secret_key'
 #print(f'SECRET_KEY: {SECRET_KEY}')
-# Email server config values
-# MAIL_SERVER = 'smtp.gmail.com' # Gmail SMTP server
-# MAIL_PORT = 587 # Port for TLS
-# MAIL_USE_TLS = True # Use TLS for security
-# MAIL_USE_SSL = False # Use SSL for security
-# MAIL_USERNAME = os.getenv('ST_MAIL_USER') # Load email username from environment variable
-# MAIL_PASSWORD = os.getenv('ST_MAIL_PW')  # Load email password from environment variable
-# MAIL_DEFAULT_SENDER = os.getenv('ST_MAIL_SENDER') # Load email sender from environment variable
 
-#SERVICE_ACCOUNT_KEY_FILE = os.getenv('SERVICE_ACCOUNT_KEY_FILE')
-# GOOGLE_PROJECT_ID = os.getenv('GOOGLE_PROJECT_ID')
 REACT_APP_RECAPTCHA_SITE_KEY = os.getenv('REACT_APP_RECAPTCHA_SITE_KEY')
 RECAPTCHA_API_KEY = os.getenv('RECAPTCHA_API_KEY')
 #print(f'**********************MAIL_USERNAME: {MAIL_USERNAME} MAIL_DEFAULT_SENDER: {MAIL_DEFAULT_SENDER} MAIL_PASSWORD: {MAIL_PASSWORD}')

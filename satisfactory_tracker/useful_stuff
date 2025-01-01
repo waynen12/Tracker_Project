@@ -35,6 +35,10 @@ Section 1 - Troubleshoting:
 Section 2 - New System Installation:
         # 1) Install Node.js from 
             https://nodejs.org/en/download/prebuilt-installer
+        # 2) Install the Communnity version of MySQL - if necessary
+            https://dev.mysql.com/downloads/mysql/
+        # 3) Install MySQL Workbench - if necessary
+            https://dev.mysql.com/downloads/workbench/
         # 2) Install Python - if necessary
             https://www.python.org/downloads/windows/
         # 3) Set Up a Virtual Environment
@@ -72,18 +76,26 @@ Section 3 - Virtual environment:
             deactivate
 
 Section 4 - Build & Run the Application:
-        # IMPORTANT: Make sure you set the RUN_MODE variables in the .env file before proceding.
-            # local - for local development on your machine
-            # docker - for running the application in Docker
-        # The scripts in package.json have been updated to start the client and server by calling npm start.
-        # Make sure you've run npm install concurrently --save-dev 
-        # This will start the flask server and the react server in watch mode and changes will be reflected in the browser in real-time.
-        cd satisfactory_tracker # if not already in the directory
-        ./venv/Scripts/activate # if not already in the virtual environment
-        npm run build # Build the React app if needed.
-        npm start # Start the servers. Ctrl C to stop the servers.
+        - IMPORTANT - SET RUN MODE IN .ENV FILE!: Make sure you set the RUN_MODE variables in the .env file before proceding.
+            - local - for local development on your machine. Both flask, react and sql servers will be run locally.
+            - docker - for running the application in a Docker container.
+            - prod - for running the application in a production environment. The Flask and SQL servers will be run on a separate server.
+        - Development mode:                
+            cd satisfactory_tracker # if not already in the directory
+            ./venv/Scripts/activate # if not already in the virtual environment
+            npm start # Start the servers. This script will start both the Flask and React servers at the same time using 'concurrently'.
+            Ctrl C # To stop the servers.
         # The Flask server, apis and the served application built using npm build will be running at http://192.168.50.33:5000/
         # The development server will be running at http://localhost:3000/
+        - Production mode:
+            # Install Flask and SQL on a separate server. See section 4.1 for instructions.
+            # The Flask and SQL servers will be running at http://192.168.50.33:5000 (update with your server IP address).
+            # Start the React app in production mode.
+            npm startprod # Starts the React app in production mode
+    #TODO: Add instructions for starting the Flask and SQL servers in production mode.
+    #TODO: Add instructions for setting up the React production environment.
+    #TODO: Add instructions for setting up the Docker environment.
+        
 
 Section 5 - Docker:
         docker-compose down # Stop the containers
@@ -112,6 +124,7 @@ Section 5 - Docker:
 Section 6 - npm commands:
         npm run build # Builds the React app
         npm start # scripts updated to use concurrently@9.1.0 to start the both react and flask servers at the same time in package.json
+        npm startprod # Starts the React app in production mode
         npm stop # stops the react server
 
 Section 7 - Table Maintenance:

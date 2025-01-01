@@ -46,26 +46,9 @@ main = Blueprint(
     static_folder=REACT_STATIC_DIR
 )
 
-# Load service account credentials
-#SERVICE_ACCOUNT_FILE = config.SERVICE_ACCOUNT_KEY_FILE
-#PROJECT_ID = config.GOOGLE_PROJECT_ID
+# Load RECAPTCHA keys
 SITE_KEY = config.REACT_APP_RECAPTCHA_SITE_KEY
 SECRET_KEY = config.RECAPTCHA_API_KEY
-
-# logger.info(f"**************************************Service account file: {SERVICE_ACCOUNT_FILE}, Project ID: {PROJECT_ID}, Site key: {SITE_KEY}")
-
-# # Load the credentials
-# credentials = service_account.Credentials.from_service_account_file(
-#     SERVICE_ACCOUNT_FILE,
-#     scopes=['https://www.googleapis.com/auth/recaptchaenterprise']
-# )
-
-# # Create an authorized session
-# authed_session = AuthorizedSession(credentials)
-
-# for rule in app.url_map.iter_rules():
-#     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
-
 
 @main.route('/')
 def serve_react_app():
@@ -166,18 +149,18 @@ def logout():
     flash('Logged out successfully.', 'info')
     return jsonify({"message": "Logged out successfully."}), 201
 
-def generate_verification_token(email):
-    #print(f"********************************************Generating verification token for {email} with secret key: {config.SECRET_KEY}")
-    serializer = URLSafeTimedSerializer(config.SECRET_KEY)
-    return serializer.dumps(email, salt='email-confirm')
+# def generate_verification_token(email):
+#     #print(f"********************************************Generating verification token for {email} with secret key: {config.SECRET_KEY}")
+#     serializer = URLSafeTimedSerializer(config.SECRET_KEY)
+#     return serializer.dumps(email, salt='email-confirm')
 
-def confirm_verification_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(config.SECRET_KEY)
-    try:
-        email = serializer.loads(token, salt='email-confirm', max_age=expiration)
-    except Exception:
-        return None
-    return email
+# def confirm_verification_token(token, expiration=3600):
+#     serializer = URLSafeTimedSerializer(config.SECRET_KEY)
+#     try:
+#         email = serializer.loads(token, salt='email-confirm', max_age=expiration)
+#     except Exception:
+#         return None
+#     return email
 
 @main.route('/verify/<token>')
 def verify_email(token):

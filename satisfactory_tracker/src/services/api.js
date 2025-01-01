@@ -1,8 +1,12 @@
 import axios from 'axios';
 
+// Determine the base URL based on the run mode
+const runMode = process.env.RUN_MODE;
+const baseURL = runMode === 'prod' ? process.env.REACT_CLIENT_BASE_URL : process.env.REACT_CLIENT_BASE_URL_LOCAL;
+
 // Create an Axios instance with the base URL
 const apiClient = axios.create({
-  baseURL: process.env.REACT_CLIENT_BASE_URL,
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },

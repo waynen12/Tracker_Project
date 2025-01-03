@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_script import Manager
-from app import create_app, db
+from ..flask_server.app import create_app, db
 
 app = create_app()
 migrate = Migrate(app, db)

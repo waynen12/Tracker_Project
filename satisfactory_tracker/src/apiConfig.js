@@ -1,6 +1,6 @@
 let flask_port = "";
 
-if (process.env.RUN_MODE !== 'prod') {
+if (process.env.RUN_MODE === 'prod') {
   flask_port = "http://192.168.50.33:5000/";
 } else {
   flask_port = "http://localhost:5000/";

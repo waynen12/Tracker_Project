@@ -311,15 +311,26 @@ WINDOWS command to remove the database.
 
 <h1 id="section-15">Section 15 - Feature List <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
-## Data Management
-* ### Edit Modal:            
+## Database
+* ### Migration from SQLite3 to MySQL
+    * [ ] WHAT HAVE YOU DONE! FIX EVERYTHING!
+    * [ ] Update instructions
+        * [ ] Section 2 - New System Installation
+        * [ ] Section 4 - Build & Run the Application
+        * [ ] Section 7 - Table Maintenance
+        * [ ] Section 8 - Flask Commands
+        * [ ] Section 9: SQLite
+        * [ ] Section 10 - Key files
+
+## Data Management Page
+* ### Edit Modal Page:            
     * [ ] Implement Data Validation on EditModal
     * [ ] Implement the data validation on the EditModal for edit and create modes.
     * [ ] Get valid values from data_validation table.
     * [ ] Get values for foreign key constraints
     * [ ] Change parts and recipes tables to 'part' and 'recipe' for consistency.
 
-## Dependencies
+## Dependency Tree Page
 * ### Build Tree:
     * [ ] Update build_tree to take alternate recipes into account.
     * [ ] Save and Load Configurations

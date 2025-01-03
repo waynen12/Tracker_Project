@@ -1,33 +1,35 @@
 # Table of Contents:
-* <a href="#section-1---troubleshooting">Section 1: Troubleshooting</a>
-* [Section 1: Troubleshooting](#section-1---troubleshooting)
-* [Section 2: New System Installation](#section-2---new-system-installation)
-* [Section 3: Virtual Environment](#section-3---virtual-environment)
-* [Section 4: Build & Run the Application](#section-4---build--run-the-application)
-* [Section 5: Docker](#section-5---docker)
-* [Section 6: npm commands](#section-6---npm-commands)
-* [Section 7: Table Maintenance](#section-7---table-maintenance)
-* [Section 8: Flask Commands](#section-8---flask-commands)
-* [Section 9: SQLite](#section-9---SQLite)
-* [Section 10: Key files](#section-10---key-files)
-* [Section 11: Code stuff](#section-11---code-stuff)
-* [Section 12: Project relative paths](#section-12---project-relative-paths)
-* [Section 13: Visual Studio](#section-13---visual-studio)
-* [Section 14: Copilot](#section-14---copilot)
-* [Section 15: Feature List](#section-15---feature-list--todos)
+* [Section 1: Troubleshooting](#section-1)
+* [Section 2: New System Installation](#section-2)
+* [Section 3: Virtual Environment](#section-3)
+* [Section 4: Build & Run the Application](#section-4)
+* [Section 5: Docker](#section-5)
+* [Section 6: npm commands](#section-6)
+* [Section 7: Table Maintenance](#section-7)
+* [Section 8: Flask Commands](#section-8)
+* [Section 9: SQLite](#section-9)
+* [Section 10: Key files](#section-10)
+* [Section 11: Code stuff](#section-11)
+* [Section 12: Project relative paths](#section-12)
+* [Section 13: Visual Studio](#section-13)
+* [Section 14: Copilot](#section-14)
+* [Section 15: Feature List](#section-15)
 
-# Section 1 - Troubleshooting: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-1">Section 1 - Troubleshooting <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
 ## When installed packages aren't recognised:
-### Check >Python Interpreter in Command Palette to make sure it's pointing to the right python installation.
+Check >Python Interpreter in Command Palette to make sure it's pointing to the right python installation.
+
     Ctrl+P
     >Python Interpreter
+
 ## Issues with conflicting package versions:
-### ***This will blow away the node_modules directory, the package-lock.json file, and reinstall the all packages.***
-### ***Make sure any dependencies on specific versions are updated in the package.json file.***
+***<span style="color: red; font-size: 18px;">Note:</span>*** This will blow away the node_modules directory, the package-lock.json file, and reinstall the all packages. Make sure any dependencies on specific versions are updated in the package.json file.
+
     Remove-Item -Recurse -Force ./node_modules
     Remove-Item -Force ./package-lock.json
     npm install
+
 ## Port 3000 already in use:
 ### WINDOWS
     Open task manager and end all Node.js processes. Then restart the application.
@@ -35,29 +37,31 @@
     sudo lsof -t -i:3000
     kill -9 <PID>
 
-# Section 2 - New System Installation: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
-  ### 1) Install Node.js  
-    https://nodejs.org/en/download/prebuilt-installer
-  ### 2) Install the Communnity version of MySQL - if necessary
-    https://dev.mysql.com/downloads/mysql/
-  ### 3) Install MySQL Workbench - if necessary
-    https://dev.mysql.com/downloads/workbench/
-  ### 4) Install Python - if necessary
-    https://www.python.org/downloads/windows/
-  ### 5) Set Up a Virtual Environment
-    See Section 3
+<h1 id="section-2">Section 2 - New System Installation <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+  
+* ### 1) Install Node.js  
+        https://nodejs.org/en/download/prebuilt-installer
+* ### 2) Install the Communnity version of MySQL - if necessary
+      https://dev.mysql.com/downloads/mysql/
+* ### 3) Install MySQL Workbench - if necessary
+     https://dev.mysql.com/downloads/workbench/
+* ### 4) Install Python - if necessary
+        https://www.python.org/downloads/windows/
+* ### 5) Set Up a Virtual Environment
+    * <a href="#section-3">See Section 3</a></h1>
 
-# Section 3 - Virtual environment: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
-  ### Set Up:
-   #### 1) Create the virtual environment
-      python -m venv venv
-   #### 2) Activate the virtual environment
-  #### LINUX command to activate the virtual environment.
-      source venv/bin/activate 
-  #### WINDOWS command to activate the virtual environment.
+<h1 id="section-3">Section 3 - Virtual Environment <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
+## Set Up:
+### 1) Create the virtual environment
+    python -m venv venv
+### 2) Activate the virtual environment
+#### LINUX command to activate the virtual environment.
+    source venv/bin/activate 
+#### WINDOWS command to activate the virtual environment.
       ./venv/Scripts/activate
-  #### 3) Install the required pip packages
-  #### pip package installation
+### 3) Install the required pip packages
+#### pip package installation
     pip install -r pip_requirements.txt
 #### 4) Install the required npm packages
 ### LINUX command to install the required packages.
@@ -65,28 +69,30 @@
 #### WINDOWS command to install the required packages.
     Get-Content -Path npm_requirements.txt | ForEach-Object {npm install $_}
 
-### Delete:
-#### LINUX command to delete the virtual environment.
+## Delete:
+### LINUX command to delete the virtual environment.
     rm -rf venv
-#### WINDOWS command to delete the virtual environment.
+### WINDOWS command to delete the virtual environment.
     Remove-Item -Recurse -Force ./venv
-Alternatively, you can manually delete the venv directory using File Explorer.
+### Alternatively, you can manually delete the venv directory using File Explorer.
 
-### Turn on virtual environment:
-#### LINUX command to activate the virtual environment.
+## Turn on virtual environment:
+### LINUX command to activate the virtual environment.
     source venv/bin/activate
-#### WINDOWS command to activate the virtual environment.
+### WINDOWS command to activate the virtual environment.
     ./venv/Scripts/activate
 
-### Turn off virtual environment:
+## Turn off virtual environment:
     deactivate
 
-# Section 4 - Build & Run the Application: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
-## ***IMPORTANT - SET RUN MODE IN .ENV FILE!***
+<h1 id="section-4">Section 4 - Build & Run the Application <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
+### ***<span style="color: red;">IMPORTANT - SET RUN MODE IN .ENV FILE!</span>*** ###
+
 ### Make sure you set the RUN_MODE variables in the .env file before proceding.
-- local - for local development on your machine. Both flask, react and sql servers will be run locally.
-- docker - for running the application in a Docker container.
-- prod - for running the application in a production environment. The Flask and SQL servers will be run on a separate server.
+- **local** - for local development on your machine. Both flask, react and sql servers will be run locally.
+- **docker** - for running the application in a Docker container.
+- **prod** - for running the application in a production environment. The Flask and SQL servers will be run on a separate machine. <span style="color: orange;">#TODO: Work in Progress</span>
 
 ### Development mode:                
 #### Navigate to the project directory    
@@ -101,15 +107,18 @@ Alternatively, you can manually delete the venv directory using File Explorer.
 ### ***The development server will be running at http://localhost:3000/***
 
 ### Production mode:
-#### Install Flask and SQL on a separate server. See section 4.1 for instructions. #TODO: Section 4.1
-#### The Flask and SQL servers will be running at http://192.168.50.33:5000 (update with your server IP address).
-#### Start the React app in production mode.
-    npm startprod
-#### #TODO: Add instructions for starting the Flask and SQL servers in production mode.
-#### #TODO: Add instructions for setting up the React production environment.
-#### #TODO: Add instructions for setting up the Docker environment.
+* Install Flask and SQL on a separate server. See section 4.1 for instructions. 
+    * <span style="color: orange;">#TODO: Add Section 4.1</span>
+* The Flask and SQL servers will be running at http://192.168.50.33:5000 <span style="color: orange;">(update with your server IP address).</span>
+* #### Start the React app in production mode.
+      npm startprod
 
-# Section 5 - Docker: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+* <span style="color: orange;">#TODO: Add instructions for starting the Flask and SQL servers in production mode.</span> 
+* <span style="color: orange;">#TODO: Add instructions for setting up the React production environment.</span> 
+* <span style="color: orange;">#TODO: Add instructions for setting up the Docker environment.</span> 
+
+<h1 id="section-5">Section 5 - Docker <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
   ### Stop the containers
     docker-compose down
   ###  Build the Docker images. Add --no-cache to build without using the cache (useful for debugging)
@@ -141,7 +150,8 @@ Alternatively, you can manually delete the venv directory using File Explorer.
 #### Remove all docker images 
       docker container rm -f $(docker container ls -aq)
 
-# Section 6 - npm commands: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-6">Section 6 - npm commands <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ### Builds the React app
     npm run build
 ### Starts the React app in developement mode
@@ -153,7 +163,8 @@ Alternatively, you can manually delete the venv directory using File Explorer.
 ### Stops the react server
     npm stop    
 
-# Section 7 - Table Maintenance: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-7">Section 7 - Table Maintenance <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ### Run refresh_data.py in SQLite_stuff directory to delete all data and reload either a specific table or all tables.
 - Primary keys are reset to 0 when the data is reloaded. So you shouldn't need to reload foreign key data. But spot check to be sure.
 - Command line arguments as follows: all_tables, part, recipe, alternate_recipe, node_purity, miner_type, miner_supply, power_shards, data_validation
@@ -169,7 +180,8 @@ Alternatively, you can manually delete the venv directory using File Explorer.
     python refresh_data.py data_validation
  ***<span style="color: red; font-size: 18px;">Note:</span>*** The user table is not included. This is to prevent the loss of user data. If you need to refresh the user table, you will need to do it manually.
 
-# Section 8 - Flask Commands: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-8">Section 8 - Flask Commands <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ### Blow away the database and start over:
 #### 1) Delete the database file.
 LINUX command to remove the database.
@@ -195,20 +207,22 @@ WINDOWS command to remove the database.
 ###### Stamp the current migration.
     flask db stamp head
 
-# Section 9 - SQLite: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-9">Section 9 - SQLite <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 - SQLite Installation Folder:
       F:/Programs/SQLite3/sqlite3.exe # Handy for me. Change path as needed.
 - SQLite commands:
       sqlite3 satisfactory_parts.db .dump > backup.sql # Backup the database. Preferably BEFORE you make massive changes! :P
 
-# Section 10 - Key files: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-10">Section 10 - Key files <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ### General:
 - satisfactory_tracker/config.py # Configuration file for both the Flask and React apps
 - satisfactory_tracker/run.py # Run the Flask app
 - satisfactory_tracker/pip_requirements.txt # List of pip packages for the virtual environment 
 - satisfactory_tracker/npm_requirements.txt # List of npm packages for the React app
 - satisfactory_tracker/.env # Environment variables for the project 
-- satisfactory_tracker/useful_stuff # That's this file! :)
+- satisfactory_tracker/README.md # That's this file :P
 ### SQLite:
 - satisfactory_tracker/SQLite_stuff/satisfactory_parts.db # Database file for the SQLite database
 - satisfactory_tracker/SQLite_stuff/Satifactory Parts Data v2.xlsx # Excel file containing the initial data
@@ -255,9 +269,9 @@ WINDOWS command to remove the database.
 - satisfactory_tracker/public/ # Public folder for the React app
 - satisfactory_tracker/SQLite_stuff/__pycache__ # Python cache folder, auto-generated by Python
 ### Files not in use:
+- satisfactory_tracker/useful_stuff # Replaced with README.md
 - satisfactory_tracker/debug.py # Debug file - Currently not in use
 - satisfactory_tracker/manage.py # Manage file - Currently not in use
-- satisfactory_tracker/README.md # Readme file - Currently not in use
 - satisfactory_tracker/app/test.py # Test file for the app, currently not in use
 - satisfactory_tracker/instance # Currently not in use
 - satisfactory_tracker/SQLite_stuff/query.py # Currently not in use
@@ -267,20 +281,23 @@ WINDOWS command to remove the database.
 - satisfactory_tracker/src/App.test.js # App test file, currently not in use
 - satisfactory_tracker/src/setupTests.js # Setup test file, currently not in use
 
-# Section 11 - Code stuff: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
-formatting of TODOs:
+<h1 id="section-11">Section 11 - Code stuff <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
+### Formatting of TODOs:
 - #TODO:
 
-# Section 12 - Project relative paths: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
-- satisfactory_tracker/
-- satisfactory_tracker/SQLite_stuff
-- satisfactory_tracker/excel_stuff
+<h1 id="section-12">Section 12 - Project relative paths <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
-# Section 13 - Visual Studio: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+- flask_server
+- satisfactory_tracker
+
+<h1 id="section-13">Section 13 - Visual Studio <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ### Exclude venv and node_modules from search. Copy into the files to exclude text box in the search tab.
     satisfactory_tracker/venv/**/, satisfactory_tracker/node_modules/**/
 
-# Section 14 - Copilot: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-14">Section 14 - Copilot <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 - copilot-debug python filename.py # Debug a file using copilot-debug
 - By typing # followed by a symbol, function_name, class_name etc... you'll get suggestions for that type from files you've recently worked on.
 - To reference symbols across your entire project, you can use #sym to open a global symbols picker.
@@ -292,7 +309,8 @@ formatting of TODOs:
 - Multi-select
 - Ctrl + Shift + L 
 
-# Section 15 - Feature List & TODOs: <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a>
+<h1 id="section-15">Section 15 - Feature List <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+
 ## Data Management
 * ### Edit Modal:            
     * [ ] Implement Data Validation on EditModal

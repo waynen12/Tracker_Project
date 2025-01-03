@@ -162,23 +162,23 @@ def logout():
 #         return None
 #     return email
 
-@main.route('/verify/<token>')
-def verify_email(token):
-    try:
-        email = confirm_verification_token(token)
-    except Exception as e:
-        flash('The verification link is invalid or has expired.', 'danger')
-        return redirect(url_for('signup'))
+# @main.route('/verify/<token>')
+# def verify_email(token):
+#     try:
+#         email = confirm_verification_token(token)
+#     except Exception as e:
+#         flash('The verification link is invalid or has expired.', 'danger')
+#         return redirect(url_for('signup'))
 
-    user = User.query.filter_by(email=email).first()
-    if user.is_verified:  # Add `is_verified` to your User model
-        flash('Account already verified. Please log in.', 'info')
-        return redirect(url_for('login'))
+#     user = User.query.filter_by(email=email).first()
+#     if user.is_verified:  # Add `is_verified` to your User model
+#         flash('Account already verified. Please log in.', 'info')
+#         return redirect(url_for('login'))
 
-    user.is_verified = True
-    db.session.commit()
-    flash('Your account has been verified! You can now log in.', 'success')
-    return redirect(url_for('login'))
+#     user.is_verified = True
+#     db.session.commit()
+#     flash('Your account has been verified! You can now log in.', 'success')
+#     return redirect(url_for('login'))
 
 @main.route('/api/user_info', methods=['GET'])
 @login_required

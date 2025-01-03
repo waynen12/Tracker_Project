@@ -82,7 +82,7 @@ print("Replaced 'N/A' with None")
 
 # Migrate parts
 print("Migrating parts")
-for _, row in parts_df.iterrows():
+for _, row in part_df.iterrows():
     get_or_create(cursor, "parts", "part_name", row["part_name"], {
         "level": row["level"],
         "category": row["category"]              

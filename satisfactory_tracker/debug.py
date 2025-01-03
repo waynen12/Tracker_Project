@@ -1,5 +1,5 @@
 from sqlalchemy import inspect
-from app import create_app, db   # Import your app factory and db instance
+from ..flask_server.app import create_app, db
 
 print("Creating the Flask app...")
 # Create the Flask app

@@ -20,17 +20,22 @@ class Config:
 
 # Set DB config values based on RUN_MODE
 if Config.RUN_MODE == 'local':
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 elif Config.RUN_MODE == 'docker':
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "app", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "app", "build", "static")}'
+elif Config.RUN_MODE == 'prod':
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_PROD')
+    REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
+    REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 else:
     # Throw an error if the run_mode is not set
     raise ValueError('RUN_MODE environment variable not set. Please set RUN_MODE to "local" or "docker"')
 
+print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

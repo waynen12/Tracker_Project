@@ -314,7 +314,22 @@ WINDOWS command to remove the database.
 ## Database
 * ### Migration from SQLite3 to MySQL
     * [ ] WHAT HAVE YOU DONE! FIX EVERYTHING!
-    * [ ] Update instructions
+    * [ ] Docker
+        * [ ] Move Dockerfile, docker-compose.yml, pip_requirements.txt and npm_requirements.txt to Tracker_Project directory so that both the Flask_Server and satisfactory_tracker(React) are included in the copy.
+        * [ ] Update Dockerfile
+            * [ ] Ensure the Dockerfile installs the necessary MySQL client libraries
+                * default-libmysqlclient-dev \
+            * [ ] Include the database migration:
+                * RUN flask db upgrade
+        * [ ] Update docker-compose.yml
+            * [ ] MySQL Service: 
+                * [ ] Define a mysql service using the mysql:8.0 image. 
+                * [ ] Set the root password and database name using environment variables.
+            * [ ] App Service:
+                * [ ] Define the app service to build from the Dockerfile. 
+                * [ ] Set environment variables for MySQL connection details. 
+                * [ ] Use depends_on to ensure the MySQL service starts before the app service.
+    * [ ] Update README.md:
         * [ ] Section 2 - New System Installation
         * [ ] Section 4 - Build & Run the Application
         * [ ] Section 7 - Table Maintenance

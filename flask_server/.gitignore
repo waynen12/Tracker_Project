@@ -1,3 +1,5 @@
 
 flask_server.log
 .env
+__pycache__
+/app/__pycache__

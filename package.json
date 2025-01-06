@@ -28,14 +28,14 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start":"concurrently -k -n \"CLIENT,SERVER\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run client\" \"npm run server\"",
-    "startprod": "npm run client",
+    "start": "concurrently -k -n \"CLIENT,SERVER\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run client --prefix satisfactory_tracker\" \"npm run server \"",
+    "startprod": "npm run client --prefix satisfactory_tracker",
     "client": "react-scripts start",
     "server": "python flask_server/run.py",
     "stop": "node bar.js",
-    "build": "npm run build",
-    "test": "npm run test",
-    "eject": "npm run eject"
+    "build": "npm run build --prefix satisfactory_tracker",
+    "test": "npm run test --prefix satisfactory_tracker",
+    "eject": "npm run eject --prefix satisfactory_tracker"
   },
   "eslintConfig": {
     "extends": [

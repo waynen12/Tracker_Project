@@ -15,48 +15,31 @@ mail = Mail()
 
 def create_app():
     # Construct the absolute path to the config file
-    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config.py'))
-    print(f"Loading config from: {config_path}")
+    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
+    # print(f"Loading config from: {config_path}")
     
     app = Flask(__name__, static_folder=None) # Explicity set static_folder to None to disable static file serving from default location
     CORS(app, resources={r"/*": {"origins": "*"}})
-    app.config.from_pyfile(config_path)
-    #print("App created")
-    #print("Initializing extensions...")
+    app.config.from_pyfile(config_path)   
     db.init_app(app)
-    #print("DB initialized")
     migrate.init_app(app, db)
-    #print("Migrate initialized")
     login_manager.init_app(app)
-    #print("Login Manager initialized")
     login_manager.login_view = 'login'
-    #print("Login view set")
     mail.init_app(app)
-    #print("Mail initialized")
 
     with app.app_context():
-        #print("Importing models...")
         # Import models to ensure they are registered
-        from .models import User, Part, Recipe, Alternate_Recipe, Miner_Type, Node_Purity, Power_Shards, Miner_Supply
-        #print("Models imported")
-        
-        #print("Inspecting metadata...")
-        #for table_name, table_obj in db.metadata.tables.items():
-            #print(f"Table: {table_name}, Columns: {list(table_obj.columns.keys())}")
-
-        #print("Creating tables...")
+        #TODO: None of the imported tables are being used. Should they be included in the db.create_all() call?
+        from .models import User, Part, Recipe, Alternate_Recipe, Miner_Type, Node_Purity, Power_Shards, Miner_Supply, Data_Validation
         db.create_all()  # Ensure tables are created
-        #print("Tables created")
 
     # Register blueprints
-    #print("Registering blueprints...")
     from .routes import main
     app.register_blueprint(main)
-    #print("Blueprints registered")
-    
+
     # print("Registered Routes:")
     # for rule in app.url_map.iter_rules():
-    #     print(rule)
+    #     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
     
     print("App successfully created")
     return app 

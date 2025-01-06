@@ -216,7 +216,7 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
                 key={col}
                 label={col.replace(/_/g, " ")}
                 value={updatedRow[col] || ""}
-                // onChange={(e) => handleChange(e, col)}
+                onChange={(e) => handleChange(e, col)}
                 fullWidth
                 disabled={col === "id"}
                 margin="normal"

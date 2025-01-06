@@ -1,3 +1,5 @@
+- View at https://github.com/CraftyCatalyst/Tracker_Project/blob/main/satisfactory_tracker/USEFUL_STUFF.md
+
 # Table of Contents:
 * [Section 1: Troubleshooting](#section-1)
 * [Section 2: New System Installation](#section-2)
@@ -309,7 +311,7 @@ WINDOWS command to remove the database.
 - Multi-select
 - Ctrl + Shift + L 
 
-<h1 id="section-15">Section 15 - Feature List <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
+<h1 id="section-15">Section 15 - Features & Issues List <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
 ## Database
 * ### Migration from SQLite3 to MySQL
@@ -344,6 +346,7 @@ WINDOWS command to remove the database.
     * [ ] Get valid values from data_validation table.
     * [ ] Get values for foreign key constraints
     * [ ] Change parts and recipes tables to 'part' and 'recipe' for consistency.
+    * [x] Fix the Delete button, it's not working.
 
 ## Dependency Tree Page
 * ### Build Tree:

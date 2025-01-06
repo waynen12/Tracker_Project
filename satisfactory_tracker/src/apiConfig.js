@@ -1,13 +1,13 @@
 let flask_port = "";
 
 if (process.env.RUN_MODE === 'prod') {
-  flask_port = "http://192.168.50.33:5000/";
+  flask_port = "http://192.168.50.33:5000";
 } else {
-  flask_port = "http://localhost:5000/";
+  flask_port = "http://localhost:5000";
 }
 
 export const API_ENDPOINTS = {
-  tables: `${flask_port}/api/tables`,
+  tables: `${flask_port}/api/tables`,  
   table_name: (tableName) => `${flask_port}/api/${tableName}`, // Dynamic endpoint
   part_names: `${flask_port}/api/part_names`,
   alternate_recipe: `${flask_port}/api/alternate_recipe`,

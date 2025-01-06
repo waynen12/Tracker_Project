@@ -114,6 +114,7 @@ const DataManagementPage = () => {
   // Handle save changes
   const handleSaveChanges = async (updatedRow) => {
     try {
+      console.log(`Calling PUT on URL: ${API_ENDPOINTS.tables}/${selectedTable}/${updatedRow.id}`);
       await axios.put(`${API_ENDPOINTS.tables}/${selectedTable}/${updatedRow.id}`, updatedRow);
       alert("Row updated successfully!");
       fetchTableData(selectedTable); // Refresh table data
@@ -138,11 +139,15 @@ const DataManagementPage = () => {
   // Handle row deletion
   const handleDelete = async (rowId) => {
     try {
-      await axios.delete(`${API_ENDPOINTS.tables}/${selectedTable}/${rowId}`);
+      const url = `${API_ENDPOINTS.tables}/${selectedTable}/${rowId}`;
+      console.log(`Calling DELETE on URL: ${url}`);
+      const response = await axios.delete(url);
+      // const response = await axios.delete(`${API_ENDPOINTS.tables}/${selectedTable}/${rowId}`);
+      console.log("DELETE response:", response.data);
       alert("Row deleted successfully!");
       fetchTableData(selectedTable); // Refresh table data
     } catch (error) {
-      console.error("Error deleting row:", error);
+      console.error("Error deleting row:", error, error.response);
     }
   };
 

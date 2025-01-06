@@ -2,16 +2,16 @@ import os
 import logging
 from dotenv import load_dotenv
 
-
 # Logging config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Base directory of the project
-basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 #print(basedir)
 
 # Load environment variables from .env file
+dotenv_path = os.path.join(basedir, ".env")
 load_dotenv()
 
 class Config:
@@ -24,11 +24,15 @@ if Config.RUN_MODE == 'local':
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 elif Config.RUN_MODE == 'docker':
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_LOCAL')
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_DOCKER')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "app", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "app", "build", "static")}'
 elif Config.RUN_MODE == 'prod':
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_PROD')
+    REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
+    REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
+elif Config.RUN_MODE == 'prod_local':
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_PROD_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 else:
@@ -38,12 +42,9 @@ else:
 print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-
-#SERVICE_ACCOUNT_KEY_FILE = os.getenv('SERVICE_ACCOUNT_KEY_FILE')
-# GOOGLE_PROJECT_ID = os.getenv('GOOGLE_PROJECT_ID')
+# Recaptcha keys
 REACT_APP_RECAPTCHA_SITE_KEY = os.getenv('REACT_APP_RECAPTCHA_SITE_KEY')
 RECAPTCHA_API_KEY = os.getenv('RECAPTCHA_API_KEY')
-#print(f'**********************MAIL_USERNAME: {MAIL_USERNAME} MAIL_DEFAULT_SENDER: {MAIL_DEFAULT_SENDER} MAIL_PASSWORD: {MAIL_PASSWORD}')
 
 # Table and column whitelist
 VALID_TABLES = {'part', 'recipe', 'alternate_recipe', 'node_purity', 'miner_type', 'miner_supply', 'power_shards', "user", "data_validation"}

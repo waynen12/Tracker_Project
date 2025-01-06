@@ -24,6 +24,7 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 
 
+
 # Construct the absolute path to the config file
 config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config.py'))
 logging.INFO, f"Loading config from: {config_path}"
@@ -272,9 +273,12 @@ def create_row(table_name):
     if invalid_columns:
         return jsonify({"error": f"Invalid column(s): {', '.join(invalid_columns)}"}), 400
 
+     # Exclude the 'id' column from the data dictionary
+    data_without_id = {key: value for key, value in data.items() if key != 'id'}
+
     # Build the SQL INSERT query
-    columns = ", ".join(data.keys())
-    values = ", ".join(f":{key}" for key in data.keys())
+    columns = ", ".join(data_without_id.keys())
+    values = ", ".join(f":{key}" for key in data_without_id.keys())
     query = text(f"INSERT INTO {table_name} ({columns}) VALUES ({values})")
 
     try:
@@ -287,13 +291,20 @@ def create_row(table_name):
 
 # Adding a DELETE route for deleting a row
 @main.route('/api/tables/<table_name>/<int:row_id>', methods=['DELETE'])
-def delete_row(table_name, row_id):
-    print("Deleting row" + table_name + row_id)
-    delete_query = text(f"DELETE FROM {table_name} WHERE id = :id")
-    db.session.execute(delete_query, {"id": row_id})
-    db.session.commit()
-    return jsonify({"message": "Row deleted successfully"})
-
+def delete_row(table_name, row_id):    
+    try:
+        print(f"delete_row called with table_name={table_name}, row_id={row_id}")
+        if table_name not in config.VALID_TABLES:
+            return jsonify({"error": "Invalid table name"}), 400        
+        # Construct the DELETE query using a parameterized query to prevent SQL injection
+        delete_query = text(f"DELETE FROM {table_name} WHERE id = :id")
+        db.session.execute(delete_query, {"id": row_id})
+        db.session.commit()
+        return jsonify({"message": "Row deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 @main.route('/api/part', methods=['GET'])
 def get_part():
     """GET ALL PARTS - Retrieve all parts from the database."""

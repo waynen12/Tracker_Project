@@ -1,0 +1,8 @@
+.env
+venv
+node_modules
+node_modules\.package-lock.json
+Compare.py
+Compare.js
+
+test.py

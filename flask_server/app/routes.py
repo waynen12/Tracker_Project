@@ -26,7 +26,7 @@ from google.auth.transport.requests import AuthorizedSession
 
 
 # Construct the absolute path to the config file
-config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config.py'))
+config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
 logging.INFO, f"Loading config from: {config_path}"
 print (config_path)
 

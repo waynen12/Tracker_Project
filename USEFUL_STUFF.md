@@ -44,7 +44,7 @@
 |Footnote |Here's a sentence with a footnote. [^1] <br> [^1]: This is the footnote. |
 |Heading ID|### My Great Heading {#custom-id}|
 |Definition List|term <br>: definition|
-|Strikethrough| `~~The world is flat.~~` |
+|Strikethrough| `~~The world is flat.~~`, ~~The world is flat.~~ |
 |Task List| - [x] Write the press release <br>- [ ] Update the website <br> - [ ] Contact the media|
 |Emoji|[Complete list of Github markdown emoji markup](https://gist.github.com/rxaviers/7360908) <br> Thank you [rxaviers](https://gist.github.com/rxaviers) :smiley: |
 |Highlight|Define the CSS (if your Markdown renderer supports custom CSS): <br> `<style>` <br> `.highlight` <br>`{`<br> `background-color: yellow;` <br> `color: black;` <br>`}` <br><br> Use the CSS Class in your Markdown <br> `</style> I need to highlight these <span class="highlight">very important words</span>` <br><br> </style> I need to highlight these <span class="highlight">very important words</span>|

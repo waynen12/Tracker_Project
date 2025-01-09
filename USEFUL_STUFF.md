@@ -7,7 +7,7 @@
 }
 </style>
 
-# 1. Table of Contents:
+# Table of Contents:
 * [Section 1: Troubleshooting](#section-1)
 * [Section 2: New System Installation](#section-2)
 * [Section 3: Virtual Environment](#section-3)

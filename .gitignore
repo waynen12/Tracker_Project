@@ -4,5 +4,19 @@ node_modules
 node_modules\.package-lock.json
 Compare.py
 Compare.js
-
 test.py
+test.md
+test.html
+getrecipes.py
+recipes.csv
+recipes with updated supply and demand.xlsx
+recipes.html
+recipes with updated supply and demand.csv
+data/file_list.txt
+data/get_file_list.py
+data
+Check-in notes.txt
+app.log
+app.log.1
+app.log.2
+app.log.3

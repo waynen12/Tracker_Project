@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   part_names: `${flask_port}/api/part_names`,
   alternate_recipe: `${flask_port}/api/alternate_recipe`,
   recipe: `${flask_port}/api/recipe`,
+  get_recipe_id: (partId) => `${flask_port}/api/recipe_id/${partId}`,
   build_tree: `${flask_port}/api/build_tree`,
   part: `${flask_port}/api/part`,
   signup: `${flask_port}/signup`,
@@ -19,4 +20,7 @@ export const API_ENDPOINTS = {
   logout: `${flask_port}/logout`,
   userinfo: `${flask_port}/api/user_info`,
   validation: `${flask_port}/api/validation`,
+  tracker_reports: `${flask_port}/api/tracker/reports`,
+  add_to_tracker: `${flask_port}/api/tracker_add`,
+  check_login: `${flask_port}/check_login`,
   };

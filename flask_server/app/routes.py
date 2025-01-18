@@ -7,7 +7,9 @@ from sqlalchemy.orm import sessionmaker
 from flask import send_from_directory
 import os
 import logging
-from .models import User
+from logging.handlers import RotatingFileHandler
+import math
+from .models import User, Tracker
 from . import db
 from .build_tree import build_tree
 from flask import request, flash, redirect, url_for
@@ -22,24 +24,48 @@ import requests
 from flask import request, jsonify
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
+import jwt
+from datetime import datetime, timedelta, timezone
 
 
+# Create a logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-# Construct the absolute path to the config file
+# Create a file handler
+file_handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=5)
+file_handler.setLevel(logging.DEBUG)
+
+# Create a formatter and set it for the handler
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
+
+# Create a console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
+
 config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
-logging.INFO, f"Loading config from: {config_path}"
+logger.info(f"Loading config from: {config_path}")
 print (config_path)
 
 # Load the config module dynamically
 spec = importlib.util.spec_from_file_location("config", config_path)
 config = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(config)
+  
 
 # Use the imported config variables
 REACT_BUILD_DIR = config.REACT_BUILD_DIR
 REACT_STATIC_DIR = config.REACT_STATIC_DIR
-
-logger = logging.getLogger(__name__)
+SECRET_KEY = config.SECRET_KEY
+# Construct the absolute path to the config file
 
 main = Blueprint(
     'main',
@@ -51,22 +77,7 @@ main = Blueprint(
 #SERVICE_ACCOUNT_FILE = config.SERVICE_ACCOUNT_KEY_FILE
 #PROJECT_ID = config.GOOGLE_PROJECT_ID
 SITE_KEY = config.REACT_APP_RECAPTCHA_SITE_KEY
-SECRET_KEY = config.RECAPTCHA_API_KEY
-
-# logger.info(f"**************************************Service account file: {SERVICE_ACCOUNT_FILE}, Project ID: {PROJECT_ID}, Site key: {SITE_KEY}")
-
-# # Load the credentials
-# credentials = service_account.Credentials.from_service_account_file(
-#     SERVICE_ACCOUNT_FILE,
-#     scopes=['https://www.googleapis.com/auth/recaptchaenterprise']
-# )
-
-# # Create an authorized session
-# authed_session = AuthorizedSession(credentials)
-
-# for rule in app.url_map.iter_rules():
-#     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
-
+API_KEY = config.RECAPTCHA_API_KEY
 
 @main.route('/')
 def serve_react_app():
@@ -83,6 +94,7 @@ def serve_static_files(path):
 
 @main.route('/<path:path>')
 def catchall(path):
+    logger.info(f"CATCH-ALL route called: {path}")
     """CATCH-ALL route to serve React app or fallback."""
     if path.startswith("static/"):
         logger.info(f"CATCH-ALL - Skipping static route for: {path}")
@@ -96,18 +108,28 @@ def catchall(path):
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    logger.info(f"Login Request Method: {request.method}")
     if request.method == 'POST':
+        logger.info("Login route called: POST METHOD")
         data = request.get_json()  # Handle JSON payload from React
         email = data.get('email')
         password = data.get('password')
 
-        print(f"Email: {email}, Password: {password}")
-
         user = User.query.filter_by(email=email).first()
+        logger.info(f"Retrieved User: {user}")
         if user and check_password_hash(user.password, password):
-            login_user(user)
+            logger.info(f"User {user.username} has been found.")
+            login_user(user) 
+            logger.info(f"User {user.username} has been logged in.")
+            # Generate a JWT token with user ID and expiry date of 30 days
+            # TODO: Store the token in a secure HttpOnly cookie
+            token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.now(timezone.utc) + timedelta(days=30)
+            }, SECRET_KEY, algorithm='HS256')
             return jsonify({
                 "message": "Login successful!",
+                "token": token,
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -117,8 +139,49 @@ def login():
             }), 200
         else:
             return jsonify({"message": "Invalid email or password."}), 401
-    return jsonify({"message": "Login route for API only."}), 404
+    elif request.method == 'GET':
+        logger.info("Login route called: GET METHOD")
+        logger.info(f"Getting User Information: {current_user}")
+        logger.info(f"User is authenticated:{current_user.is_authenticated}")        
+        
+        user_info = {
+            "is_authenticated": current_user.is_authenticated,
+            "id": current_user.id if current_user.is_authenticated else None,
+            "username": current_user.username if current_user.is_authenticated else None,
+            "email": current_user.email if current_user.is_authenticated else None,
+            "role": current_user.role if current_user.is_authenticated else None
+        }
+        return jsonify({
+            "message": "Please log in via the POST method.",
+            "current_user": user_info
+        }), 401
+        
+@main.route('/check_login', methods=['POST'])
+@login_required
+def check_login():
+    data = request.get_json()
+    token = data.get('token')
 
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded['user_id']
+        user = User.query.get(user_id)
+        if user:
+            login_user(user)
+            return jsonify({
+                "message": "User logged in automatically.",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role
+                }
+            }), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token has expired."}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token."}), 401
+            
 @main.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -131,7 +194,7 @@ def signup():
         # Verify reCAPTCHA
         verify_url = 'https://www.google.com/recaptcha/api/siteverify'
         response = requests.post(verify_url, data={
-            'secret': SECRET_KEY,
+            'secret': API_KEY,
             'response': recaptcha_token
         })
         result = response.json()
@@ -199,9 +262,10 @@ def verify_email(token):
     return redirect(url_for('login'))
 
 @main.route('/api/user_info', methods=['GET'])
-@login_required
+#@login_required
 def user_info():
     return jsonify({
+        "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email,
         "role": current_user.role
@@ -210,14 +274,14 @@ def user_info():
 @main.route('/api/build_tree', methods=['GET'])
 def build_tree_route():
     part_id = request.args.get('part_id')
-    recipe_type = request.args.get('recipe_type', '_Standard')
+    recipe_name = request.args.get('recipe_name', '_Standard')
     target_quantity = request.args.get('target_quantity', 1, type=int)
     visited = request.args.get('visited')
 
     if not part_id:
         return jsonify({"error": "part_id is required"}), 400
 
-    result = build_tree(part_id, recipe_type, target_quantity, visited)
+    result = build_tree(part_id, recipe_name, target_quantity, visited)
 
     return jsonify(result)
 
@@ -326,6 +390,21 @@ def get_recipe():
     recipe = db.session.execute(query).fetchall()
     return jsonify([dict(row._mapping) for row in recipe])
 
+@main.route('/api/recipe_id/<part_id>', methods=['GET'])
+def get_recipe_id(part_id):
+    recipe_name = request.args.get('recipe_name', '_Standard')  # Default to '_Standard'
+    logger.info(f"Getting recipe ID for part_id: {part_id} and recipe_name: {recipe_name}")
+
+    try:
+        # Use parameterized query to fetch the recipe
+        query = text("SELECT * FROM recipe WHERE part_id = :part_id AND recipe_name = :recipe_name")
+        recipe = db.session.execute(query, {"part_id": part_id, "recipe_name": recipe_name}).fetchall()
+        logger.info(f"Query result: {recipe}")
+        return jsonify([dict(row._mapping) for row in recipe])
+    except Exception as e:
+        logger.error(f"Error fetching recipe ID for part_id {part_id} and recipe_name {recipe_name}: {e}")
+        return jsonify({"error": "Failed to fetch recipe ID"}), 500
+
 @main.route('/api/alternate_recipe', methods=['GET'])
 def get_alternate_recipe():
     """
@@ -353,6 +432,7 @@ def tracker():
 def dashboard():
     """DASHBOARD - Render the dashboard page."""
     return f'Welcome, {current_user.username}!' #TODO: Implement dashboard.html
+    
 
 @main.route('/api/validation', methods=['GET'])
 def get_data_validation():
@@ -361,3 +441,60 @@ def get_data_validation():
     validation_data = db.session.execute(query).fetchall()
     # print("**************************************", [dict(row._mapping) for row in validation_data])
     return jsonify([dict(row._mapping) for row in validation_data])
+
+@main.route('/api/tracker/reports', methods=['POST'])
+def generate_reports():
+    tracker_data = request.json  # User's tracker data
+    total_parts = sum(part['base_demand'] for part in tracker_data)
+    total_parts_pm = sum(part['base_demand_pm'] for part in tracker_data)
+    total_machines = sum(math.ceil(part['base_demand'] / part['base_supply']) for part in tracker_data)
+    byproducts = sum(part.get('byproduct_supply', 0) for part in tracker_data)
+
+    return jsonify({
+        'totalParts': total_parts,
+        'totalPartsPerMinute': total_parts_pm,
+        'totalMachines': total_machines,
+        'byproducts': byproducts
+    })
+
+@main.route('/api/tracker_add', methods=['POST'])
+@login_required
+def add_to_tracker():
+    logger.info("Adding part and recipe to tracker")
+    if not current_user.is_authenticated:
+        logger.info(current_user, "User is not authenticated")
+        return jsonify({"error": "User is not authenticated"}), 401
+    
+    data = request.json
+    part_id = data.get('partId')
+    target_quantity = data.get('targetQuantity')
+    recipe_id = data.get('recipeId')
+
+    logger.info(f"Part ID: {part_id}, Recipe Name: {recipe_id}, Target Quantity: {target_quantity}")
+    if not part_id or not recipe_id:
+        return jsonify({"error": "Part ID and Recipe ID are required"}), 400
+
+    logger.info(f"Current user: {current_user}")
+    # Check if the part and recipe are already in the user's tracker
+    existing_entry = Tracker.query.filter_by(part_id=part_id, recipe_id=recipe_id, user_id=current_user.id).first()
+    if existing_entry:
+        return jsonify({"message": "Part and recipe are already in the tracker"}), 200
+
+    # Get the current time formatted as dd/mm/yy hh:mm:ss
+    current_time = datetime.now().strftime('%d/%m/%y %H:%M:%S')
+
+    logger.info(f"Adding new tracker entry for user: {current_user.id}, part: {part_id}, recipe: {recipe_id}, target quantity: {target_quantity}, recipe_id: {recipe_id}")
+    # Add new tracker entry
+    new_tracker_entry = Tracker(
+        part_id=part_id,
+        recipe_id=recipe_id,
+        user_id=current_user.id,
+        target_quantity=target_quantity,
+        created_at=current_time,
+        updated_at=current_time
+    )
+    logger.info(f"New tracker entry: {new_tracker_entry}")
+    db.session.add(new_tracker_entry)
+    db.session.commit()
+    logger.info(f"Part and recipe added to tracker successfully, {part_id}, {recipe_id}")
+    return jsonify({"message": "Part and recipe added to tracker successfully"}), 200

@@ -5,11 +5,14 @@ import axios from 'axios';
 import { API_ENDPOINTS } from './apiConfig';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
-import { useUser } from './UserContext';
+import { UserContext } from './UserContext';
+
+axios.defaults.withCredentials = true;
 
 const Header = () => {
-    const { user, logout } = useUser(); // Access user and logout function
+    const { user, logout } = React.useContext(UserContext); // Access user and logout function
     const navigate = useNavigate();
+
 
     const handleLogout = async () => {
         try {

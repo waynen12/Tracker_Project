@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from "../apiConfig";
-import { useUser } from '../UserContext'; // Import the UserContext
+import { UserContext } from '../UserContext'; // Import the UserContext
+
+axios.defaults.withCredentials = true;  
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -11,7 +13,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useUser(); // Access the login function from the context  
+  const { login } = useContext(UserContext); // Access the login function from the context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,9 +26,10 @@ const LoginPage = () => {
       
       // Extract user information from the response
       const userInfo = response.data.user;
-
+      const authToken = response.data.token;
+      
       // Update global user state using UserContext
-      login(userInfo);
+      login(userInfo, authToken);
 
     // Navigate to the home page after successful login
     navigate('/');

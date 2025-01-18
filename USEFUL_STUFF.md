@@ -24,7 +24,7 @@ This file contains all the things I learned during this project and needed to re
 
 |Element    |Syntax |
 |-----------|-------|
-|Add colour using CSS: |<span style="color: red; font-size: 18px;">Text</span> `<span style="color: red; font-size: 18px;">Text</span>`</span><br><span style="color: orange; font-size: 18px;">Text</span> `<span style="color: orange; font-size: 18px;">Text</span>`<br><span style="color: yellow; font-size: 18px;">Text</span> `<span style="color: yellow; font-size: 18px;">Text</span>`<br><span style="color: green; font-size: 18px;">Text</span> `<span style="color: green; font-size: 18px;">Text</span>`<br><span style="color: blue; font-size: 18px;">Text</span> `<span style="color: blue; font-size: 18px;">Text</span>`<br><span style="color: indigo; font-size: 18px;">Text</span> `<span style="color: indigo; font-size: 18px;">Text</span>`<br><span style="color: violet; font-size: 18px;">Text</span> `<span style="color: violet; font-size: 18px;">Text</span>` |
+|Add colour using CSS: |<span style="color: red; font-size: 18px;">Text - </span> `<span style="color: red; font-size: 18px;">Text</span>`</span><br><span style="color: orange; font-size: 18px;">Text - </span> `<span style="color: orange; font-size: 18px;">Text</span>`<br><span style="color: yellow; font-size: 18px;">Text - </span> `<span style="color: yellow; font-size: 18px;">Text</span>`<br><span style="color: green; font-size: 18px;">Text - </span> `<span style="color: green; font-size: 18px;">Text</span>`<br><span style="color: blue; font-size: 18px;">Text - </span> `<span style="color: blue; font-size: 18px;">Text</span>`<br><span style="color: indigo; font-size: 18px;">Text - </span> `<span style="color: indigo; font-size: 18px;">Text</span>`<br><span style="color: violet; font-size: 18px;">Text - </span> `<span style="color: violet; font-size: 18px;">Text</span>` |
 | Headings |# Heading 1 <br> ## Heading 2 <br>### Heading 3|
 | **bold text** | `**bold**`
 |*italicized text*| `*italicized text*`
@@ -43,12 +43,13 @@ This file contains all the things I learned during this project and needed to re
 |Strikethrough| `~~The world is flat.~~`, ~~The world is flat.~~ |
 |Task List| - [x] Write the press release <br>- [ ] Update the website <br> - [ ] Contact the media|
 |Emoji|[Complete list of Github markdown emoji markup](https://gist.github.com/rxaviers/7360908) <br> Thank you [rxaviers](https://gist.github.com/rxaviers) :smiley: |
-|Highlight| 1) If your Markdown processor supports highlighting text then you can use == before and after the text. <br>I need to highlight these ==very important words== <br><br>If that doesn't work for you here are another couple of options: <br><br> 2) Define the CSS (if your Markdown renderer supports custom CSS): <br> `<style>` <br> `.highlight` <br>`{`<br> `background-color: yellow;` <br> `color: black;` <br>`}` <br><br> Use the CSS Class in your Markdown <br> `</style> I need to highlight these <span class="highlight">very important words</span>` <br><br> </style> I need to highlight these <span class="highlight">very important words</span> <br><br> 3) Another way is to use HTML like so: <br> `I need to highlight these <mark>very important words</mark>` <br><br> I need to highlight these <mark>very important words</mark>|
+|Highlight| 1) If your Markdown processor supports highlighting text then you can use == before and after the text. <br>I need to highlight these ==very important words== <br><br>If that doesn't work for you here are another couple of options: <br><br> 2) Define the CSS (if your Markdown renderer supports custom CSS): <br> `<style>` <br> `.highlight` <br>`{`<br> `background-color: yellow;` <br> `color: black;` <br>`}` <br><br> Use the CSS Class in your Markdown <br> `<style> I need to highlight these <span class="highlight">very important words</span></style>` <br><br> I need to highlight these <span class="highlight">very important words</span> <br><br> 3) Another way is to use HTML like so: <br> `I need to highlight these <mark>very important words</mark>` <br><br> I need to highlight these <mark>very important words</mark>|
 |Subscript| H~2~O |
 |Superscript| X^2^ |
 
-Sourced from: [markdownguide.org](https://www.markdownguide.org/cheat-sheet/)
-This is a really good Markdown Preview extension: [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced)
+>Sourced from: [markdownguide.org](https://www.markdownguide.org/cheat-sheet/)
+
+>This is a really good Markdown Preview extension for VSCode: [Markdown Preview Enhanced](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced)
 
 ## <h1 id="section-1">Section 1 - Troubleshooting
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
@@ -240,7 +241,7 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
 * ####  <span style="color: orange; font-size: 18px;">WINDOWS</span> command to remove the database.
     del satisfactory_parts.db
 #####  ***<span style="color: orange; font-size: 18px;">Alternatively, you can manually delete the satisfactory_parts.db file using File Explorer</span>***
-#### 2) Recreate the database.
+#### 2) Update or Recreate the database Schema.
     flask db stamp head # Stamp the current migration.
     flask db migrate -m "your description" # Change the message as needed.
     flask db upgrade # Upgrade the database to the latest migration.
@@ -489,10 +490,12 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
         - [X] Test Docker with new folder structure
     - [X] Upgrade from SQLite3 to MySQL
 
-## Tracker Page
+## Tracker Feature
 * ## 1. Adding Parts to the Tracker
-    - [ ] Clicking on "Add to my Tracker" from the DependencyTreePage:
-    - [ ]  Adds the part, the target quantity, and the alternative recipe the user has configured.
+    - [x] Clicking on "Add to my Tracker" from the Tracker Tab on the DependencyTreePage:
+    - [ ]  Adds the part, the target quantity, and the recipe the user has configured.
+      - [x]  Standard Recipes
+      - [ ]  Alternative recipes
     - Constraints:
       - [ ] Users cannot add the same part with the same alternative recipe combination more than once.
 * ## 2. Accessing the TrackerPage

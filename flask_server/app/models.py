@@ -2,14 +2,22 @@ from . import db
 from flask_login import UserMixin
 from . import login_manager
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'user'  # Explicit table name
+class User(UserMixin, db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
-    role = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
+
+    def check_password(self, password):
+        # Implement password checking logic here
+        return self.password == password
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 class Part(db.Model):
     __tablename__ = 'part'
@@ -72,6 +80,20 @@ class Data_Validation(db.Model):
     column_name = db.Column(db.String(100), nullable=False)
     value = db.Column(db.String(100), nullable=True)
     description = db.Column(db.String(200), nullable=True)
+
+class Tracker(db.Model):
+    __tablename__ = 'tracker'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=False)
+    target_quantity = db.Column(db.Float, nullable=False, default=1)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'part_id', 'recipe_id', name='unique_user_part_recipe'),
+    )
+
 
 @login_manager.user_loader
 def load_user(user_id):

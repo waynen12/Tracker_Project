@@ -1,5 +1,5 @@
 //Mine
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
 import Tree from "react-d3-tree";
 import { Link } from 'react-router-dom';
 import {
@@ -25,14 +25,18 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
+import { UserContext } from '../UserContext';
 
 const DependencyTreePage = () => {
+    const { user } = useContext(UserContext);
     const [parts, setParts] = useState([]);
     const [alternateRecipes, setAlternateRecipes] = useState([]);
     const [filteredRecipes, setFilteredRecipes] = useState([]);
     const [selectedRecipes, setSelectedRecipes] = useState([]);
     const [selectedPart, setSelectedPart] = useState("");
-    const [recipeType, setRecipeType] = useState("_Standard");
+    const [selectedPartName, setSelectedPartName] = useState("");
+    const [recipeName, setRecipeName] = useState("_Standard");
+    const [recipeID, setRecipeID] = useState("");
     const [targetQuantity, setTargetQuantity] = useState(1);
     const [treeData, setTreeData] = useState(null);
     const [flattenedData, setFlattenedData] = useState([]);
@@ -58,41 +62,41 @@ const DependencyTreePage = () => {
         setStartWidth(tabWidth);
         // Prevent text selection
         document.body.style.userSelect = "none";
-      };
-    
-      const handleMouseMove = (e) => {
-        if (tabWidth === 0) {return}; // Skip if the tab is collapsed
-        
+    };
+
+    const handleMouseMove = (e) => {
+        if (tabWidth === 0) { return }; // Skip if the tab is collapsed
+
         const deltaX = startX - e.clientX; // Calculate the change in X position
         const newWidth = Math.max(0, startWidth + deltaX); // Calculate the new width
         setTabWidth(newWidth);
         //console.log("Mouse Position:", e.clientX, "Start X:", startX, "Tab Width:", tabWidth, "New Width:", newWidth, "Delta X:", deltaX);        
-      };
-    
+    };
+
     useEffect(() => {
         //console.log("Updated Tab Width:", tabWidth);
     }, [tabWidth]);
 
-      const handleMouseUp = () => {
+    const handleMouseUp = () => {
         //console.log("Mouse Up");
         setIsResizing(false);
         document.body.style.userSelect = ""; // Re-enable text selection
-      };
-    
-      useEffect(() => {
+    };
+
+    useEffect(() => {
         if (isResizing) {
-          window.addEventListener("mousemove", handleMouseMove);
-          window.addEventListener("mouseup", handleMouseUp);
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
         } else {
-          window.removeEventListener("mousemove", handleMouseMove);
-          window.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
         }
-    
+
         return () => {
-          window.removeEventListener("mousemove", handleMouseMove);
-          window.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
         };
-      }, [isResizing]);
+    }, [isResizing]);
 
 
     const fetchTreeData = async () => {
@@ -171,7 +175,7 @@ const DependencyTreePage = () => {
                             <span>Produced In: {node["Produced In"]}</span>
                             <span>No. of Machines: {node["No. of Machines"]}</span>
                             <span>Recipe: {node.Recipe}</span>
-                            </div>
+                        </div>
                     }
                 >
                     {node.children.length > 0 && renderTree(node.children)}
@@ -185,9 +189,9 @@ const DependencyTreePage = () => {
         if (!flattenedData.length) {
             return <Typography>No data to display</Typography>;
         }
-    
+
         const spiderData = transformSpiderData(flattenedData);
-    
+
         return (
             <div id="treeWrapper" style={{ width: "100%", height: "600px" }}>
                 <Tree
@@ -200,10 +204,10 @@ const DependencyTreePage = () => {
             </div>
         );
     };
-    
+
     const transformSpiderData = (rows) => {
         const nodeRegistry = {}; // Store references to existing nodes
-    
+
         const root = {
             name: "Root",
             children: rows
@@ -212,16 +216,16 @@ const DependencyTreePage = () => {
         };
         return root;
     };
-    
+
     const createSubTree = (rows, currentNode, nodeRegistry) => {
         // Use Part.id as the unique key
         const nodeKey = currentNode.id;
-    
+
         // If the node already exists in the registry, reuse it
         if (nodeRegistry[nodeKey]) {
             return nodeRegistry[nodeKey];
         }
-    
+
         // Otherwise, create a new node and store it in the registry
         const newNode = {
             name: currentNode.Node,
@@ -235,11 +239,11 @@ const DependencyTreePage = () => {
                 .filter(row => row.Parent === currentNode.Node)
                 .map(child => createSubTree(rows, child, nodeRegistry)),
         };
-    
+
         nodeRegistry[nodeKey] = newNode; // Save the node to the registry
         return newNode;
     };
-    
+
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
         { field: 'parent', headerName: 'Parent', flex: 1 },
@@ -248,7 +252,7 @@ const DependencyTreePage = () => {
         { field: 'requiredQuantity', headerName: 'Required Quantity', flex: 1, type: 'number' },
         { field: 'producedIn', headerName: 'Produced In', flex: 1 },
         { field: 'machines', headerName: 'No. of Machines', flex: 1, type: 'number' },
-        { field: 'recipe', headerName: 'Recipe', flex: 1 },
+        { field: 'recipe', headerName: 'Recipe Name', flex: 1 },
     ];
     // Flattened data for the DataGrid
     const rows = flattenedData.map((row, index) => ({
@@ -342,7 +346,7 @@ const DependencyTreePage = () => {
             const response = await axios.get(API_ENDPOINTS.build_tree, {
                 params: {
                     part_id: selectedPart,
-                    recipe_type: recipeType,
+                    recipe_name: recipeName,
                     target_quantity: targetQuantity,
                 },
             });
@@ -398,6 +402,47 @@ const DependencyTreePage = () => {
                 return tab; // Set the active tab
             }
         });
+    };
+
+    const handleAddToTracker = async (partId, targetQuantity, recipeName ) => {
+        if (!user) {
+            // Redirect to login page if user is not authenticated
+            window.location.href = "/login";
+            return;
+        }
+    
+        try {
+            console.log("Fetching Recipe ID for Part:", partId, "and Recipe Name:", recipeName);
+            const response = await axios.get(API_ENDPOINTS.get_recipe_id(partId), {
+                params: { recipe_name: recipeName },
+            });
+            const recipes = response.data;
+    
+            if (recipes.length === 0) {
+                alert("No recipe found for the selected part and recipe name.");
+                return;
+            }
+    
+            const recipeId = recipes[0].id; // Extract the first recipe_id
+            console.log("Retrieved Recipe ID:", recipeId);
+    
+            console.log("Adding Part to Tracker:", partId, targetQuantity, recipeId);
+            const addToTrackerResponse = await axios.post(API_ENDPOINTS.add_to_tracker, {
+                partId,
+                targetQuantity,
+                recipeId,
+            });
+    
+            if (addToTrackerResponse.status === 200) {
+                console.log("Part added to tracker:", addToTrackerResponse.data);
+                alert("Part added to your tracker!");
+            } else {
+                alert(addToTrackerResponse.data.error || "Failed to add part to tracker.");
+            }
+        } catch (error) {
+            console.error("Error adding part to tracker:", error);
+            alert("Failed to add part to tracker. Please log in.");
+        }
     };
 
     // Render the content based on the active tab
@@ -507,9 +552,10 @@ const DependencyTreePage = () => {
                         <Box sx={{ overflowY: "auto" }}>
                             {treeData.length > 0 ? (
                                 <SimpleTreeView
-                                    sx = {{ defaultCollapseIcon: "🔽", 
-                                        defaultExpandIcon: "▶",                                    
-                                     }}
+                                    sx={{
+                                        defaultCollapseIcon: "🔽",
+                                        defaultExpandIcon: "▶",
+                                    }}
                                     // defaultCollapseIcon="🔽"
                                     // defaultExpandIcon="▶"
                                     expandedItems={expandedNodes}
@@ -533,14 +579,28 @@ const DependencyTreePage = () => {
                     </div>
                 );
             case "tracker":
+                const selectedPartId = Number(selectedPart); // Convert selectedPart to a number
+                const selectedPartData = parts.find((part) => part.id === selectedPartId);
+                const partName = selectedPartData ? selectedPartData.name : "Unknown Part";
+                
+                console.log("User", user, "Part Data:", parts, "Selected Part ID:", selectedPartId, "Part Name:", partName);
+
                 return (
-                    <Typography>
-                        <strong>Tracker:</strong> #TODO Tracker.
-                    </Typography>
+                    <Box>
+                        <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+                            <Typography variant="body1">{partName}, {recipeName}</Typography>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                sx={{ marginLeft: 2 }}
+                                onClick={() => handleAddToTracker(selectedPartId, targetQuantity, recipeName)}
+                            >
+                                Add to My Tracker
+                            </Button>
+                        </Box>
+                    </Box>
                 );
-            default:
-                return null;
-        }
+        };
     };
 
     // Extract unique filter options
@@ -649,30 +709,30 @@ const DependencyTreePage = () => {
                     />
                 </Box>
             </Box>
-            
+
             {/* Resizer */}
             <Box
                 sx={{
-                width: "5px",
-                cursor: "col-resize",
-                backgroundColor: "#00FFCC",
+                    width: "5px",
+                    cursor: "col-resize",
+                    backgroundColor: "#00FFCC",
                 }}
                 onMouseDown={handleMouseDown}
-            ></Box> 
-            
+            ></Box>
+
             {/* Right Side: Content and Tabs Section */}
             <Box
                 sx={{
                     //flex: 1, // Expand when tab content is active
                     // width: activeTab ? "700px" : "0px", // Expand/collapse width
                     width: activeTab ? `${tabWidth}px` : "0px", // Expand/collapse width
-                    transition: isResizing ? "none" : "width 0.2s ease",                   
+                    transition: isResizing ? "none" : "width 0.2s ease",
                     transition: "width 0.3s ease", // Smooth width transition
                     borderLeft: "2px solid #ccc",
                     overflow: "hidden", // Prevent content overflow when collapsed
                     backgroundColor: "#0A4B3E",
                     color: "#CCFFFF",
-                    resize: "horizontal",                     
+                    resize: "horizontal",
                 }}
             >
                 {activeTab && (
@@ -737,6 +797,7 @@ const DependencyTreePage = () => {
                 </Button>
                 <Button
                     onClick={() => toggleTab("tracker")}
+                    disabled={!treeData}
                     sx={{
                         textAlign: "center",
                         padding: "8px",
@@ -765,5 +826,4 @@ const DependencyTreePage = () => {
         </Box>
     );
 };
-
 export default DependencyTreePage;

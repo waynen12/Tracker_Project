@@ -5,16 +5,16 @@ from . import db
 
 logger = logging.getLogger(__name__)
 
-def build_tree(part_id, recipe_type="_Standard", target_quantity=1, visited=None):
-    logger.info(f"Building tree for part_id {part_id} with recipe_type {recipe_type} and target_quantity {target_quantity}")
+def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None):
+    logger.info(f"Building tree for part_id {part_id} with recipe_name {recipe_name} and target_quantity {target_quantity}")
     if visited is None:
         visited = set()
     
     #logger.info(f"Visited: {visited}")
-    if (part_id, recipe_type) in visited:
-        return {"Error": f"Circular dependency detected for part_id {part_id} with recipe_type {recipe_type}"}
+    if (part_id, recipe_name) in visited:
+        return {"Error": f"Circular dependency detected for part_id {part_id} with recipe_name {recipe_name}"}
 
-    visited.add((part_id, recipe_type))
+    visited.add((part_id, recipe_name))
     tree = {}
 
     # Query part and recipe data
@@ -23,14 +23,14 @@ def build_tree(part_id, recipe_type="_Standard", target_quantity=1, visited=None
         SELECT p.part_name, r.base_input, r.source_level, r.base_demand_pm, r.base_supply_pm, r.recipe_name, r.produced_in_automated
         FROM part p
         JOIN recipe r ON p.id = r.part_id
-        WHERE p.id = :part_id AND r.recipe_name = :recipe_type
+        WHERE p.id = :part_id AND r.recipe_name = :recipe_name
         """),
-        {"part_id": part_id, "recipe_type": recipe_type}
+        {"part_id": part_id, "recipe_name": recipe_name}
     ).fetchall()
 
     if not part_data:
-        visited.remove((part_id, recipe_type))
-        return {"Error": f"Part ID {part_id} with recipe type {recipe_type} not found."}
+        visited.remove((part_id, recipe_name))
+        return {"Error": f"Part ID {part_id} with recipe type {recipe_name} not found."}
     
     # Iterate over ingredient inputs for the given part
     for row in part_data:
@@ -80,7 +80,7 @@ def build_tree(part_id, recipe_type="_Standard", target_quantity=1, visited=None
 
         # Recursive call for subparts
         subtree = build_tree(ingredient_input_id, ingredient_recipe, target_quantity, visited)
-        #logger.info(f"Subtree for part_id {ingredient_input_id} with recipe_type {recipe_type} and target_quantity {target_quantity}: {subtree}")
+        #logger.info(f"Subtree for part_id {ingredient_input_id} with recipe_name {recipe_name} and target_quantity {target_quantity}: {subtree}")
         tree[ingredient_input] = {
             "Required Quantity": required_quantity,
             "Produced In": ingredient_production_machine,
@@ -91,5 +91,5 @@ def build_tree(part_id, recipe_type="_Standard", target_quantity=1, visited=None
             "Subtree": subtree,
         }
 
-    visited.remove((part_id, recipe_type))
+    visited.remove((part_id, recipe_name))
     return tree

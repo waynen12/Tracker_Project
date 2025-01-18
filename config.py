@@ -17,6 +17,7 @@ load_dotenv()
 class Config:
     RUN_MODE = os.getenv('RUN_MODE_LOCATION')
     print(f'RUN_MODE: {RUN_MODE}')
+    
 
 # Set DB config values based on RUN_MODE
 if Config.RUN_MODE == 'local':
@@ -40,6 +41,9 @@ else:
     raise ValueError('RUN_MODE environment variable not set. Please set RUN_MODE to "local" or "docker"')
 
 print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
+SECRET_KEY = os.getenv('SECRET_KEY') or 'dev_default_secret_key'
+SESSION_TYPE = 'filesystem'
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Recaptcha keys

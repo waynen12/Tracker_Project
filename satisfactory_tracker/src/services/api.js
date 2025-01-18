@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+axios.defaults.withCredentials = true;
+
 // Determine the base URL based on the run mode
 const runMode = process.env.RUN_MODE;
 const baseURL = runMode === 'prod' ? process.env.REACT_CLIENT_BASE_URL : process.env.REACT_CLIENT_BASE_URL_LOCAL;

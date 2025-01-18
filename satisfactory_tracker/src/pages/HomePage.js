@@ -1,27 +1,41 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from "react";
+import axios from 'axios';
+import { API_ENDPOINTS } from "../apiConfig";
 import { useNavigate } from "react-router-dom";
 import { Button, Typography, Box, Stack } from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
+import { UserContext } from '../UserContext';
 
 const HomePage = () => {
-    const navigate = useNavigate(); // Use navigate for routing
-    // Check if user is logged in
-    const userInfo = JSON.parse(localStorage.getItem("user_info"));
-    const isLoggedIn = Boolean(userInfo); // Check if user_info exists in localStorage
+    const { user, token, login, logout } = useContext(UserContext);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
 
-    try {
-        const userInfo = localStorage.getItem("user_info");
-        //console.log(userInfo);
-      } catch (e) {
-        console.error("Error accessing localStorage:", e);
-        return null; // Return null if parsing fails
-        
-      }
-
+    useEffect(() => {
+        if (token) {
+          // Send stored token to the server to log in the user automatically
+          axios.post(API_ENDPOINTS.check_login, {
+            token: token
+          }, { withCredentials: true })
+          .then(response => {
+            console.log("User logged in automatically:", response.data);
+            setIsLoggedIn(true);
+          })
+          .catch(error => {
+            console.error("Error logging in automatically:", error);
+            if (error.response && error.response.status === 401) {
+              // Token has expired or is invalid, clear localStorage
+              logout();
+            }
+            setIsLoggedIn(false);
+          });
+        }
+      }, [token, logout]);
+    
     return (
         <Box
             sx={{
-                background: "linear-gradient(to right, #0A4B3E, #000000)",  
+                background: "linear-gradient(to right, #0A4B3E, #000000)",
                 //backgroundcolor: "background.default",
                 padding: 4,
                 minHeight: "100vh",
@@ -66,14 +80,14 @@ const HomePage = () => {
                 {/* <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => navigate("/drawer")}
+                    onClick={() => navigate("/tracker")}
                     disabled={!isLoggedIn} // Disable if not logged in
                     sx={{
                         opacity: isLoggedIn ? 1 : 0.5,
                         cursor: isLoggedIn ? "pointer" : "not-allowed",
                     }}
                 >
-                    Drawer
+                    Tracker
                 </Button> */}
             </Stack>
         </Box>

@@ -23,12 +23,15 @@ import {
 import { SimpleTreeView } from "@mui/x-tree-view";
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import Tooltip from "@mui/material/Tooltip";
 import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
 import { UserContext } from '../UserContext';
+import { useAlert } from "../context/AlertContext";
 
 const DependencyTreePage = () => {
     const { user } = useContext(UserContext);
+    const { showAlert } = useAlert();
     const [parts, setParts] = useState([]);
     const [alternateRecipes, setAlternateRecipes] = useState([]);
     const [filteredRecipes, setFilteredRecipes] = useState([]);
@@ -49,54 +52,57 @@ const DependencyTreePage = () => {
     const [isResizing, setIsResizing] = useState(false);
     const [startX, setStartX] = useState(0); // Track starting mouse position
     const [startWidth, setStartWidth] = useState(tabWidth); // Track starting width
+    const [trackerData, setTrackerData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedRows, setSelectedRows] = useState([]);
 
     // Filter states
     const [partFilter, setPartFilter] = useState("");
     const [recipeFilter, setRecipeFilter] = useState("");
     const [recipes, setRecipes] = useState(filteredRecipes);
 
-    const handleMouseDown = (e) => {
-        //console.log("Mouse Down");
-        setIsResizing(true);
-        setStartX(e.clientX);
-        setStartWidth(tabWidth);
-        // Prevent text selection
-        document.body.style.userSelect = "none";
-    };
+    // const handleMouseDown = (e) => {
+    //     //console.log("Mouse Down");
+    //     setIsResizing(true);
+    //     setStartX(e.clientX);
+    //     setStartWidth(tabWidth);
+    //     // Prevent text selection
+    //     document.body.style.userSelect = "none";
+    // };
 
-    const handleMouseMove = (e) => {
-        if (tabWidth === 0) { return }; // Skip if the tab is collapsed
+    // const handleMouseMove = (e) => {
+    //     if (tabWidth === 0) { return }; // Skip if the tab is collapsed
 
-        const deltaX = startX - e.clientX; // Calculate the change in X position
-        const newWidth = Math.max(0, startWidth + deltaX); // Calculate the new width
-        setTabWidth(newWidth);
-        //console.log("Mouse Position:", e.clientX, "Start X:", startX, "Tab Width:", tabWidth, "New Width:", newWidth, "Delta X:", deltaX);        
-    };
+    //     const deltaX = startX - e.clientX; // Calculate the change in X position
+    //     const newWidth = Math.max(0, startWidth + deltaX); // Calculate the new width
+    //     setTabWidth(newWidth);
+    //     //console.log("Mouse Position:", e.clientX, "Start X:", startX, "Tab Width:", tabWidth, "New Width:", newWidth, "Delta X:", deltaX);        
+    // };
 
-    useEffect(() => {
-        //console.log("Updated Tab Width:", tabWidth);
-    }, [tabWidth]);
+    // useEffect(() => {
+    //     //console.log("Updated Tab Width:", tabWidth);
+    // }, [tabWidth]);
 
-    const handleMouseUp = () => {
-        //console.log("Mouse Up");
-        setIsResizing(false);
-        document.body.style.userSelect = ""; // Re-enable text selection
-    };
+    // const handleMouseUp = () => {
+    //     //console.log("Mouse Up");
+    //     setIsResizing(false);
+    //     document.body.style.userSelect = ""; // Re-enable text selection
+    // };
 
-    useEffect(() => {
-        if (isResizing) {
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
-        } else {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        }
+    // useEffect(() => {
+    //     if (isResizing) {
+    //         window.addEventListener("mousemove", handleMouseMove);
+    //         window.addEventListener("mouseup", handleMouseUp);
+    //     } else {
+    //         window.removeEventListener("mousemove", handleMouseMove);
+    //         window.removeEventListener("mouseup", handleMouseUp);
+    //     }
 
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [isResizing]);
+    //     return () => {
+    //         window.removeEventListener("mousemove", handleMouseMove);
+    //         window.removeEventListener("mouseup", handleMouseUp);
+    //     };
+    // }, [isResizing]);
 
 
     const fetchTreeData = async () => {
@@ -246,8 +252,8 @@ const DependencyTreePage = () => {
 
     const columns = [
         { field: 'id', headerName: 'ID', flex: 1 },
-        { field: 'parent', headerName: 'Parent', flex: 1 },
-        { field: 'node', headerName: 'Node', flex: 1 },
+        { field: 'parent', headerName: 'Part', flex: 1 },
+        { field: 'node', headerName: 'Ingredient', flex: 1 },
         { field: 'level', headerName: 'Level', flex: 1, type: 'number' },
         { field: 'requiredQuantity', headerName: 'Required Quantity', flex: 1, type: 'number' },
         { field: 'producedIn', headerName: 'Produced In', flex: 1 },
@@ -404,50 +410,109 @@ const DependencyTreePage = () => {
         });
     };
 
-    const handleAddToTracker = async (partId, targetQuantity, recipeName ) => {
+    const handleAddToTracker = async (partId, targetQuantity, recipeName) => {
         if (!user) {
             // Redirect to login page if user is not authenticated
             window.location.href = "/login";
             return;
         }
-    
+
         try {
             console.log("Fetching Recipe ID for Part:", partId, "and Recipe Name:", recipeName);
             const response = await axios.get(API_ENDPOINTS.get_recipe_id(partId), {
                 params: { recipe_name: recipeName },
             });
             const recipes = response.data;
-    
+
             if (recipes.length === 0) {
-                alert("No recipe found for the selected part and recipe name.");
+                showAlert("warning", "No recipe found for the selected part and recipe name.");
                 return;
             }
-    
+
             const recipeId = recipes[0].id; // Extract the first recipe_id
             console.log("Retrieved Recipe ID:", recipeId);
-    
+
             console.log("Adding Part to Tracker:", partId, targetQuantity, recipeId);
             const addToTrackerResponse = await axios.post(API_ENDPOINTS.add_to_tracker, {
                 partId,
                 targetQuantity,
                 recipeId,
             });
-    
+
             if (addToTrackerResponse.status === 200) {
                 console.log("Part added to tracker:", addToTrackerResponse.data);
-                alert("Part added to your tracker!");
+                showAlert("success", "Part added to your tracker!");
+                fetchTrackerData(); // Refresh the tracker data
             } else {
-                alert(addToTrackerResponse.data.error || "Failed to add part to tracker.");
+                showAlert("error", addToTrackerResponse.data.error || "Failed to add part to tracker.");
             }
         } catch (error) {
             console.error("Error adding part to tracker:", error);
-            alert("Failed to add part to tracker. Please log in.");
+            showAlert("error", "Failed to add part to tracker. Please log in.");
         }
     };
 
+    const handleDeleteSelected = async () => {
+        if (selectedRows.length === 0) {
+            showAlert("warning", "Please select at least one item to delete.");
+            return;
+        }
+
+        try {
+            await Promise.all(
+                selectedRows.map((id) =>
+                    axios.delete(`${API_ENDPOINTS.tracker_data}/${id}`)
+                )
+            );
+            showAlert("success", "Selected items deleted successfully.");
+            fetchTrackerData(); // Refresh the data
+            setSelectedRows([]); // Clear selected rows
+        } catch (error) {
+            console.error("Error deleting selected items:", error);
+            showAlert("error", "Failed to delete selected items. Please try again.");
+        }
+    };
+
+    const updateTrackerItem = async (id, updatedQuantity) => {
+        try {
+            await axios.put(`${API_ENDPOINTS.tracker_data}/${id}`, {
+                target_quantity: updatedQuantity,
+            });
+            showAlert("success", "Quantity updated successfully.");
+            fetchTrackerData(); // Refresh data
+        } catch (error) {
+            console.error("Error updating tracker item:", error);
+            showAlert("error", "Failed to update quantity. Please try again.");
+        }
+    };
+
+    const handleProcessRowUpdate = (newRow) => {
+        const { id, target_quantity } = newRow;
+        updateTrackerItem(id, target_quantity);
+        return newRow; // Return the updated row to reflect changes in the grid
+    };
+
+    useEffect(() => {
+        fetchTrackerData(); // Fetch data on component mount
+    }, []);
+
+    const fetchTrackerData = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(API_ENDPOINTS.tracker_data);
+            setTrackerData(response.data);
+        } catch (error) {
+            console.error("Error fetching tracker data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
     // Render the content based on the active tab
     const renderContent = () => {
-        switch (activeTab) {
+        switch (activeTab ) { 
             case "alternateRecipes":
                 return (
                     <div>
@@ -582,9 +647,26 @@ const DependencyTreePage = () => {
                 const selectedPartId = Number(selectedPart); // Convert selectedPart to a number
                 const selectedPartData = parts.find((part) => part.id === selectedPartId);
                 const partName = selectedPartData ? selectedPartData.name : "Unknown Part";
-                
                 console.log("User", user, "Part Data:", parts, "Selected Part ID:", selectedPartId, "Part Name:", partName);
 
+                const columns = [
+                    { field: "part_name", headerName: "Part", flex: 1 },
+                    { field: "recipe_name", headerName: "Recipe", flex: 1 },
+                    {
+                        field: "target_quantity",
+                        headerName: "Target Quantity",
+                        flex: 1,
+                        type: "number",
+                        editable: true, // Enable inline editing                        
+                    },
+                    { field: "created_at", headerName: "Created At", flex: 1 },
+                    { field: "updated_at", headerName: "Updated At", flex: 1 },
+                ];
+
+                const rows = trackerData.map((row, index) => ({
+                    id: row.id || index, // Ensure a unique ID
+                    ...row,
+                }));
                 return (
                     <Box>
                         <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
@@ -596,6 +678,36 @@ const DependencyTreePage = () => {
                                 onClick={() => handleAddToTracker(selectedPartId, targetQuantity, recipeName)}
                             >
                                 Add to My Tracker
+                            </Button>
+                        </Box>
+                        <Box>
+                            <Typography variant="body2" color="textSecondary" gutterBottom>
+                                * Double-click on the <strong>Target Quantity</strong> field to edit. Press Enter to save.
+                            </Typography>
+                            <div style={{ height: 600, width: "100%" }}>
+                                <DataGrid
+                                    rows={rows}
+                                    columns={columns}
+                                    loading={loading}
+                                    pageSize={5}
+                                    rowsPerPageOptions={[5, 10]}
+                                    checkboxSelection
+                                    disableSelectionOnClick
+                                    onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
+                                    processRowUpdate={handleProcessRowUpdate}
+                                    experimentalFeatures={{ newEditingApi: true }}
+                                />
+                            </div>
+                        </Box>
+
+                        <Box sx={{ marginTop: 2, textAlign: "right" }}>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleDeleteSelected}
+                                disabled={selectedRows.length === 0}
+                            >
+                                Delete Selected
                             </Button>
                         </Box>
                     </Box>
@@ -619,7 +731,7 @@ const DependencyTreePage = () => {
                     padding: "16px",
                     background: "linear-gradient(to right, #000000, #0F705C)",
                     color: "#CCFFFF",
-                    transition: "flex 0.3s ease", // Smooth resize transition
+                    //transition: "flex 0.3s ease", // Smooth resize transition
                     // overflowY: "auto",
                     overflow: "hidden",
                 }}
@@ -711,14 +823,14 @@ const DependencyTreePage = () => {
             </Box>
 
             {/* Resizer */}
-            <Box
+            {/* <Box
                 sx={{
                     width: "5px",
                     cursor: "col-resize",
                     backgroundColor: "#00FFCC",
                 }}
                 onMouseDown={handleMouseDown}
-            ></Box>
+            ></Box> */}
 
             {/* Right Side: Content and Tabs Section */}
             <Box
@@ -727,12 +839,12 @@ const DependencyTreePage = () => {
                     // width: activeTab ? "700px" : "0px", // Expand/collapse width
                     width: activeTab ? `${tabWidth}px` : "0px", // Expand/collapse width
                     transition: isResizing ? "none" : "width 0.2s ease",
-                    transition: "width 0.3s ease", // Smooth width transition
+                    //transition: "width 0.3s ease", // Smooth width transition
                     borderLeft: "2px solid #ccc",
                     overflow: "hidden", // Prevent content overflow when collapsed
                     backgroundColor: "#0A4B3E",
                     color: "#CCFFFF",
-                    resize: "horizontal",
+                    //resize: "horizontal",
                 }}
             >
                 {activeTab && (

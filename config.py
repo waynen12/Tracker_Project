@@ -19,7 +19,7 @@ class Config:
     print(f'RUN_MODE: {RUN_MODE}')
     
 
-# Set DB config values based on RUN_MODE
+# Set DB config values based on RUN_MODE_LOCATION
 if Config.RUN_MODE == 'local':
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
@@ -37,8 +37,8 @@ elif Config.RUN_MODE == 'prod_local':
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 else:
-    # Throw an error if the run_mode is not set
-    raise ValueError('RUN_MODE environment variable not set. Please set RUN_MODE to "local" or "docker"')
+    # Throw an error if the RUN_MODE_LOCATION is not set
+    raise ValueError('RUN_MODE_LOCATION environment variable not set. Please set RUN_MODE_LOCATION to "local", "docker", "prod", or "prod_local"')
 
 print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
 SECRET_KEY = os.getenv('SECRET_KEY') or 'dev_default_secret_key'

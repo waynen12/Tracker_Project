@@ -16,7 +16,14 @@ data/file_list.txt
 data/get_file_list.py
 data
 Check-in notes.txt
+logs
 app.log
 app.log.1
 app.log.2
 app.log.3
+satisfactory_tracker/src/components/Tracker/ExportShareButtons.js
+satisfactory_tracker/src/components/Tracker/ModifiersPanel.js
+satisfactory_tracker/src/components/Tracker/TrackerHeader.js
+satisfactory_tracker/src/components/Tracker/TrackerTables.js
+satisfactory_tracker/src/pages/TrackerPage.js
+.gitignore

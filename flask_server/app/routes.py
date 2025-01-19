@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Create a file handler
-file_handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=5)
+file_handler = RotatingFileHandler('logs/app.log', maxBytes=10000, backupCount=5)
 file_handler.setLevel(logging.DEBUG)
 
 # Create a formatter and set it for the handler
@@ -477,6 +477,7 @@ def add_to_tracker():
     logger.info(f"Current user: {current_user}")
     # Check if the part and recipe are already in the user's tracker
     existing_entry = Tracker.query.filter_by(part_id=part_id, recipe_id=recipe_id, user_id=current_user.id).first()
+    logger.info(f"Existing entry: {existing_entry}")
     if existing_entry:
         return jsonify({"message": "Part and recipe are already in the tracker"}), 200
 
@@ -498,3 +499,60 @@ def add_to_tracker():
     db.session.commit()
     logger.info(f"Part and recipe added to tracker successfully, {part_id}, {recipe_id}")
     return jsonify({"message": "Part and recipe added to tracker successfully"}), 200
+
+@main.route('/api/tracker_data', methods=['GET'])
+@login_required
+def get_tracker_data():
+    user_id = current_user.id
+    tracker_data_query = """
+        SELECT t.id, t.target_quantity, p.part_name, r.recipe_name, t.created_at, t.updated_at
+        FROM tracker t
+        JOIN part p ON t.part_id = p.id
+        JOIN recipe r ON t.recipe_id = r.id
+        WHERE t.user_id = :user_id
+    """
+    try:
+        tracker_data = db.session.execute(text(tracker_data_query), {"user_id": user_id}).fetchall()
+        return jsonify([dict(row._mapping) for row in tracker_data])
+    except Exception as e:
+        logger.error(f"Error fetching tracker data: {e}")
+        return jsonify({"error": "Failed to fetch tracker data"}), 500
+    
+@main.route('/api/tracker_data/<int:tracker_id>', methods=['DELETE'])
+@login_required
+def delete_tracker_item(tracker_id):
+    try:
+        logger.info(f"Deleting tracker item with ID: {tracker_id}")
+        tracker_item = Tracker.query.filter_by(id=tracker_id, user_id=current_user.id).first()
+        logger.info(f"Tracker item: {tracker_item}")
+        if not tracker_item:
+            logger.info("Tracker item not found or you don't have permission to delete it")
+            return jsonify({"error": "Tracker item not found or you don't have permission to delete it"}), 404
+
+        db.session.delete(tracker_item)
+        db.session.commit()
+        return jsonify({"message": "Tracker item deleted successfully"}), 200
+    except Exception as e:
+        logger.info(f"Error deleting tracker item: {e}")
+        return jsonify({"error": "Failed to delete tracker item"}), 500
+    
+@main.route('/api/tracker_data/<int:tracker_id>', methods=['PUT'])
+@login_required
+def update_tracker_item(tracker_id):
+    try:
+        data = request.json
+        target_quantity = data.get("target_quantity")
+        if target_quantity is None:
+            return jsonify({"error": "Target quantity is required"}), 400
+
+        tracker_item = Tracker.query.filter_by(id=tracker_id, user_id=current_user.id).first()
+        if not tracker_item:
+            return jsonify({"error": "Tracker item not found or you don't have permission to update it"}), 404
+
+        tracker_item.target_quantity = target_quantity
+        db.session.commit()
+        return jsonify({"message": "Tracker item updated successfully"}), 200
+    except Exception as e:
+        logger.error(f"Error updating tracker item: {e}")
+        return jsonify({"error": "Failed to update tracker item"}), 500
+

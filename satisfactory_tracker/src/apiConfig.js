@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
   logout: `${flask_port}/logout`,
   userinfo: `${flask_port}/api/user_info`,
   validation: `${flask_port}/api/validation`,
+  tracker_data: `${flask_port}/api/tracker_data`,
   tracker_reports: `${flask_port}/api/tracker/reports`,
   add_to_tracker: `${flask_port}/api/tracker_add`,
   check_login: `${flask_port}/check_login`,

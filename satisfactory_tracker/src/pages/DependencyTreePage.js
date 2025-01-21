@@ -28,6 +28,7 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
 import { UserContext } from '../UserContext';
 import { useAlert } from "../context/AlertContext";
+import logToBackend from '../services/logService';
 
 const DependencyTreePage = () => {
     const { user } = useContext(UserContext);
@@ -60,6 +61,7 @@ const DependencyTreePage = () => {
     const [partFilter, setPartFilter] = useState("");
     const [recipeFilter, setRecipeFilter] = useState("");
     const [recipes, setRecipes] = useState(filteredRecipes);
+    const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
     // const handleMouseDown = (e) => {
     //     //console.log("Mouse Down");
@@ -115,6 +117,7 @@ const DependencyTreePage = () => {
             console.log("Structured Tree Data:", structuredData); // Debug to confirm all nodes
             setTreeData(structuredData);
         } catch (error) {
+            logToBackend("Error fetching dependency tree: " + error, "ERROR");
             console.error("Error fetching dependency tree:", error);
         }
     };
@@ -122,6 +125,7 @@ const DependencyTreePage = () => {
 
     // Build the tree data structure
     const buildTreeData = (node, parentId = "root", counter = { id: 1 }) => {
+        // logToBackend("Building Tree Data for Node: " + node + "Parent ID: " + parentId, "INFO");
         console.log("Building Tree Data for Node:", node, "Parent ID:", parentId); // Debug log
         const tree = [];
         if (!node || typeof node !== "object") return tree;
@@ -308,16 +312,20 @@ const DependencyTreePage = () => {
     useEffect(() => {
         const fetchPartsAndRecipes = async () => {
             try {
-                console.log("Getting Alt Recipes", API_ENDPOINTS.part_names);
+                console.log("Getting Part Names", API_ENDPOINTS.part_names);
                 const partsResponse = await axios.get(API_ENDPOINTS.part_names);
                 const partsData = partsResponse.data;
                 setParts(Array.isArray(partsData) ? partsData : []);
+
                 console.log("Getting Alt Recipes", API_ENDPOINTS.alternate_recipe);
                 const recipesResponse = await axios.get(API_ENDPOINTS.alternate_recipe);
-                console.log("Fetched Alternate Recipes:", recipesResponse.data);
+                // console.log("Fetched Alternate Recipes:", recipesResponse.data);
+
                 setAlternateRecipes(recipesResponse.data);
                 setFilteredRecipes(recipesResponse.data); // Initialize filteredRecipes
-                setSelectedRecipes(recipesResponse.data.filter((recipe) => recipe.selected).map((r) => r.id));
+                // #TODO: Load the selected recipes from the User's profile
+                //setSelectedRecipes(recipesResponse.data.filter((recipe) => recipe.selected).map((r) => r.id));
+                //setSelectedRecipes(response.data.map((recipe) => recipe.recipe_id));
             } catch (err) {
                 console.error("Failed to fetch parts or recipes:", err);
                 setParts([]);
@@ -325,6 +333,28 @@ const DependencyTreePage = () => {
             }
         };
         fetchPartsAndRecipes();
+    }, []);
+
+    useEffect(() => {
+        const fetchSelectedRecipes = async () => {
+            try {
+                // Fetch user-selected recipes
+                const selectedResponse = await axios.get(API_ENDPOINTS.selected_recipes);
+
+                // Extract the recipe IDs for the selected recipes
+                const selectedRecipeIds = selectedResponse.data.map((recipe) => recipe.recipe_id);
+
+                setSelectedRecipes(selectedRecipeIds);
+
+                // Fetch all alternate recipes for filtering and display
+                // const alternateResponse = await axios.get(API_ENDPOINTS.alternate_recipe);
+                // setFilteredRecipes(alternateResponse.data);
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+            }
+        };
+
+        fetchSelectedRecipes();
     }, []);
 
     // Handle dropdown filters
@@ -388,12 +418,47 @@ const DependencyTreePage = () => {
         return rows;
     };
 
-    // Handle checkbox change
-    const handleCheckboxChange = (id) => {
-        setSelectedRecipes((prev) =>
-            prev.includes(id) ? prev.filter((recipeId) => recipeId !== id) : [...prev, id]
-        );
+    const handleCheckboxChange = async (recipeId, partId) => {
+        const recipeExists = selectedRecipes.includes(recipeId);
+        logToBackend("SelectedRecipes: " + selectedRecipes, "INFO");
+        logToBackend("Checkbox Change: Recipe ID: " + recipeId + " Part ID: " + partId + " Checked: " + recipeExists, "INFO");
+        // Toggle the checkbox selection
+        const updatedRecipes = recipeExists
+            ? selectedRecipes.filter((id) => id !== recipeId)
+            : [...selectedRecipes, recipeId];
+        setSelectedRecipes(updatedRecipes);
+
+        try {
+            if (recipeExists) {
+                // Send DELETE request to the backend when unchecked
+                const response = await axios.delete(`${API_ENDPOINTS.selected_recipes}/${recipeId}`);
+                if (response.status === 200) {
+                    showAlert("success", "Recipe removed successfully.");
+                    console.log("Recipe removed successfully.");
+                    setSelectedRecipes(selectedRecipes.filter((id) => id !== recipeId)); // Remove from the selectedRecipes array
+                } else {
+                    console.error("Unexpected response from backend:", response);
+                }
+            } else {
+                // Send POST request to the backend when checked
+                const response = await axios.post(API_ENDPOINTS.selected_recipes, {
+                    part_id: partId,
+                    recipe_id: recipeId,
+                });
+                if (response.status === 200) {
+                    showAlert("success", "Recipe added successfully.");
+                    console.log("Recipe added successfully.");
+
+                } else {
+                    console.error("Unexpected response from backend:", response);
+                }
+            }
+        } catch (error) {
+            console.error("Error updating selected recipe:", error);
+            showAlert("error", "Failed to update selected recipe.");
+        }
     };
+
 
     // Handle tab toggle
     const toggleTab = (tab) => {
@@ -512,8 +577,12 @@ const DependencyTreePage = () => {
 
     // Render the content based on the active tab
     const renderContent = () => {
-        switch (activeTab ) { 
+        switch (activeTab) {
             case "alternateRecipes":
+                // Filter the recipes
+                const displayedRecipes = showSelectedOnly
+                    ? filteredRecipes.filter((recipe) => selectedRecipes.includes(recipe.recipe_id))
+                    : filteredRecipes;
                 return (
                     <div>
                         <Typography variant="h2" color="primary" gutterBottom>
@@ -566,6 +635,17 @@ const DependencyTreePage = () => {
                                 </select>
                             </div>
                         </Box>
+                        {/* Second Row: Show Selected Filter */}
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                Show Selected Only
+                                <input
+                                    type="checkbox"
+                                    checked={showSelectedOnly}
+                                    onChange={(e) => setShowSelectedOnly(e.target.checked)}
+                                />
+                            </label>
+                        </Box>
                         {/* Filtered Table */}
                         <TableContainer component={Paper}>
                             <Table>
@@ -577,13 +657,14 @@ const DependencyTreePage = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredRecipes.map((recipe) => (
-                                        <TableRow key={recipe.id}>
-                                            <TableCell>{recipe.recipe_name}</TableCell>
+                                    {displayedRecipes.map((recipe, index) => (
+                                        <TableRow key={index}>
                                             <TableCell>{recipe.part_name}</TableCell>
+                                            <TableCell>{recipe.recipe_name}</TableCell>
                                             <TableCell>
                                                 <Checkbox
-                                                    onChange={() => handleCheckboxChange(recipe.id)}
+                                                    checked={selectedRecipes.includes(recipe.recipe_id)}
+                                                    onChange={() => handleCheckboxChange(recipe.recipe_id, recipe.part_id)}
                                                 />
                                             </TableCell>
                                         </TableRow>
@@ -669,13 +750,21 @@ const DependencyTreePage = () => {
                 }));
                 return (
                     <Box>
-                        <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-                            <Typography variant="body1">{partName}, {recipeName}</Typography>
+                        <Typography variant="h2" color="primary" gutterBottom>
+                            My Tracker Data
+                        </Typography>
+                        <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>                        
+                            {treeData ? (
+                                <Typography variant="body1">{partName}, {recipeName}</Typography>
+                            ) : (
+                                <Typography variant="body1">No Part Selected</Typography>
+                            )}
                             <Button
                                 variant="contained"
                                 color="secondary"
                                 sx={{ marginLeft: 2 }}
                                 onClick={() => handleAddToTracker(selectedPartId, targetQuantity, recipeName)}
+                                disabled={!treeData}
                             >
                                 Add to My Tracker
                             </Button>
@@ -909,7 +998,7 @@ const DependencyTreePage = () => {
                 </Button>
                 <Button
                     onClick={() => toggleTab("tracker")}
-                    disabled={!treeData}
+                    // disabled={!treeData}
                     sx={{
                         textAlign: "center",
                         padding: "8px",

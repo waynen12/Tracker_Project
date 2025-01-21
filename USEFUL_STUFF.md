@@ -398,6 +398,17 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
 ### Inital Commit
     chore: init
 
+# App Logging
+### In files where logging is required, add this at the top:
+    from logging_util import setup_logger
+    logger = setup_logger(__name__)
+
+#### Use Appropriate Log Levels:
+
+    logger.info("Info")
+    logger.warning("Warning")
+    logger.error("Error")
+
 ## <h1 id="section-12">Section 12 - Project relative paths 
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 

@@ -2,9 +2,9 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Logging config
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# # Logging config
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
 
 # Base directory of the project
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -16,7 +16,8 @@ load_dotenv()
 
 class Config:
     RUN_MODE = os.getenv('RUN_MODE_LOCATION')
-    print(f'RUN_MODE: {RUN_MODE}')
+    #print(f'RUN_MODE_LOCATION: {RUN_MODE_LOCATION}')
+    
     
 
 # Set DB config values based on RUN_MODE_LOCATION
@@ -40,7 +41,8 @@ else:
     # Throw an error if the RUN_MODE_LOCATION is not set
     raise ValueError('RUN_MODE_LOCATION environment variable not set. Please set RUN_MODE_LOCATION to "local", "docker", "prod", or "prod_local"')
 
-print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
+#print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
+
 SECRET_KEY = os.getenv('SECRET_KEY') or 'dev_default_secret_key'
 SESSION_TYPE = 'filesystem'
 

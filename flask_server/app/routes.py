@@ -26,40 +26,18 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 import jwt
 from datetime import datetime, timedelta, timezone
-
-
-# Create a logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Create a file handler
-file_handler = RotatingFileHandler('logs/app.log', maxBytes=10000, backupCount=5)
-file_handler.setLevel(logging.DEBUG)
-
-# Create a formatter and set it for the handler
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-# Add the file handler to the logger
-logger.addHandler(file_handler)
-
-# Create a console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-console_handler.setFormatter(formatter)
-
-# Add the console handler to the logger
-logger.addHandler(console_handler)
+from .logging_util import setup_logger
 
 config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
-logger.info(f"Loading config from: {config_path}")
-print (config_path)
 
 # Load the config module dynamically
 spec = importlib.util.spec_from_file_location("config", config_path)
 config = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(config)
-  
+
+logger = setup_logger("routes")
+
+logger.info(f"Config Path: {config_path}")  
 
 # Use the imported config variables
 REACT_BUILD_DIR = config.REACT_BUILD_DIR
@@ -462,7 +440,7 @@ def generate_reports():
 def add_to_tracker():
     logger.info("Adding part and recipe to tracker")
     if not current_user.is_authenticated:
-        logger.info(current_user, "User is not authenticated")
+        logger.info(f"{current_user}, User is not authenticated")
         return jsonify({"error": "User is not authenticated"}), 401
     
     data = request.json
@@ -556,3 +534,92 @@ def update_tracker_item(tracker_id):
         logger.error(f"Error updating tracker item: {e}")
         return jsonify({"error": "Failed to update tracker item"}), 500
 
+@main.route('/api/selected_recipes', methods=['GET'])
+@login_required
+def get_selected_recipes():
+    user_id = current_user.id
+    query = """
+        SELECT usr.id, usr.part_id, usr.recipe_id, p.part_name, r.recipe_name
+        FROM user_selected_recipe usr
+        JOIN part p ON usr.part_id = p.id
+        JOIN recipe r ON usr.recipe_id = r.id
+        WHERE usr.user_id = :user_id
+    """
+    try:
+        selected_recipes = db.session.execute(text(query), {"user_id": user_id}).fetchall()
+        return jsonify([dict(row._mapping) for row in selected_recipes])
+    except Exception as e:
+        logger.error(f"Error fetching selected recipes: {e}")
+        return jsonify({"error": "Failed to fetch selected recipes"}), 500
+    
+@main.route('/api/selected_recipes', methods=['POST'])
+@login_required
+def add_or_update_selected_recipe():
+    user_id = current_user.id
+    data = request.json
+    part_id = data.get('part_id')
+    recipe_id = data.get('recipe_id')
+
+    if not part_id or not recipe_id:
+        return jsonify({"error": "Part ID and Recipe ID are required"}), 400
+
+    try:
+        query = """
+            INSERT INTO user_selected_recipe (user_id, part_id, recipe_id, created_at, updated_at)
+            VALUES (:user_id, :part_id, :recipe_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            ON DUPLICATE KEY UPDATE
+                recipe_id = VALUES(recipe_id),
+                updated_at = CURRENT_TIMESTAMP
+        """
+        db.session.execute(text(query), {"user_id": user_id, "part_id": part_id, "recipe_id": recipe_id})
+        db.session.commit()
+        return jsonify({"message": "Selected recipe updated successfully"}), 200
+    except Exception as e:
+        logger.error(f"Error updating selected recipe: {e}")
+        return jsonify({"error": "Failed to update selected recipe"}), 500
+    
+@main.route('/api/selected_recipes/<int:recipe_id>', methods=['DELETE'])
+@login_required
+def delete_selected_recipe(recipe_id):
+    user_id = current_user.id
+
+    try:
+        query = """
+            DELETE FROM user_selected_recipe
+            WHERE user_id = :user_id AND recipe_id = :recipe_id
+        """
+        logger.info(f"Query: {query}, User: {user_id}, Recipe: {recipe_id}")
+        
+        db.session.execute(text(query), {"user_id": user_id, "recipe_id": recipe_id})
+        db.session.commit()
+        
+        logger.info(f"Selected recipe deleted successfully: Recipe {recipe_id}, User {user_id}")
+        
+        return jsonify({"message": "Selected recipe deleted successfully"}), 200
+    except Exception as e:
+        logger.error(f"Error deleting selected recipe: {e}")
+        return jsonify({"error": "Failed to delete selected recipe"}), 500
+
+@main.route('/api/log', methods=['POST'])
+def log_message():
+    data = request.json
+    message = data.get('message')
+    level = data.get('level', 'INFO')  # Default to INFO level
+
+    if not message:
+        return jsonify({"error": "Log message is required"}), 400
+
+    # Map string levels to logging levels
+    log_levels = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+
+    log_level = log_levels.get(level.upper(), logging.INFO)
+
+    # Log the message
+    logger.log(log_level, f"Frontend: {message}")
+    return jsonify({"message": "Log recorded"}), 200

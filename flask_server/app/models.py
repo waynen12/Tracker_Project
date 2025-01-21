@@ -94,6 +94,17 @@ class Tracker(db.Model):
         db.UniqueConstraint('user_id', 'part_id', 'recipe_id', name='unique_user_part_recipe'),
     )
 
+class UserSelectedRecipe(db.Model):
+    __tablename__ = 'user_selected_recipe'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'part_id', 'recipe_id', name='unique_user_part_recipe'),
+    )
 
 @login_manager.user_loader
 def load_user(user_id):

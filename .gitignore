@@ -27,3 +27,4 @@ satisfactory_tracker/src/components/Tracker/TrackerHeader.js
 satisfactory_tracker/src/components/Tracker/TrackerTables.js
 satisfactory_tracker/src/pages/TrackerPage.js
 .gitignore
+app_2025-01-19.log

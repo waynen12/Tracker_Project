@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   table_name: (tableName) => `${flask_port}/api/${tableName}`, // Dynamic endpoint
   part_names: `${flask_port}/api/part_names`,
   alternate_recipe: `${flask_port}/api/alternate_recipe`,
+  selected_recipes: `${flask_port}/api/selected_recipes`,
   recipe: `${flask_port}/api/recipe`,
   get_recipe_id: (partId) => `${flask_port}/api/recipe_id/${partId}`,
   build_tree: `${flask_port}/api/build_tree`,
@@ -24,4 +25,5 @@ export const API_ENDPOINTS = {
   tracker_reports: `${flask_port}/api/tracker/reports`,
   add_to_tracker: `${flask_port}/api/tracker_add`,
   check_login: `${flask_port}/check_login`,
+  log: `${flask_port}/api/log`,
   };

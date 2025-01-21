@@ -5,7 +5,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
-
+from .logging_util import setup_logger
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -16,13 +16,19 @@ def create_app():
     # Construct the absolute path to the config file
     config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
     # print(f"Loading config from: {config_path}")
-    
+    logger = setup_logger("__init__")
     app = Flask(__name__, static_folder=None) # Explicity set static_folder to None to disable static file serving from default location
     CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True) # Enable CORS for all domains on all routes with credentials support
     app.config.from_pyfile(config_path)   
     SECRET_KEY = app.config['SECRET_KEY']
 
-    print("Initializing Flask Application...")
+    init_message = f"""
+    *********************************************
+    Initializing Flask Application...
+    *********************************************
+    """
+    logger.info(init_message)
+    
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
@@ -48,5 +54,5 @@ def create_app():
     # for rule in app.url_map.iter_rules():
     #     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
     
-    print("App successfully created")
+    logger.info("2) Flask Application successfully created")
     return app 

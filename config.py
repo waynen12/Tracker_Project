@@ -52,13 +52,10 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 REACT_APP_RECAPTCHA_SITE_KEY = os.getenv('REACT_APP_RECAPTCHA_SITE_KEY')
 RECAPTCHA_API_KEY = os.getenv('RECAPTCHA_API_KEY')
 
+# .sav file upload config
+UPLOAD_FOLDER = "uploads"  # Define where files will be stored
+ALLOWED_EXTENSIONS = {"sav"}  # Define allowed file extensions
+
 # Table and column whitelist
-VALID_TABLES = {'part', 'recipe', 'alternate_recipe', 'node_purity', 'miner_type', 'miner_supply', 'power_shards', "user", "data_validation"}
-VALID_COLUMNS = {'part_name', 'level', 'category', 'base_production_type', 'produced_in_automated', 'produced_in_manual', 'production_type', 
-                    'recipe_name', 'ingredient_count', 'source_level', 'base_input', 'base_demand_pm', 'base_supply_pm', 'byproduct', 'byproduct_supply_pm', 'selected', 
-                    "selected",
-                    'node_purity', 'miner_type', 'quantity', 'output_increase', 'base_supply_pm',
-                    'part_id', 'recipe_id', 'node_purity_id', 'miner_type_id', 'id',
-                    'username', 'email', 'password', 'is_verified', 'role',
-                    'table_name', 'column_name', 'value', 'description'
-                }
+VALID_TABLES = os.getenv('VALID_TABLES')
+VALID_COLUMNS = os.getenv('VALID_COLUMNS')

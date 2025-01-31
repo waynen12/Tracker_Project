@@ -50,10 +50,10 @@ class Alternate_Recipe(db.Model):
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=False)
     selected = db.Column(db.Boolean, default=False)
 
-class Miner_Type(db.Model):
-    __tablename__ = 'miner_type' 
+class Machine_Level(db.Model):
+    __tablename__ = 'machine_level' 
     id = db.Column(db.Integer, primary_key=True)
-    miner_type = db.Column(db.String(100), nullable=False)
+    machine_level = db.Column(db.String(100), nullable=False)
 
 class Node_Purity(db.Model):
     __tablename__ = 'node_purity'
@@ -70,7 +70,7 @@ class Miner_Supply(db.Model):
     __tablename__ = 'miner_supply' 
     id = db.Column(db.Integer, primary_key=True)
     node_purity_id = db.Column(db.Integer, db.ForeignKey('node_purity.id'), nullable=False)
-    miner_type_id = db.Column(db.Integer, db.ForeignKey('miner_type.id'), nullable=False)
+    machine_level_id = db.Column(db.Integer, db.ForeignKey('machine_level.id'), nullable=False)
     base_supply_pm = db.Column(db.Float)                                                    
 
 class Data_Validation(db.Model):
@@ -106,6 +106,44 @@ class UserSelectedRecipe(db.Model):
         db.UniqueConstraint('user_id', 'part_id', 'recipe_id', name='unique_user_part_recipe'),
     )
 
+class User_Save(db.Model):
+    __tablename__ = 'user_save'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=True)
+    resource_node_id = db.Column(db.Integer, db.ForeignKey('resource_node.id'), nullable=True)
+    machine_id = db.Column(db.Integer, db.ForeignKey('machine.id'), nullable=False)
+    machine_power_modifier = db.Column(db.Float, default=1.0)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    sav_file_name = db.Column(db.String(200), nullable=False)
+	
+class Machine(db.Model):
+    __tablename__ = 'machine'
+    id = db.Column(db.Integer, primary_key=True)
+    machine_name = db.Column(db.String(200), nullable=False)
+    machine_level_id = db.Column(db.Integer, db.ForeignKey('machine_level.id'), nullable=True)
+    save_file_class_name = db.Column(db.String(200), nullable=False)
+    __table_args__ = (
+        db.Index('idx_save_file_class_name', 'save_file_class_name'),
+    )
+	
+class Resource_Node(db.Model):
+    __tablename__ = 'resource_node'
+    id = db.Column(db.Integer, primary_key=True)
+    part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    node_purity_id = db.Column(db.Integer, db.ForeignKey('node_purity.id'), nullable=False)
+    save_file_path_name = db.Column(db.String(200), nullable=False, unique=True)
+    __table_args__ = (
+        db.Index('idx_save_file_path_name', 'save_file_path_name'),
+    )
+    
+class Recipe_Mapping(db.Model):
+    __tablename__ = 'recipe_mapping'
+    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=False)
+    save_file_recipe = db.Column(db.String(200), nullable=False, unique=True)
+	
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

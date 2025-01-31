@@ -64,6 +64,7 @@ const DependencyTreePage = () => {
     const [recipes, setRecipes] = useState(filteredRecipes);
     const [showSelectedOnly, setShowSelectedOnly] = useState(false);
 
+    // Commenting out the resizing code for now
     // const handleMouseDown = (e) => {
     //     //console.log("Mouse Down");
     //     setIsResizing(true);
@@ -106,400 +107,7 @@ const DependencyTreePage = () => {
     //         window.removeEventListener("mouseup", handleMouseUp);
     //     };
     // }, [isResizing]);
-    const mockTreeData = {
-        "EXCITED PHOTONIC MATTER": {
-          "No. of Machines": 0.375,
-          "Produced In": "Converter",
-          "Recipe": "_Standard",
-          "Required Quantity": 75,
-          "Subtree": {
-      
-          }
-        },
-        "FICSITE TRIGON": {
-          "No. of Machines": 1.5,
-          "Produced In": "Constructor",
-          "Recipe": "_Standard",
-          "Required Quantity": 45,
-          "Subtree": {
-            "FICSITE INGOT": {
-              "No. of Machines": 1,
-              "Produced In": "Converter",
-              "Recipe": "_Standard",
-              "Required Quantity": 10,
-              "Subtree": {
-                "IRON INGOT": {
-                  "No. of Machines": 8,
-                  "Produced In": "Smelter",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 240,
-                  "Subtree": {
-                    "IRON ORE": {
-                      "No. of Machines": 0.125,
-                      "Produced In": "Miner",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 30,
-                      "Subtree": {
-      
-                      }
-                    }
-                  }
-                },
-                "REANIMATED SAM": {
-                  "No. of Machines": 1.33333333333333,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 40,
-                  "Subtree": {
-                    "SAM ORE": {
-                      "No. of Machines": 0.5,
-                      "Produced In": "Miner",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 120,
-                      "Subtree": {
-      
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "SUPERCOMPUTER": {
-          "No. of Machines": 1.6,
-          "Produced In": "Manufacturer",
-          "Recipe": "_Standard",
-          "Required Quantity": 3,
-          "Subtree": {
-            "AI LIMITER": {
-              "No. of Machines": 0.75,
-              "Produced In": "Assembler",
-              "Recipe": "_Standard",
-              "Required Quantity": 3.75,
-              "Subtree": {
-                "COPPER SHEET": {
-                  "No. of Machines": 2.5,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 25,
-                  "Subtree": {
-                    "COPPER INGOT": {
-                      "No. of Machines": 0.666666666666667,
-                      "Produced In": "Smelter",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 20,
-                      "Subtree": {
-                        "COPPER ORE": {
-                          "No. of Machines": 0.125,
-                          "Produced In": "Miner",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 30,
-                          "Subtree": {
-      
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "QUICKWIRE": {
-                  "No. of Machines": 1.66666666666667,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 100,
-                  "Subtree": {
-                    "CATERIUM INGOT": {
-                      "No. of Machines": 0.8,
-                      "Produced In": "Smelter",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 12,
-                      "Subtree": {
-                        "CATERIUM ORE": {
-                          "No. of Machines": 0.1875,
-                          "Produced In": "Miner",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 45,
-                          "Subtree": {
-      
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "COMPUTER": {
-              "No. of Machines": 3,
-              "Produced In": "Manufacturer",
-              "Recipe": "_Standard",
-              "Required Quantity": 7.5,
-              "Subtree": {
-                "CABLE": {
-                  "No. of Machines": 0.666666666666667,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 20,
-                  "Subtree": {
-                    "WIRE": {
-                      "No. of Machines": 2,
-                      "Produced In": "Constructor",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 60,
-                      "Subtree": {
-                        "COPPER INGOT": {
-                          "No. of Machines": 0.5,
-                          "Produced In": "Smelter",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 15,
-                          "Subtree": {
-                            "COPPER ORE": {
-                              "No. of Machines": 0.125,
-                              "Produced In": "Miner",
-                              "Recipe": "_Standard",
-                              "Required Quantity": 30,
-                              "Subtree": {
-      
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "CIRCUIT BOARD": {
-                  "No. of Machines": 1.33333333333333,
-                  "Produced In": "Assembler",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 10,
-                  "Subtree": {
-                    "COPPER SHEET": {
-                      "No. of Machines": 1.5,
-                      "Produced In": "Constructor",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 15,
-                      "Subtree": {
-                        "COPPER INGOT": {
-                          "No. of Machines": 0.666666666666667,
-                          "Produced In": "Smelter",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 20,
-                          "Subtree": {
-                            "COPPER ORE": {
-                              "No. of Machines": 0.125,
-                              "Produced In": "Miner",
-                              "Recipe": "_Standard",
-                              "Required Quantity": 30,
-                              "Subtree": {
-      
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "PLASTIC": {
-                      "No. of Machines": 1.5,
-                      "Produced In": "Refinery",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 30,
-                      "Subtree": {
-                        "CRUDE OIL": {
-                          "No. of Machines": 0.125,
-                          "Produced In": "Oil Extractor",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 30,
-                          "Subtree": {
-      
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "PLASTIC": {
-                  "No. of Machines": 2,
-                  "Produced In": "Refinery",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 40,
-                  "Subtree": {
-                    "CRUDE OIL": {
-                      "No. of Machines": 0.125,
-                      "Produced In": "Oil Extractor",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 30,
-                      "Subtree": {
-      
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "HIGH-SPEED CONNECTOR": {
-              "No. of Machines": 1.5,
-              "Produced In": "Manufacturer",
-              "Recipe": "_Standard",
-              "Required Quantity": 5.625,
-              "Subtree": {
-                "CABLE": {
-                  "No. of Machines": 1.25,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 37.5,
-                  "Subtree": {
-                    "WIRE": {
-                      "No. of Machines": 2,
-                      "Produced In": "Constructor",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 60,
-                      "Subtree": {
-                        "COPPER INGOT": {
-                          "No. of Machines": 0.5,
-                          "Produced In": "Smelter",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 15,
-                          "Subtree": {
-                            "COPPER ORE": {
-                              "No. of Machines": 0.125,
-                              "Produced In": "Miner",
-                              "Recipe": "_Standard",
-                              "Required Quantity": 30,
-                              "Subtree": {
-      
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "CIRCUIT BOARD": {
-                  "No. of Machines": 0.5,
-                  "Produced In": "Assembler",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 3.75,
-                  "Subtree": {
-                    "COPPER SHEET": {
-                      "No. of Machines": 1.5,
-                      "Produced In": "Constructor",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 15,
-                      "Subtree": {
-                        "COPPER INGOT": {
-                          "No. of Machines": 0.666666666666667,
-                          "Produced In": "Smelter",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 20,
-                          "Subtree": {
-                            "COPPER ORE": {
-                              "No. of Machines": 0.125,
-                              "Produced In": "Miner",
-                              "Recipe": "_Standard",
-                              "Required Quantity": 30,
-                              "Subtree": {
-      
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "PLASTIC": {
-                      "No. of Machines": 1.5,
-                      "Produced In": "Refinery",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 30,
-                      "Subtree": {
-                        "CRUDE OIL": {
-                          "No. of Machines": 0.125,
-                          "Produced In": "Oil Extractor",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 30,
-                          "Subtree": {
-      
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "QUICKWIRE": {
-                  "No. of Machines": 3.5,
-                  "Produced In": "Constructor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 210,
-                  "Subtree": {
-                    "CATERIUM INGOT": {
-                      "No. of Machines": 0.8,
-                      "Produced In": "Smelter",
-                      "Recipe": "_Standard",
-                      "Required Quantity": 12,
-                      "Subtree": {
-                        "CATERIUM ORE": {
-                          "No. of Machines": 0.1875,
-                          "Produced In": "Miner",
-                          "Recipe": "_Standard",
-                          "Required Quantity": 45,
-                          "Subtree": {
-      
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "PLASTIC": {
-              "No. of Machines": 2.625,
-              "Produced In": "Refinery",
-              "Recipe": "_Standard",
-              "Required Quantity": 52.5,
-              "Subtree": {
-                "CRUDE OIL": {
-                  "No. of Machines": 0.125,
-                  "Produced In": "Oil Extractor",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 30,
-                  "Subtree": {
-      
-                  }
-                }
-              }
-            }
-          }
-        },
-        "TIME CRYSTAL": {
-          "No. of Machines": 2.5,
-          "Produced In": "Converter",
-          "Recipe": "_Standard",
-          "Required Quantity": 15,
-          "Subtree": {
-            "DIAMONDS": {
-              "No. of Machines": 0.4,
-              "Produced In": "Particle Accelerator",
-              "Recipe": "_Standard",
-              "Required Quantity": 12,
-              "Subtree": {
-                "COAL": {
-                  "No. of Machines": 2.5,
-                  "Produced In": "Miner",
-                  "Recipe": "_Standard",
-                  "Required Quantity": 600,
-                  "Subtree": {
-      
-                  }
-                }
-              }
-            }
-          }
-        }
-      };
-
+    
     const fetchTreeData = async () => {
         try {
             const response = await axios.get(API_ENDPOINTS.build_tree, {
@@ -510,7 +118,7 @@ const DependencyTreePage = () => {
                 },
             });
             const tree = response.data;
-            
+
             setTreeData(response.data); // Use the tree structure from the backend directly
             setFlattenedData(flattenTree(response.data)); // Flatten the tree for the DataGrid
             setVisualData(buildTreeData(response.data)); // Build the tree data structure for the visual tab
@@ -594,46 +202,6 @@ const DependencyTreePage = () => {
             );
         });
     };
-
-    // const renderTree = (nodes) => {
-    //     console.log("Rendering nodes:", nodes); // Log the input data
-    
-    //     // Iterate over object entries (not an array)
-    //     return Object.entries(nodes).map(([key, value]) => {
-    //         console.log("Processing node:", key, value); // Log each processed node
-    
-    //         // Validate that the node has an ID
-    //         const nodeId = key;
-    //         if (!nodeId || nodeId === "undefined") {
-    //             console.error("Attempting to render a node with invalid ID:", value);
-    //             return null; // Skip invalid nodes
-    //         }
-    
-    //         console.log("Rendering Node:", nodeId, value); // Confirm valid node
-    
-    //         return (
-    //             <TreeItem
-    //                 itemId={nodeId} // Custom prop for debugging (optional)
-    //                 key={nodeId} // React requires a unique key
-    //                 nodeId={nodeId} // This is used by TreeView for expansion logic
-    //                 label={
-    //                     <div style={{ display: "flex", flexDirection: "column" }}>
-    //                         <strong>{key}</strong>
-    //                         <span>Qty: {value["Required Quantity"] || "N/A"}</span>
-    //                         <span>Produced In: {value["Produced In"] || "N/A"}</span>
-    //                         <span>No. of Machines: {value["No. of Machines"] || "N/A"}</span>
-    //                         <span>Recipe: {value.Recipe || "N/A"}</span>
-    //                     </div>
-    //                 }
-    //             >
-    //                 {/* Recursively render children if Subtree is non-empty */}
-    //                 {value.Subtree && Object.keys(value.Subtree).length > 0
-    //                     ? renderTree(value.Subtree)
-    //                     : null}
-    //             </TreeItem>
-    //         );
-    //     });
-    // };
 
     const renderSpiderDiagram = () => {
         if (!flattenedData.length) {
@@ -817,24 +385,24 @@ const DependencyTreePage = () => {
     }, [partFilter, recipeFilter, alternateRecipes]);
 
     // Build the dependency tree
-    const handleFetchTree = async () => {
-        try {
-            const response = await axios.get(API_ENDPOINTS.build_tree, {
-                params: {
-                    part_id: selectedPart,
-                    recipe_name: recipeName,
-                    target_quantity: targetQuantity,
-                },
-            });
-            const tree = response.data;
-            setTreeData(tree); // Set the structured tree data
-            setFlattenedData(flattenTree(tree)); // Flatten the tree for the DataGrid
-            setError("");
-        } catch (err) {
-            setError("Failed to fetch dependency tree. Check console for details.");
-            console.error(err);
-        }
-    };
+    // const handleFetchTree = async () => {
+    //     try {
+    //         const response = await axios.get(API_ENDPOINTS.build_tree, {
+    //             params: {
+    //                 part_id: selectedPart,
+    //                 recipe_name: recipeName,
+    //                 target_quantity: targetQuantity,
+    //             },
+    //         });
+    //         const tree = response.data;
+    //         setTreeData(tree); // Set the structured tree data
+    //         setFlattenedData(flattenTree(tree)); // Flatten the tree for the DataGrid
+    //         setError("");
+    //     } catch (err) {
+    //         setError("Failed to fetch dependency tree. Check console for details.");
+    //         console.error(err);
+    //     }
+    // };
 
     // Flatten the tree structure for the DataGrid
     const flattenTree = (tree, parent = "", level = 0) => {

@@ -45,7 +45,7 @@ const theme = createTheme({
     },
   },
   spacing: 8, // Default spacing multiplier
-
+  
   components: {
     MuiTableCell: {
       styleOverrides: {
@@ -54,7 +54,26 @@ const theme = createTheme({
           fontWeight: 'bold',
           fontFamily: 'Arial, sans-serif',
           color: '#00FFCC',
-          backgroundcolor: '#004c4c',
+          backgroundColor: '#004c4c',
+        },
+      },
+    },
+
+    // Add Dropzone styles
+    Dropzone: {
+      styleOverrides: {
+        root: {
+          border: '2px dashed #00FFCC', // Light green border
+          padding: '20px',
+          textAlign: 'center',
+          cursor: 'pointer',
+          backgroundColor: '#000000', // Black background
+          transition: 'background-color 0.3s ease-in-out',
+          color: '#CCFFFF', // Light text color
+        },
+        active: {
+          backgroundColor: '#008080', // Teal when dragging
+          borderColor: '#00FFCC',
         },
       },
     },

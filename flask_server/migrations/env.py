@@ -3,8 +3,14 @@ from logging.config import fileConfig
 from flask import current_app
 from alembic import context
 from app.models import db
-from flask_server.app.logging_util import setup_logger
-logger = setup_logger('alembic.env')
+#from flask_server.app.logging_util import setup_logger
+import sys
+import os
+
+# Add project root to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+print (sys.path)
+#logger = setup_logger('alembic.env')
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -91,7 +97,7 @@ def run_migrations_online():
             script = directives[0]
             if script.upgrade_ops.is_empty():
                 directives[:] = []
-                logger.info('No changes in schema detected.')
+                #logger.info('No changes in schema detected.')
 
     conf_args = current_app.extensions['migrate'].configure_args
     if conf_args.get("process_revision_directives") is None:

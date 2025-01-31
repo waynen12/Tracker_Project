@@ -77,7 +77,7 @@ const HomePage = () => {
                 >
                     Dependencies
                 </Button>
-                {/* <Button
+                <Button
                     variant="contained"
                     color="secondary"
                     onClick={() => navigate("/tracker")}
@@ -88,7 +88,7 @@ const HomePage = () => {
                     }}
                 >
                     Tracker
-                </Button> */}
+                </Button>
             </Stack>
         </Box>
     );

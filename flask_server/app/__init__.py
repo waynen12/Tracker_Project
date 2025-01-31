@@ -43,7 +43,7 @@ def create_app():
     with app.app_context():
         # Import models to ensure they are registered
         #TODO: None of the imported tables are being used. Should they be included in the db.create_all() call?
-        from .models import User, Part, Recipe, Alternate_Recipe, Miner_Type, Node_Purity, Power_Shards, Miner_Supply, Data_Validation, Tracker
+        from .models import User, Part, Recipe, Alternate_Recipe, Machine_Level, Node_Purity, Power_Shards, Miner_Supply, Data_Validation, Tracker, User_Save, Machine, Recipe_Mapping, Resource_Node
         #db.create_all()  # Ensure tables are created
 
     # Register blueprints
@@ -54,5 +54,5 @@ def create_app():
     # for rule in app.url_map.iter_rules():
     #     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
     
-    logger.info("2) Flask Application successfully created")
+    logger.info("Flask Application successfully created")
     return app 

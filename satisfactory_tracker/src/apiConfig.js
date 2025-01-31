@@ -1,6 +1,6 @@
 let flask_port = "";
 
-if (process.env.RUN_MODE === 'prod') {
+if (process.env.RUN_MODE_LOCATION === 'prod') {
   flask_port = "http://192.168.50.33:5000";
 } else {
   flask_port = "http://localhost:5000";
@@ -19,11 +19,14 @@ export const API_ENDPOINTS = {
   signup: `${flask_port}/signup`,
   login: `${flask_port}/login`,
   logout: `${flask_port}/logout`,
+  check_login: `${flask_port}/check_login`,
   userinfo: `${flask_port}/api/user_info`,
   validation: `${flask_port}/api/validation`,
   tracker_data: `${flask_port}/api/tracker_data`,
-  tracker_reports: `${flask_port}/api/tracker/reports`,
-  add_to_tracker: `${flask_port}/api/tracker_add`,
-  check_login: `${flask_port}/check_login`,
+  tracker_reports: `${flask_port}/api/tracker_reports`,
+  add_to_tracker: `${flask_port}/api/tracker_add`,  
   log: `${flask_port}/api/log`,
+  upload_sav: `${flask_port}/upload_sav`,
+  user_save: `${flask_port}/user_save`,
+  processing_status: `${flask_port}/processing_status`,
   };

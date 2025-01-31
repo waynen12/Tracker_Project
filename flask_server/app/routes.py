@@ -6,27 +6,29 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
 from flask import send_from_directory
 import os
+import uuid
 import logging
 from logging.handlers import RotatingFileHandler
 import math
-from .models import User, Tracker
+from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Level, Node_Purity, Resource_Node
 from . import db
 from .build_tree import build_tree
 from flask import request, flash, redirect, url_for
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
 from flask_mail import Message
 from . import mail
 import importlib.util
 import requests
-from flask import request, jsonify
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 import jwt
 from datetime import datetime, timedelta, timezone
 from .logging_util import setup_logger
+# from .read_save_file import process_save_file  # Import the processing function
 
 config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
 
@@ -56,6 +58,19 @@ main = Blueprint(
 #PROJECT_ID = config.GOOGLE_PROJECT_ID
 SITE_KEY = config.REACT_APP_RECAPTCHA_SITE_KEY
 API_KEY = config.RECAPTCHA_API_KEY
+
+UPLOAD_FOLDER = config.UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = config.ALLOWED_EXTENSIONS
+
+# Simulated processing tracker
+PROCESSING_STATUS = {}
+
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @main.route('/')
 def serve_react_app():
@@ -258,7 +273,7 @@ def build_tree_route():
 
     if not part_id:
         return jsonify({"error": "part_id is required"}), 400
-
+    
     result = build_tree(part_id, recipe_name, target_quantity, visited)
 
     return jsonify(result)
@@ -420,20 +435,43 @@ def get_data_validation():
     # print("**************************************", [dict(row._mapping) for row in validation_data])
     return jsonify([dict(row._mapping) for row in validation_data])
 
-@main.route('/api/tracker/reports', methods=['POST'])
-def generate_reports():
-    tracker_data = request.json  # User's tracker data
-    total_parts = sum(part['base_demand'] for part in tracker_data)
-    total_parts_pm = sum(part['base_demand_pm'] for part in tracker_data)
-    total_machines = sum(math.ceil(part['base_demand'] / part['base_supply']) for part in tracker_data)
-    byproducts = sum(part.get('byproduct_supply', 0) for part in tracker_data)
+@main.route('/api/tracker_reports', methods=['GET'])
+def get_tracker_reports():
+    user_id = current_user.id
 
-    return jsonify({
-        'totalParts': total_parts,
-        'totalPartsPerMinute': total_parts_pm,
-        'totalMachines': total_machines,
-        'byproducts': byproducts
-    })
+    try:
+        # Query the tracker table for the user's tracked parts
+        query = """
+            SELECT t.part_id, t.recipe_id, t.target_quantity, p.part_name, r.recipe_name
+            FROM tracker t
+            JOIN part p ON t.part_id = p.id
+            JOIN recipe r ON t.recipe_id = r.id
+            WHERE t.user_id = :user_id
+        """
+        # logger.info(f"tracker_reports Query: {query}, User: {user_id}")
+        tracked_parts = db.session.execute(text(query), {"user_id": user_id}).fetchall()
+        # logger.info(f"User: {user_id}, Tracked parts: {tracked_parts}")
+        # Generate dependency trees for each tracked part
+        reports = []
+        for part in tracked_parts:
+            part_id = part.part_id
+            recipe_name = part.recipe_name
+            target_quantity = part.target_quantity
+
+            # Call build_tree for each tracked part
+            tree = build_tree(part_id, recipe_name, target_quantity)
+            reports.append({
+                "part_id": part_id,
+                "part_name": part.part_name,
+                "recipe_name": recipe_name,
+                "target_quantity": target_quantity,
+                "tree": tree
+            })
+
+        return jsonify(reports), 200
+    except Exception as e:
+        logger.error(f"Error generating tracker reports: {e}")
+        return jsonify({"error": "Failed to generate tracker reports"}), 500
 
 @main.route('/api/tracker_add', methods=['POST'])
 @login_required
@@ -623,3 +661,87 @@ def log_message():
     # Log the message
     logger.log(log_level, f"Frontend: {message}")
     return jsonify({"message": "Log recorded"}), 200
+
+@main.route("/upload_sav", methods=["POST"])
+def upload_sav():
+    from app.read_save_file import process_save_file  # Move import inside the function to avoid circular import
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+          # Assign processing ID
+        processing_id = str(uuid.uuid4())
+        PROCESSING_STATUS[processing_id] = "processing"
+
+        # Process file in a background task
+        try:
+            user_id = current_user.id  # Replace this with actual user ID from authentication
+            logger.info(f"BEFORE PROCESS_SAVE_FILE CALL - Processing file: {filename} for user ID: {user_id}")
+            process_save_file(filepath, user_id)
+            PROCESSING_STATUS[processing_id] = "completed"
+        except Exception as e:
+            PROCESSING_STATUS[processing_id] = "failed"
+            return jsonify({"error": f"Error processing file: {str(e)}"}), 500
+
+    return jsonify({"message": f"File '{filename}' uploaded successfully!", "processing_id": processing_id}), 200
+
+@main.route("/processing_status/<processing_id>", methods=["GET"])
+def get_processing_status(processing_id):
+    status = PROCESSING_STATUS.get(processing_id, "unknown")
+    return jsonify({"status": status})
+
+@main.route("/user_save", methods=["GET"])
+def get_user_save():
+    user_id = current_user.id
+    # sav_file_name = request.args.get("sav_file_name", type=str)
+
+    # if not user_id or not sav_file_name:
+    #     return jsonify({"error": "Missing required parameters: user_id and sav_file_name"}), 400
+
+    user_saves = (
+        db.session.query(
+            User_Save.id,
+            Part.part_name,
+            Recipe.recipe_name,
+            Machine.machine_name,
+            Machine_Level.machine_level,
+            Node_Purity.node_purity,
+            User_Save.machine_power_modifier,
+            User_Save.created_at,
+            User_Save.sav_file_name,
+        )
+        .join(Recipe, User_Save.recipe_id == Recipe.id, isouter=True)
+        .join(Part, Recipe.part_id == Part.id, isouter=True)
+        .join(Machine, User_Save.machine_id == Machine.id, isouter=True)
+        .join(Machine_Level, Machine.machine_level_id == Machine_Level.id, isouter=True)
+        .join(Resource_Node, User_Save.resource_node_id == Resource_Node.id, isouter=True)
+        .join(Node_Purity, Resource_Node.node_purity_id == Node_Purity.id, isouter=True)
+        .filter(User_Save.user_id == user_id)
+        #.filter(User_Save.sav_file_name == sav_file_name)  # ✅ Only return records for the relevant save file
+        .all()
+    )
+    #logger.info(f"User Saves: {user_saves}")
+    return jsonify([
+        {
+            "id": us.id,
+            "part_name": us.part_name,
+            "recipe_name": us.recipe_name,
+            "machine_name": us.machine_name,
+            "machine_level": us.machine_level,
+            "node_purity": us.node_purity,
+            "machine_power_modifier": us.machine_power_modifier,
+            "created_at": us.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "sav_file_name": us.sav_file_name,
+        } for us in user_saves
+        
+    ])
+    

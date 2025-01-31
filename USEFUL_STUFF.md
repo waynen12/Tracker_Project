@@ -234,39 +234,32 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
 ## <h1 id="section-8">Section 8 - Flask Commands 
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
-### Blow away the database and start over:
-#### 1) Delete the database file.
-* ####  <span style="color: orange; font-size: 18px;">LINUX</span> command to remove the database.
-    rm satisfactory_parts.db 
-* ####  <span style="color: orange; font-size: 18px;">WINDOWS</span> command to remove the database.
-    del satisfactory_parts.db
-#####  ***<span style="color: orange; font-size: 18px;">Alternatively, you can manually delete the satisfactory_parts.db file using File Explorer</span>***
-#### 2) Update or Recreate the database Schema.
+
+#### Update or Recreate the database Schema.
+    cd flask_server
     flask db stamp head # Stamp the current migration.
     flask db migrate -m "your description" # Change the message as needed.
     flask db upgrade # Upgrade the database to the latest migration.
-#### 3) Migrate the data from the Excel file to the database.
-    cd SQLite_stuff
-#### 4) Migration script to move data from Excel to SQLite database.
-    python -m SQLite_stuff.migrate_data 
-##### Other useful Flask commands:
-* ##### Downgrade to the previous migration.
+
+
+##### Downgrade to the previous migration.
         flask db downgrade
-* ##### Show the migration history.
+##### Show the migration history.
         flask db history
-* ##### Show the current migration.
+##### Show the current migration.
         flask db heads
-* ##### Stamp the current migration.
+##### Stamp the current migration.
         flask db stamp head
 
-## <h1 id="section-9">Section 9 - SQLite 
+## <h1 id="section-9">Section 9 - SQL 
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
 
-### <span style="color: red;"> THIS WHOLE SECTION IS OUT OF DATE #TODO</span>
-- SQLite Installation Folder:
-      F:/Programs/SQLite3/sqlite3.exe # Handy for me. Change path as needed.
-- SQLite commands:
-      sqlite3 satisfactory_parts.db .dump > backup.sql # Backup the database. Preferably BEFORE you make massive changes! :P
+#### Useful MySQL Commands
+##### Disable foreign key checks temporarily
+    SET FOREIGN_KEY_CHECKS = 0;
+    TRUNCATE TABLE referenced_table;
+    SET FOREIGN_KEY_CHECKS = 1;
+
 
 ## <h1 id="section-10">Section 10 - Key files 
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>
@@ -420,6 +413,19 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
 
 ### Exclude venv and node_modules from search. Copy into the files to exclude text box in the search tab.
     satisfactory_tracker/venv/**/, satisfactory_tracker/node_modules/**/
+
+### Collapse/Expand all code blocks
+#### Using Keyboard Shortcuts
+        Collapse All: Ctrl + K, Ctrl + 0 (Windows/Linux) or Cmd + K, Cmd + 0 (Mac)
+
+        Expand All: Ctrl + K, Ctrl + J (Windows/Linux) or Cmd + K, Cmd + J (Mac)
+
+#### Using the Command Palette
+    Open the Command Palette: Press Ctrl + Shift + P (Windows/Linux) or Cmd + Shift + P (Mac).
+    
+    Collapse All: Type Fold All and select the Fold All command.
+    
+    Expand All: Type Unfold All and select the Unfold All command.
 
 ## <h1 id="section-14">Section 14 - Copilot
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>

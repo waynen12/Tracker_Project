@@ -6,7 +6,7 @@ from .logging_util import setup_logger
 logger = setup_logger("build_tree")
 
 def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None, in_recursion=False):
-    logger.debug("Building tree for part_id %s, recipe_name %s, target_quantity %s", part_id, recipe_name, target_quantity)
+    #logger.debug("Building tree for part_id %s, recipe_name %s, target_quantity %s", part_id, recipe_name, target_quantity)
         # Check for user-selected recipe
     selected_recipe_query = """
         SELECT r.id, r.recipe_name
@@ -119,7 +119,7 @@ def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None
         no_of_machines = required_quantity / ingredient_supply if ingredient_supply else 0
 
         # Recursive call for the ingredient's subtree
-        ingredient_subtree = build_tree(ingredient_input_id, final_recipe, required_quantity, visited, True)
+        ingredient_subtree = build_tree(ingredient_input_id, final_recipe, target_quantity, visited, True)
 
         # Attach the ingredient's subtree to the current node
         root_info["Subtree"][ingredient_input] = {

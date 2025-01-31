@@ -164,6 +164,11 @@ export const deleteNodePurity = async (nodePurityId) => {
   return response.data;
 };
 
+export const uploadSave = async (saveData) => {
+  const response = await apiClient.post('/upload_sav', saveData);
+  return response.data;
+};
+
 // Build Dependency Tree API
 export const buildDependencyTree = async (partId, recipeType = '_Standard', targetQuantity = 1) => {
   try {

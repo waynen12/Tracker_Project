@@ -32,7 +32,8 @@ const TrackerTables = ({ trackerData, totals, isLoading }) => {
         <Typography>Loading...</Typography>
       ) : (
         <Box sx={{ height: 600, width: "100%" }}>
-          <DataGrid
+          <DataGrid rows={rows} columns={columns} />
+          {/* <DataGrid
             rows={rows}
             columns={columns}
             pageSize={10}
@@ -46,7 +47,7 @@ const TrackerTables = ({ trackerData, totals, isLoading }) => {
                 showQuickFilter: true,
               },
             }}
-          />
+          /> */}
         </Box>
       )}
     </Box>

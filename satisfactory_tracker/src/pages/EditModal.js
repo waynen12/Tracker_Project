@@ -3,8 +3,13 @@ import React, { useState, useEffect } from "react";
 import { Modal, Box, Typography, Button, TextField, MenuItem, Tooltip } from "@mui/material";
 import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
+import { useTheme } from '@mui/material/styles';
+import logToBackend from '../services/logService';
+
+
 
 const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName }) => {
+  const theme = useTheme();
   const [updatedRow, setUpdatedRow] = useState({ ...row });
   const [validationRules, setValidationRules] = useState([]);
   const [foreignKeyData, setForeignKeyData] = useState({});
@@ -27,6 +32,7 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
   const getValidValues = (tableName, columnName) => {
     console.log("Getting validation rules for:", tableName, columnName); // Debug
     console.log("Validation Rules:", validationRules); // Debug
+    // logToBackend(`Getting validation rules for ${tableName}.${columnName}`);
     return (
       validationRules
         .filter(rule => rule["table_name"] === tableName && rule["column_name"] === columnName)
@@ -39,13 +45,17 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
       try {
         const foreignKeys = columns.filter(col => col.endsWith("_id"));
         const data = {};
-
+        // logToBackend(`Fetching foreign key data for ${foreignKeys} columns`);
         for (const fk of foreignKeys) {
           const endpoint = API_ENDPOINTS.table_name(fk.replace("_id", ""));
           const response = await axios.get(endpoint);
+          // logToBackend(`Fetched foreign key data for ${fk}: ${response.data.length} rows`);
           data[fk] = response.data.map(row => ({
             id: row.id,
-            name: row.name || row.node_purity || row.miner_type,
+            name: row.name || row.node_purity ||
+              row.recipe_name || row.part_name || 
+              row.machine_name || row.machine_level ||
+              row.save_file_path_name || row.username
           }));
         }
 
@@ -85,7 +95,7 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
           //height: '70vh',
           maxHeight: '80vh',
           bgcolor: 'background.paper',
-          background: 'background.default', //'linear-gradient(to right, #0A4B3E, #000000)',
+          background: `linear-gradient(to right, ${theme.palette.background.linearGradientLeft}, ${theme.palette.background.linearGradientRight})`,
           border: '2px solid',
           borderColor: 'primary.main',
           borderRadius: 2,
@@ -99,7 +109,7 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
         <Typography
           id="edit-modal-title"
           variant="h2"
-          sx={{ mb: 2, color: 'primary.main', textAlign: 'center' }}
+          sx={{ mb: 2, color: 'text.primary', textAlign: 'center' }}
         >
           {isCreateModalOpen ? "Create New Row" : "Edit Row"}
         </Typography>
@@ -110,7 +120,7 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
           const fkValues = foreignKeyData[col] || []; // Default to empty array if undefined
           //const description = getFieldDescription(tableName, col); // Field description
 
-          if (validValues.length > 0) {
+          if (validValues.length > 0 || fkValues.length > 0) {
             return (
               <Box key={col} sx={{ mb: 2 }}>
                 <label
@@ -128,13 +138,6 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
                   id={col}
                   value={updatedRow[col] || ""}
                   onChange={(e) => handleChange(e, col)}
-                  onMouseEnter={(e) => {
-                    const selectedOption = validValues.find(
-                      (val) => val.value === e.target.value
-                    );
-                    setHoveredDescription(selectedOption?.description || "");
-                  }}
-                  onMouseLeave={() => setHoveredDescription("")}
                   style={{
                     width: "100%",
                     padding: "8px",
@@ -146,122 +149,54 @@ const EditModal = ({ row, columns, onSave, onClose, isCreateModalOpen, tableName
                   <option value="" disabled>
                     -- Select an option --
                   </option>
+                  {/* Render valid values */}
                   {validValues.map(({ value, description }) => (
                     <option key={value} value={value} title={description}>
                       {value}
                     </option>
                   ))}
+                  {/* Render foreign key values */}
+                  {fkValues.map(({ id, name }) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
                 </select>
-                {hoveredDescription && (
-                <div
-                  style={{
-                    marginTop: "4px",
-                    fontSize: "12px",
-                    color: "gray",
-                  }}
-                >
-                  {hoveredDescription}
-                </div>
-                )}
               </Box>
-            );
-          } else if (fkValues.length > 0) {
-            return (
-              <TextField
-                select
-                key={col}
-                label={col.replace(/_/g, " ")}
-                value={updatedRow[col] || ""}
-                onChange={(e) => handleChange(e, col)}
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                slotProps={{
-                  input: {
-                    sx: {
-                      color: col === "id" ? 'text.secondary' : 'text.primary', // Adjust text color for disabled fields
-                    },
-                  },
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: col === "id" ? 'text.disabled' : 'primary.contrastText', // Default border color
-                    },
-                    '&:hover fieldset': {
-                      borderColor: col === "id" ? 'text.disabled' : 'primary.light', // Prevent hover color on disabled fields
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'primary.main', // Focus state for active fields
-                    },
-                    '&.Mui-disabled fieldset': {
-                      borderColor: 'text.disabled', // Explicitly set border color for disabled state
-                    },
-                  },
-                  '& .MuiInputBase-root.Mui-disabled': {
-                    color: 'text.secondary', // Safeguard for disabled text styling
-                  },
-                }}
-              >
-                {fkValues.map((fk) => (
-                  <MenuItem key={fk.id} value={fk.id}>
-                    {fk.name}
-                  </MenuItem>
-                ))}
-              </TextField>
             );
           } else {
             return (
-              <TextField
-                key={col}
-                label={col.replace(/_/g, " ")}
-                value={updatedRow[col] || ""}
-                onChange={(e) => handleChange(e, col)}
-                fullWidth
-                disabled={col === "id"}
-                margin="normal"
-                variant="outlined"
-                slotProps={{
-                  input: {
-                    sx: {
-                      color: col === "id" ? 'text.secondary' : 'text.primary', // Adjust text color for disabled fields
-                    },
-                  },
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: col === "id" ? 'text.disabled' : 'primary.contrastText', // Default border color
-                    },
-                    '&:hover fieldset': {
-                      borderColor: col === "id" ? 'text.disabled' : 'primary.light', // Prevent hover color on disabled fields
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'primary.main', // Focus state for active fields
-                    },
-                    '&.Mui-disabled fieldset': {
-                      borderColor: 'text.disabled', // Explicitly set border color for disabled state
-                    },
-                  },
-                  '& .MuiInputBase-root.Mui-disabled': {
-                    color: 'text.secondary', // Safeguard for disabled text styling
-                  },
-                }}
-              >
-                {fkValues.map((fk) => (
-                  <MenuItem key={fk.id} value={fk.id}>
-                    {fk.name}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <Box key={col} sx={{ mb: 2 }}>
+                <label
+                  htmlFor={col}
+                  style={{
+                    display: "block",
+                    fontWeight: "bold",
+                    marginBottom: "4px",
+                    color: "text.primary",
+                  }}
+                >
+                  {col.replace(/_/g, " ")}
+                </label>
+                <input
+                  type="text"
+                  id={col}
+                  value={updatedRow[col] || ""}
+                  onChange={(e) => handleChange(e, col)}
+                  disabled={col === "id"}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: col === "id" ? "1px solid #ccc" : "1px solid #00FFCC",
+                    background: col === "id" ? "#f5f5f5" : "white",
+                    color: col === "id" ? "#aaa" : "#000",
+                  }}
+                />
+              </Box>
             );
           }
         })}
-
-
-
-
-
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
           <Button

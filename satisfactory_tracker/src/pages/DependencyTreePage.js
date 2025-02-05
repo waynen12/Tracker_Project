@@ -20,6 +20,7 @@ import {
     InputLabel,
     TextField,
 } from "@mui/material";
+import { useTheme } from '@mui/material/styles';
 import { SimpleTreeView } from "@mui/x-tree-view";
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
@@ -31,6 +32,7 @@ import { useAlert } from "../context/AlertContext";
 import logToBackend from '../services/logService';
 
 const DependencyTreePage = () => {
+    const theme = useTheme();
     const { user } = useContext(UserContext);
     const { showAlert } = useAlert();
     const [parts, setParts] = useState([]);
@@ -107,7 +109,7 @@ const DependencyTreePage = () => {
     //         window.removeEventListener("mouseup", handleMouseUp);
     //     };
     // }, [isResizing]);
-    
+
     const fetchTreeData = async () => {
         try {
             const response = await axios.get(API_ENDPOINTS.build_tree, {
@@ -169,6 +171,23 @@ const DependencyTreePage = () => {
 
         return tree;
     };
+
+    // console.log("Columns Definition:", [
+    //     { field: "part_name", headerName: "Part", flex: 1 },
+    //     { field: "recipe_name", headerName: "Recipe", flex: 1 },
+    //     {
+    //         field: "select",
+    //         headerName: "Select",
+    //         flex: 0.5,
+    //         sortable: false,
+    //         renderCell: (params) => (
+    //             <Checkbox
+    //                 checked={selectedRecipes.includes(params.row.recipe_id)}
+    //                 onChange={() => handleCheckboxChange(params.row.recipe_id, params.row.part_id)}
+    //             />
+    //         ),
+    //     },
+    // ]);
 
     // Render the tree recursively
     const renderTree = (nodes) => {
@@ -283,6 +302,31 @@ const DependencyTreePage = () => {
         machines: row['No. of Machines'],
         recipe: row.Recipe,
     }));
+
+    // const altrows = displayedRecipes.map((recipe, index) => ({
+    //     id: index, ...recipe,
+    //     altpart_name: recipe.Part,
+    //     altrecipe_name: recipe.Recipe
+    // }));
+
+
+
+
+    // logToBackend("Alternate Rows: " + altrows, "INFO");
+
+    // const altcolumns = [
+    //     { field: "part_name", headerName: "Part", flex: 1 },
+    //     { field: "recipe_name", headerName: "Recipe", flex: 1 },
+    //     {
+    //         field: "select", headerName: "Select", flex: 0.5, sortable: false,
+    //         renderCell: (params) => (
+    //             <Checkbox
+    //                 checked={selectedRecipes.includes(params.row.recipe_id)}
+    //                 onChange={() => handleCheckboxChange(params.row.recipe_id, params.row.part_id)}
+    //             />
+    //         ),
+    //     },
+    // ];
 
     // Collect all node IDs in the tree
     const collectAllNodeIds = (nodes) => {
@@ -426,10 +470,11 @@ const DependencyTreePage = () => {
         return rows;
     };
 
+
     const handleCheckboxChange = async (recipeId, partId) => {
         const recipeExists = selectedRecipes.includes(recipeId);
-        logToBackend("SelectedRecipes: " + selectedRecipes, "INFO");
-        logToBackend("Checkbox Change: Recipe ID: " + recipeId + " Part ID: " + partId + " Checked: " + recipeExists, "INFO");
+        // logToBackend("SelectedRecipes: " + selectedRecipes, "INFO");
+        // logToBackend("Checkbox Change: Recipe ID: " + recipeId + " Part ID: " + partId + " Checked: " + recipeExists, "INFO");
         // Toggle the checkbox selection
         const updatedRecipes = recipeExists
             ? selectedRecipes.filter((id) => id !== recipeId)
@@ -591,25 +636,72 @@ const DependencyTreePage = () => {
                 const displayedRecipes = showSelectedOnly
                     ? filteredRecipes.filter((recipe) => selectedRecipes.includes(recipe.recipe_id))
                     : filteredRecipes;
+                //logToBackend(displayedRecipes.map((recipe, index) => ({id: index, ...recipe })),"INFO");
+                //logToBackend("Transformed Rows:" + displayedRecipes.map((recipe, index) => ({ id: recipe.id || index, ...recipe })), "DEBUG");
+
+                // const flattenedAltRows = displayedRecipes.map((recipe, index) => ({
+                //     id: recipe.recipe_id ? `${recipe.recipe_id}-${index}` : `fallback-${index}`, // Ensures a unique ID
+                //     part_name: String(recipe.part_name || "Unknown"),
+                //     recipe_name: String(recipe.recipe_name || "Unknown"),
+                //     recipe_id: recipe.recipe_id,
+                //     part_id: recipe.part_id
+                // }));
+
+
+                // logToBackend("Flattened Rows: " + JSON.stringify(flattenedAltRows, null, 2), "DEBUG");
+                // logToBackend("Is array? " + Array.isArray(flattenedAltRows), "DEBUG");
+                // logToBackend("Flattened Rows Length: " + flattenedAltRows.length, "DEBUG");
+                // logToBackend("First Row: " + JSON.stringify(flattenedAltRows[0], null, 2), "DEBUG");
+
+                // const altColumns = [
+                //     { field: "part_name", headerName: "Part", flex: 1 },
+                //     { field: "recipe_name", headerName: "Recipe", flex: 1 },
+                //     {
+                //         field: "select",
+                //         headerName: "Select",
+                //         flex: 0.5,
+                //         sortable: false,
+                //         renderCell: (params) => {
+                //             console.log("RenderCell Params:", params.row); // Debugging output
+                //             if (!params.row || !params.row.recipe_id || !params.row.part_id) {
+                //                 return null; // Prevents function errors if params are undefined
+                //             }
+                //             return (
+                //                 <Checkbox
+                //                     checked={selectedRecipes.includes(params.row.recipe_id)}
+                //                     onChange={() => handleCheckboxChange(params.row.recipe_id, params.row.part_id)}
+                //                 />
+                //             );
+                //         },
+                //     },
+                // ];
+
+                // console.log("Final Columns Before DataGrid:", altColumns);
+                // logToBackend("Final Columns Before DataGrid: " + JSON.stringify(altColumns, null, 2), "DEBUG");
+                //console.log("Updated Columns Definition:", altColumns);
+                //console.log("Select Column:", altColumns.find(col => col.field === "select"));
+
+                // logToBackend("Updated Columns Definition: " + JSON.stringify(altColumns, null, 2), "DEBUG");
+
                 return (
                     <div>
-                        <Typography variant="h2" color="primary" gutterBottom>
+                        <Typography variant="h2" gutterBottom>
                             Alternate Recipes
                         </Typography>
-                        <Box sx={{ display: "flex", gap: "16px", marginBottom: "16px", alignItems: "center" }}>
+                        <Box sx={{ display: "flex", gap: theme.spacing(1), marginBottom: theme.spacing(1), alignItems: "center" }}>
                             {/* Part Filter */}
                             <div>
                                 <label>Filter by Part:</label>
                                 <select
                                     value={partFilter}
                                     onChange={(e) => setPartFilter(e.target.value)}
-                                    style={{
-                                        marginLeft: "8px",
-                                        padding: "8px",
-                                        borderRadius: "4px",
-                                        border: "1px solid #ccc",
-                                        background: "#fff",
-                                    }}
+                                // style={{
+                                //     padding: theme.spacing(1),
+                                //     borderRadius: theme.shape.borderRadius,
+                                //     border: `1px solid ${theme.palette.text.disabled}`,
+                                //     background: theme.palette.background.dropdown,
+                                //     color: theme.palette.text.dropdown,
+                                // }}
                                 >
                                     <option value="">-- Select Part --</option>
                                     {uniqueParts.map((part, index) => (
@@ -626,13 +718,13 @@ const DependencyTreePage = () => {
                                 <select
                                     value={recipeFilter}
                                     onChange={(e) => setRecipeFilter(e.target.value)}
-                                    style={{
-                                        marginLeft: "8px",
-                                        padding: "8px",
-                                        borderRadius: "4px",
-                                        border: "1px solid #ccc",
-                                        background: "#fff",
-                                    }}
+                                // style={{
+                                //     padding: theme.spacing(1),
+                                //     borderRadius: theme.shape.borderRadius,
+                                //     border: `1px solid ${theme.palette.text.disabled}`,
+                                //     background: theme.palette.background.dropdown,
+                                //     color: theme.palette.text.dropdown,
+                                // }}
                                 >
                                     <option value="">-- Select Recipe --</option>
                                     {uniqueRecipes.map((recipe, index) => (
@@ -644,8 +736,8 @@ const DependencyTreePage = () => {
                             </div>
                         </Box>
                         {/* Second Row: Show Selected Filter */}
-                        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-                            <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginTop: theme.spacing(8) }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: theme.spacing(1) }}>
                                 Show Selected Only
                                 <input
                                     type="checkbox"
@@ -655,8 +747,36 @@ const DependencyTreePage = () => {
                             </label>
                         </Box>
                         {/* Filtered Table */}
-                        <TableContainer component={Paper}>
-                            <Table>
+                        {/* component={Paper}
+                        sx={{
+                            marginTop: theme.spacing(1),
+                            width: "100%",
+                            flexGrow: 1, // Allows it to expand dynamically
+                            display: "flex",
+                            flexDirection: "column"
+                        }} */}
+
+                        {/* <DataGrid
+                            rows={flattenedAltRows}
+                            columns={altColumns}
+
+                            pageSize={10}
+                            rowsPerPageOptions={[5, 10, 20]}
+                            checkboxSelection={false} // No need for DataGrid's built-in checkboxes
+                            disableSelectionOnClick
+                            slots={{ toolbar: () => <GridToolbar /> }}
+                            slotProps={{ toolbar: { showQuickFilter: true } }}
+                            sortingOrder={['asc', 'desc']}
+                            sx={{ flexGrow: 1 }} // Makes the DataGrid take up the full height of its parent container
+                        /> */}
+
+                        <TableContainer component={Paper} sx={{
+                            marginTop: theme.spacing(1),
+                            maxHeight: "700px", // ✅ Limits height to enable scrolling
+                            overflow: "auto" // ✅ Enables scrollbars
+                        }}
+                        >
+                            <Table stickyHeader>
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Part</TableCell>
@@ -687,17 +807,17 @@ const DependencyTreePage = () => {
                     <div>
                         <Typography> <strong>Visualise Tree:</strong> </Typography>
                         {/* Buttons for Expand/Collapse */}
-                        <           Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                        <           Box sx={{ display: "flex", gap: theme.spacing(1), mb: theme.spacing(1) }}>
                             <Button
                                 variant="contained"
-                                color="secondary"
+                                // color="secondary"
                                 onClick={handleExpandAll}
                             >
                                 Expand All
                             </Button>
                             <Button
                                 variant="contained"
-                                color="secondary"
+                                // color="secondary"
                                 onClick={handleCollapseAll}
                             >
                                 Collapse All
@@ -715,7 +835,7 @@ const DependencyTreePage = () => {
                                     expandedItems={expandedNodes}
                                     onExpandedItemsChange={(event, nodeIds) => setExpandedNodes(nodeIds)}
                                 >
-                                    {renderTree(visualData)}                                    
+                                    {renderTree(visualData)}
                                 </SimpleTreeView>
                             ) : (
                                 <Typography>No data to display</Typography>
@@ -726,7 +846,7 @@ const DependencyTreePage = () => {
             case "spiderDiagram":
                 return (
                     <div>
-                        <Typography variant="h2" color="primary" gutterBottom>
+                        <Typography variant="h2" gutterBottom>
                             Spider Diagram
                         </Typography>
                         {renderSpiderDiagram()}
@@ -758,10 +878,10 @@ const DependencyTreePage = () => {
                 }));
                 return (
                     <Box>
-                        <Typography variant="h2" color="primary" gutterBottom>
+                        <Typography variant="h2" gutterBottom>
                             My Tracker Data
                         </Typography>
-                        <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+                        <Box key={selectedPart} sx={{ display: "flex", alignItems: "center", marginBottom: theme.spacing(2) }}>
                             {treeData ? (
                                 <Typography variant="body1">{partName}, {recipeName}</Typography>
                             ) : (
@@ -769,8 +889,8 @@ const DependencyTreePage = () => {
                             )}
                             <Button
                                 variant="contained"
-                                color="secondary"
-                                sx={{ marginLeft: 2 }}
+                                // color="secondary"
+                                sx={{ marginLeft: theme.spacing(2) }}
                                 onClick={() => handleAddToTracker(selectedPartId, targetQuantity, recipeName)}
                                 disabled={!treeData}
                             >
@@ -778,11 +898,12 @@ const DependencyTreePage = () => {
                             </Button>
                         </Box>
                         <Box>
-                            <Typography variant="body2" color="textSecondary" gutterBottom>
+                            <Typography variant="body3" gutterBottom>
                                 * Double-click on the <strong>Target Quantity</strong> field to edit. Press Enter to save.
                             </Typography>
                             <div style={{ height: 600, width: "100%" }}>
-                                <DataGrid
+                                <DataGrid rows={rows} columns={columns} loading={loading} />
+                                {/* <DataGrid
                                     rows={rows}
                                     columns={columns}
                                     loading={loading}
@@ -792,12 +913,12 @@ const DependencyTreePage = () => {
                                     disableSelectionOnClick
                                     onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
                                     processRowUpdate={handleProcessRowUpdate}
-                                    experimentalFeatures={{ newEditingApi: true }}
-                                />
+                                    experimentalFeatures={{ newEditingApi: true }} */}
+                                {/* /> */}
                             </div>
                         </Box>
 
-                        <Box sx={{ marginTop: 2, textAlign: "right" }}>
+                        <Box sx={{ marginTop: theme.spacing(2), textAlign: "right" }}>
                             <Button
                                 variant="contained"
                                 color="error"
@@ -825,38 +946,38 @@ const DependencyTreePage = () => {
                     flex: activeTab ? 3 : 4, // Shrink when tab content is active
                     width: `calc(100% - ${tabWidth}px)`, // Subtract the tab width for the main content
                     transition: isResizing ? "none" : "width 0.2s ease",
-                    padding: "16px",
-                    background: "linear-gradient(to right, #000000, #0F705C)",
-                    color: "#CCFFFF",
-                    //transition: "flex 0.3s ease", // Smooth resize transition
-                    // overflowY: "auto",
+                    padding: theme.spacing(2),
+                    backgroundColor: theme.palette.background, //`linear-gradient(to right, ${theme.palette.background.linearGradientLeft}, ${theme.palette.background.linearGradientRight})`,
+                    color: theme.palette.text.primary,
                     overflow: "hidden",
                 }}
             >
-                <Typography variant="h1" color="primary" gutterBottom>
+                <Typography variant="h1" gutterBottom>
                     Dependency Tree Table
                 </Typography>
 
+                {/* Selection Inputs */}
                 <Box
                     sx={{
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "flex-start",
-                        gap: "16px",
-                        marginBottom: "16px",
+                        gap: theme.spacing(2),
+                        marginBottom: theme.spacing(2),
                     }}
                 >
                     {/* Select Part */}
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ marginBottom: "4px" }}>Select Part:</label>
+                        <label style={{ marginBottom: theme.spacing(0.5) }}>Select Part:</label>
                         <select
                             value={selectedPart}
                             onChange={(e) => setSelectedPart(e.target.value)}
                             style={{
-                                padding: "8px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                background: "#fff",
+                                padding: theme.spacing(1),
+                                borderRadius: theme.shape.borderRadius,
+                                border: `1px solid ${theme.palette.text.disabled}`,
+                                background: theme.palette.background.dropdown,
+                                color: theme.palette.text.dropdown,
                             }}
                         >
                             <option value="">-- Select a Part --</option>
@@ -870,38 +991,37 @@ const DependencyTreePage = () => {
 
                     {/* Target Quantity */}
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ marginBottom: "4px" }}>Target Quantity:</label>
+                        <label style={{ marginBottom: theme.spacing(0.5) }}>Target Quantity:</label>
                         <input
                             type="number"
                             placeholder="Enter Quantity"
                             value={targetQuantity}
                             onChange={(e) => setTargetQuantity(e.target.value)}
                             style={{
-                                padding: "8px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                background: "#fff",
+                                padding: theme.spacing(1),
+                                borderRadius: theme.shape.borderRadius,
+                                border: `1px solid ${theme.palette.text.disabled}`,
+                                background: theme.palette.background.dropdown,
+                                color: theme.palette.text.dropdown,
                             }}
                         />
                     </Box>
                 </Box>
 
+                {/* Fetch Dependencies Button */}
                 <Button
                     variant="contained"
-                    color="secondary"
-                    onClick={() => {
-                        //handleFetchTree();
-                        fetchTreeData();
-                    }}
+                    onClick={fetchTreeData}
                     disabled={!selectedPart}
-                    sx={{ marginBottom: "16px" }}
+                    sx={{ marginBottom: theme.spacing(2) }}
                 >
                     Fetch Dependencies
                 </Button>
 
                 {/* DataGrid */}
-                <Box sx={{ height: 600, width: "100%" }}>
-                    <DataGrid
+                <Box sx={{ height: 650, width: "100%" }}>
+                    <DataGrid rows={rows} columns={columns} loading={loading} />
+                    {/* <DataGrid
                         rows={rows}
                         columns={columns}
                         pageSize={10}
@@ -910,12 +1030,8 @@ const DependencyTreePage = () => {
                         disableSelectionOnClick
                         sortingOrder={['asc', 'desc']}
                         slots={{ toolbar: GridToolbar }}
-                        slotProps={{
-                            toolbar: {
-                                showQuickFilter: true,
-                            },
-                        }}
-                    />
+                        slotProps={{ toolbar: { showQuickFilter: true } }}
+                    /> */}
                 </Box>
             </Box>
 
@@ -932,32 +1048,22 @@ const DependencyTreePage = () => {
             {/* Right Side: Content and Tabs Section */}
             <Box
                 sx={{
-                    //flex: 1, // Expand when tab content is active
-                    // width: activeTab ? "700px" : "0px", // Expand/collapse width
-                    width: activeTab ? `${tabWidth}px` : "0px", // Expand/collapse width
+                    width: activeTab ? `${tabWidth}px` : "0px",
                     transition: isResizing ? "none" : "width 0.2s ease",
-                    //transition: "width 0.3s ease", // Smooth width transition
-                    borderLeft: "2px solid #ccc",
-                    overflow: "hidden", // Prevent content overflow when collapsed
-                    backgroundColor: "#0A4B3E",
-                    color: "#CCFFFF",
-                    //resize: "horizontal",
+                    borderLeft: `2px solid ${theme.palette.text.disabled}`,
+                    overflow: "hidden",
+                    backgroundColor: theme.palette.background,
+                    color: theme.palette.text.primary,
                 }}
             >
                 {activeTab && (
-                    <Box
-                        sx={{
-                            padding: "16px",
-                            height: "100%",
-                            overflowY: "auto",
-                        }}
-                    >
+                    <Box sx={{ padding: theme.spacing(2), height: "100%", overflowY: "auto" }}>
                         <Paper
                             sx={{
-                                padding: "16px",
-                                backgroundColor: "#0A4B3E",
-                                color: "#CCFFFF",
-                                borderRadius: "8px",
+                                padding: theme.spacing(2),
+                                backgroundColor: theme.palette.background,
+                                color: theme.palette.text.primary,
+                                borderRadius: theme.shape.borderRadius,
                             }}
                         >
                             {renderContent()}
@@ -969,14 +1075,14 @@ const DependencyTreePage = () => {
             {/* Static Tabs Column */}
             <Box
                 sx={{
-                    width: "100px", // Fixed width for tabs
+                    width: "100px",
                     display: "flex",
                     flexDirection: "column",
-                    backgroundColor: "#0A4B3E",
-                    borderLeft: "2px solid #ccc",
+                    backgroundColor: theme.palette.background,
+                    borderLeft: `2px solid ${theme.palette.text.disabled}`,
                 }}
             >
-                <Button
+                {/* <Button
                     onClick={() => toggleTab("alternateRecipes")}
                     sx={{
                         textAlign: "center",
@@ -1017,22 +1123,40 @@ const DependencyTreePage = () => {
                     }}
                 >
                     Tracker
-                </Button>
-                <Button
-                    onClick={() => toggleTab("spiderDiagram")}
-                    sx={{
-                        textAlign: "center",
-                        padding: "8px",
-                        borderRadius: 2,
-                        backgroundColor: activeTab === "spiderDiagram" ? "#00FFCC" : "#0A5F3E",
-                        color: activeTab === "spiderDiagram" ? "#000" : "#CCFFFF",
-                        "&:hover": { backgroundColor: "#00FFCC", color: "#000" },
-                    }}
-                >
-                    Spider Diagram
-                </Button>
+                </Button> */}
+                {[
+                    { id: "alternateRecipes", label: "Alternate Recipes" },
+                    { id: "visualiseTree", label: "Visualise Tree", disabled: !treeData },
+                    { id: "tracker", label: "Tracker" },
+                    { id: "spiderDiagram", label: "Spider Diagram" }
+                ].map((tab) => (
+                    <Button
+                        key={tab.id}
+                        onClick={() => toggleTab(tab.id)}
+                        disabled={tab.disabled}
+                        sx={{
+                            textAlign: "center",
+                            padding: theme.spacing(4),
+                            gap: theme.spacing(1),
+                            borderRadius: theme.shape.borderRadius,
+                            backgroundColor: activeTab === tab.id
+                                ? theme.palette.button.main
+                                : theme.palette.button.main,
+                            color: activeTab === tab.id
+                                ? theme.palette.button.contrastText
+                                : theme.palette.button.contrastText,
+                            "&:hover": {
+                                backgroundColor: theme.palette.button.hover,
+                                color: theme.palette.button.contrastText,
+                            },
+                        }}
+                    >
+                        {tab.label}
+                    </Button>
+                ))}
             </Box>
         </Box>
     );
 };
+
 export default DependencyTreePage;

@@ -11,6 +11,7 @@ import DataManagementPage from './pages/DataManagementPage';
 import DependencyTreePage from "./pages/DependencyTreePage";
 import SignupPage from './pages/SignupPage';
 import Header from './Header';
+import Footer from './components/Footer.js';
 import { UserProvider } from './UserContext';
 import TrackerPage from './pages/TrackerPage';
 import ProtectedRoute from './components/ProtectedRoute.js';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/signup" element={<SignupPage />} />
             </Routes>
           </Router>
+          <Footer />
         </ThemeProvider>
       </AlertProvider>
     </UserProvider>

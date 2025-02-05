@@ -16,7 +16,8 @@ import {
   CircularProgress,
   LinearProgress,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+// import { useMaterialReactTable } from "use-material-react-table";
 import { CheckCircle, ErrorOutline } from "@mui/icons-material";
 import TrackerHeader from "../components/Tracker/TrackerHeader";
 import TrackerTables from "../components/Tracker/TrackerTables";
@@ -49,7 +50,7 @@ const TrackerPage = () => {
 
   const fetchUserSaveData = async () => {
     const logFetchSaveMessage = "TrackerPage: Fetching user_save data";
-    logToBackend(logFetchSaveMessage, "INFO");
+    // logToBackend(logFetchSaveMessage, "INFO");
 
     try {
       setLoading(true);
@@ -63,14 +64,14 @@ const TrackerPage = () => {
       //   return;
       // }
 
-      logToBackend("TrackerPage: Fetching user_save data", "INFO");
+      // logToBackend("TrackerPage: Fetching user_save data", "INFO");
       // const response = await axios.get(API_ENDPOINTS.user_save, {
       //   params: { sav_file_name: latestSaveFile },
       // });
       const response = await axios.get(API_ENDPOINTS.user_save);
       setUserSaveData(response.data);
       const logSaveDataResponse = ("TrackerPage: User Save Data Set" + { userSaveData });
-      logToBackend(logSaveDataResponse, "INFO");
+      // logToBackend(logSaveDataResponse, "INFO");
     } catch (error) {
       console.error("Error fetching user_save data:", error);
     } finally {
@@ -88,14 +89,14 @@ const TrackerPage = () => {
   useEffect(() => {
     const fetchTrackerData = async () => {
       const logTrackerDataMessage = "TrackerPage: Fetching tracker data";
-      logToBackend(logTrackerDataMessage, "INFO");
+      // logToBackend(logTrackerDataMessage, "INFO");
       try {
         setIsLoading(true);
         const response = await axios.get(API_ENDPOINTS.tracker_data); // Example endpoint
         setTrackerData(response.data);
         calculateReports(response.data); // Calculate reports on data fetch
         const logTrackerDataResponse = ("TrackerPage: Tracker data fetched" + { response } + "Tracker Data Set" + { trackerData });
-        logToBackend(logTrackerDataResponse, "INFO");
+        // logToBackend(logTrackerDataResponse, "INFO");
 
       } catch (error) {
         console.error("Error fetching tracker data:", error);
@@ -160,7 +161,7 @@ const TrackerPage = () => {
 
   // Handle file drop
   const onDrop = useCallback(async (acceptedFiles) => {
-    logToBackend("TrackerPage: File dropped" + { acceptedFiles }, "INFO");
+    // logToBackend("TrackerPage: File dropped" + { acceptedFiles }, "INFO");
     if (acceptedFiles.length === 0) return;
 
     const file = acceptedFiles[0];
@@ -177,7 +178,7 @@ const TrackerPage = () => {
 
       // Send file to backend
       const logOnDropMessage = "TrackerPage: Uploading save file" + file + formData;
-      logToBackend(logOnDropMessage, "INFO");
+      // logToBackend(logOnDropMessage, "INFO");
       const response = await axios.post(API_ENDPOINTS.upload_sav, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
@@ -242,15 +243,23 @@ const TrackerPage = () => {
     { field: "sav_file_name", headerName: "Save File", width: 180 }, // ✅ use the user_save.sav_file_name
   ];
 
+  // const table = useMaterialReactTable({
+  //   rows: {userSaveData},
+  //   columns: {columns},
+  //   enablePagination: false,
+  //   enableBottomToolbar: false, //hide the bottom toolbar as well if you want
+  // });
+  
   return (
-    <Box sx={{ 
-        padding: 4,
-        background: "linear-gradient(to right, #000000, #0F705C)",
-        color: "#CCFFFF",        
-      }}
->
+    <Box sx={{
+      padding: 4,
+      // background: "linear-gradient(to right, #000000, #0F705C)",
+      background: `linear-gradient(to right, ${theme.palette.background.linearGradientLeft}, ${theme.palette.background.linearGradientRight})`,
+      color: "#CCFFFF",
+    }}
+    >
 
-      <Typography variant="h1" color="primary" gutterBottom>
+      <Typography variant="h1" color="primary.contrastText" gutterBottom>
         My Tracker
       </Typography>
 
@@ -280,15 +289,15 @@ const TrackerPage = () => {
         {/* Animated Upload State */}
         {uploading ? (
           <>
-            <CircularProgress color="primary" />
+            <CircularProgress color="progressIndicator.main" />
             <LinearProgress variant="determinate" value={progress} sx={{ width: "100%", mt: 1 }} />
           </>
         ) : uploadSuccess === true ? (
-          <CheckCircle sx={{ fontSize: 50, color: theme.palette.primary.main }} />
+          <CheckCircle sx={{ fontSize: 50, color: theme.palette.progressIndicator.main }} />
         ) : uploadSuccess === false ? (
           <ErrorOutline sx={{ fontSize: 50, color: "red" }} />
         ) : (
-          <Typography variant="body1">
+          <Typography variant="body3">
             {isDragActive
               ? "Drop the save file here..."
               : "Drag & drop a Satisfactory save file here, or click to select one."}
@@ -296,17 +305,23 @@ const TrackerPage = () => {
         )}
       </Box>
 
+      
+
       {/* DataGrid Displaying user_save Table */}
-      <Paper sx={{ height: 400, width: "100%", mt: 3 }}>
-        <DataGrid
-          rows={userSaveData}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10, 20, 50]}
-          loading={loading}
-          checkboxSelection
-        />
-      </Paper>
+      <Box sx={{ height: 600, width: "100%", mt: theme.spacing(4) }}>
+        {/* <useMaterialReactTable table={table} /> */}
+        <DataGrid rows={userSaveData} columns={columns} />
+          {/* //<DataGrid
+          // rowHeight={40}
+          // pageSizeOptions={[10, 25, 100, { value: -1, label: 'All' }]}
+          // disableSelectionOnClick
+          // sortingOrder={['asc', 'desc']}
+          // slots={{ toolbar: GridToolbar }}
+          // slotProps={{ toolbar: { showQuickFilter: true } }}
+          // loading={loading}
+          // checkboxSelection */}
+        
+      </Box>
 
       <Grid2 container spacing={2}>
         <Grid2 item xs={8}>

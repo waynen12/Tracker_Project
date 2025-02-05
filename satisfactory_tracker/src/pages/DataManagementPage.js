@@ -18,8 +18,10 @@ import axios from "axios";
 import EditModal from "./EditModal";
 import { API_ENDPOINTS } from "../apiConfig";
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { useTheme } from '@mui/material/styles';
 
 const DataManagementPage = () => {
+  const theme = useTheme();
   const [tables, setTables] = useState([]); // List of tables
   const [selectedTable, setSelectedTable] = useState(""); // Selected table name
   const [tableData, setTableData] = useState([]); // Data of the selected table
@@ -33,8 +35,8 @@ const DataManagementPage = () => {
     recipe: ['id', 'part_id', 'recipe_name', 'ingredient_count', 'source_level', 'base_input', 'base_production_type', 'produced_in_automated', 'produced_in_manual', 'base_demand_pm', 'base_supply_pm', 'byproduct', 'byproduct_supply_pm'],
     alternate_recipe: ['id', 'part_id', 'recipe_id', 'selected'],
     node_purity: ['id', 'node_purity'],
-    miner_type: ['id', 'miner_type'],
-    miner_supply: ['id', 'node_purity_id', 'miner_type_id', 'base_supply_pm'],
+    machine_level: ['id', 'machine_level'],
+    miner_supply: ['id', 'node_purity_id', 'machine_level_id', 'base_supply_pm'],
     power_shards: ['id', 'quantity', 'output_increase'],
     user: ['id', 'role', 'username', 'email', 'password', 'is_verified'],
     part: ['id', 'part_name', 'level', 'category'],
@@ -150,43 +152,51 @@ const DataManagementPage = () => {
       console.error("Error deleting row:", error, error.response);
     }
   };
-
+//"100vh" }}>
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
+    <Box sx={{ display: "flex", height: "100vh", Width: "100%" }}> 
       <Box
         sx={{
           flex: 4,
-          padding: "16px",
-          background: "linear-gradient(to right, #000000, #0F705C)",
-          color: "#CCFFFF",
+          padding: theme.spacing(2),
+          background: theme.palette.background, //`linear-gradient(to right, ${theme.palette.background.linearGradientLeft}, ${theme.palette.background.linearGradientRight})`,
+          color: theme.palette.text.primary,
+          width: "100%", // Ensure full width
+          maxWidth: "100vw", // Prevent overflow
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Typography variant="h1" color="primary">
+        <Typography variant="h1" gutterBottom>
           Data Management Page
         </Typography>
 
+        {/* Dropdown + Button Section */}
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between", // Spread the dropdown and button
+            justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "16px",
-            padding: "16px",
-            borderRadius: "8px",
+            marginBottom: theme.spacing(2),
+            padding: theme.spacing(2),
+            borderRadius: theme.shape.borderRadius,
+            backgroundColor: theme.palette.background,
+            flexWrap: "wrap", // Allow items to wrap
           }}
         >
           {/* Select Table Dropdown */}
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <label style={{ marginBottom: "4px", color: "#CCFFFF" }}>Select Table:</label>
+          <Box sx={{ display: "flex", flexDirection: "column", minWidth: "200px"  }}>
+            <label style={{ marginBottom: theme.spacing(0.5) }}>Select Table:</label>
             <select
               value={selectedTable}
               onChange={(e) => handleTableChange(e)}
-              style={{
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                background: "#fff",
-              }}
+              // style={{
+              //   padding: theme.spacing(1),
+              //   borderRadius: theme.shape.borderRadius,
+              //   border: `1px solid ${theme.palette.text.disabled}`,
+              //   background: theme.palette.background.dropdown,
+              //   color: theme.palette.text.dropdown,
+              // }}
             >
               <option value="">-- Select a Table --</option>
               {tables.map((table) => (
@@ -196,37 +206,36 @@ const DataManagementPage = () => {
               ))}
             </select>
           </Box>
+
           {/* Create New Row Button */}
           <Button
             variant="contained"
-            color="secondary"
+            // color= {theme.palette.secondary.main}
             onClick={handleCreate}
             disabled={!selectedTable} // Disable if no table is selected
-            sx={{
-              height: "fit-content", // Match the height of the dropdown
-            }}
+            sx={{ height: "fit-content", whiteSpace: "nowrap" }}
           >
             Create New Row
           </Button>
         </Box>
 
-
         {/* Data Grid */}
         {selectedTable && (
-          <Box sx={{ height: 700, width: "100%" }}>
-            <DataGrid
+          <Box sx={{ height: "calc(100vh - 200px)", width: "100%", minWidth: 0 }}>
+          <DataGrid
               rows={rows}
               columns={[
-                ...gridColumns,
+                  ...gridColumns,
+
                 {
                   field: "actions",
                   headerName: "Actions",
                   flex: 1,
                   renderCell: (params) => (
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Box sx={{ display: "flex", gap: theme.spacing(2) }}>
                       <Button
                         variant="contained"
-                        color="secondary"
+                        // color="secondary"
                         onClick={() => handleEdit(params.row)}
                       >
                         Edit
@@ -242,26 +251,22 @@ const DataManagementPage = () => {
                   ),
                 },
               ]}
-              pageSize={20}
-              rowsPerPageOptions={[5, 10, 20]}
-              checkboxSelection
-              disableSelectionOnClick
-              sortingOrder={['asc', 'desc']}
-              slots={{ toolbar: GridToolbar }}
-              slotProps={{
-                toolbar: {
-                  showQuickFilter: true,
-                },
-              }}
-              sx={{
-                '& .MuiDataGrid-columnHeaders': {
-                  backgroundcolor: 'secondary.main',
-                  color: 'primary.main',
-                  textTransform: 'uppercase',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                },
-              }}
+              // <DataGrid
+              // pageSize={20}
+              // rowsPerPageOptions={[5, 10, 20]}
+              // checkboxSelection
+              // disableSelectionOnClick
+              // sortingOrder={['asc', 'desc']}
+              // slots={{ toolbar: GridToolbar }}
+              // slotProps={{ toolbar: { showQuickFilter: true } }}
+              // sx={{
+              //   '& .MuiDataGrid-columnHeaders': {
+              //     color: theme.palette.text.primary,
+              //     textTransform: 'uppercase',
+              //     fontSize: theme.typography.body2.fontSize,
+              //     fontWeight: 'bold',
+              //   },
+              // }}
             />
           </Box>
         )}
@@ -270,27 +275,28 @@ const DataManagementPage = () => {
         {isModalOpen && editingRow && (
           <EditModal
             row={editingRow}
-            columns={columns}
+            columns={gridColumns.map(col => col.field)}
+            //columns={columns}
             onSave={handleSaveChanges}
             onClose={handleModalClose}
             isCreateModalOpen={isCreateModalOpen}
-            tableName={selectedTable} // Pass the currently selected table
+                        tableName={selectedTable}
           />
         )}
 
         {isCreateModalOpen && (
           <EditModal
             row={newRow}
-            columns={columns}
+            columns={gridColumns.map(col => col.field)}
+            //columns={columns}
             onSave={handleSaveNewRow}
             onClose={handleCreateModalClose}
             isCreateModalOpen={isCreateModalOpen}
-            tableName={selectedTable} // Pass the currently selected table
+                        tableName={selectedTable}
           />
         )}
       </Box>
     </Box>
-
   );
 };
 

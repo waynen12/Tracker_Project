@@ -3,14 +3,17 @@ import { Box, Typography, Link } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import ForumIcon from "@mui/icons-material/Forum";
 import PolicyIcon from "@mui/icons-material/Policy";
+import { useTheme } from '@mui/material/styles';
 
 const Footer = () => {
+    const theme = useTheme();
+
     return (
         <Box
             sx={{
                 width: "100%",
                 padding: "16px",
-                backgroundColor: "primary.dark",
+                backgroundColor: theme.palette.primary.secondary,
                 color: "primary.contrastText",
                 display: "flex",
                 flexDirection: "column",
@@ -40,6 +43,13 @@ const Footer = () => {
                     underline="hover">
                     View GitHub Logos
                 </Link>
+                <Link href="https://www.flaticon.com/free-icons/question-mark" title="question-mark icons"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    color="inherit"
+                    underline="hover">
+                    Question-mark icons created by Fathema Khanom - Flaticon
+                </Link>
             </Typography>
             {/* Quick Links */}
             <Box sx={{ display: "flex", gap: 2, justifyContent: "center", marginBottom: 1 }}>
@@ -52,6 +62,7 @@ const Footer = () => {
                 <Link href="/privacy-policy" color="inherit" underline="none">
                     <PolicyIcon sx={{ fontSize: 24 }} /> Privacy Policy
                 </Link>
+                
             </Box>
 
             {/* Copyright Notice */}

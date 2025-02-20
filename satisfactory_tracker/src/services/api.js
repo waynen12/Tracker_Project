@@ -1,10 +1,13 @@
 import axios from 'axios';
+import logToBackend from "../services/logService";
 
 axios.defaults.withCredentials = true;
 
 // Determine the base URL based on the run mode
 const runMode = process.env.RUN_MODE;
 const baseURL = runMode === 'prod' ? process.env.REACT_CLIENT_BASE_URL : process.env.REACT_CLIENT_BASE_URL_LOCAL;
+
+// logToBackend("api.js - Run Mode: " + runMode, "INFO");
 
 // Create an Axios instance with the base URL
 const apiClient = axios.create({

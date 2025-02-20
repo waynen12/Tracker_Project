@@ -51,13 +51,14 @@ def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None
         "Produced In": root_data.produced_in_automated,
         "No. of Machines": target_quantity / (root_data.base_supply_pm or 1),
         "Recipe": recipe_name,
+        "Base Supply PM": root_data.base_supply_pm,
         "Subtree": {},  # Initialize empty Subtree
     }
 
     # Fetch all ingredients for the current recipe
     ingredients = db.session.execute(
         text("""
-        SELECT r.base_input, r.source_level, r.base_demand_pm, r.recipe_name
+        SELECT r.base_input, r.source_level, r.base_demand_pm, r.base_supply_pm, r.recipe_name
         FROM recipe r
         WHERE r.part_id = :part_id AND r.recipe_name = :recipe_name
         """),
@@ -70,6 +71,7 @@ def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None
         ingredient_input = row.base_input
         source_level = row.source_level
         ingredient_demand = row.base_demand_pm
+        ingredient_supply = row.base_supply_pm
         ingredient_recipe = row.recipe_name
         
         # Calculate required input quantity for this ingredient input based the demand from the parent and the target quantity
@@ -127,6 +129,7 @@ def build_tree(part_id, recipe_name="_Standard", target_quantity=1, visited=None
             "Produced In": ingredient_production_machine,
             "No. of Machines": no_of_machines,
             "Recipe": final_recipe,
+            "Base Supply PM": ingredient_supply,
             "Subtree": ingredient_subtree.get("Subtree", {}) if isinstance(ingredient_subtree, dict) else {},
         }
 

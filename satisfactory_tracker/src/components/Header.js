@@ -1,12 +1,12 @@
 // Use this file to compare proposed changes before implementing them
 import React, { useEffect, useContext, useState } from 'react';
-import { ReactComponent as DiscordIcon } from './assets/icons/discord-icon.svg';
-import { ReactComponent as GitHubIcon } from './assets/icons/github-mark-white.svg';
+import { ReactComponent as DiscordIcon } from '../assets/icons/discord-icon.svg';
+import { ReactComponent as GitHubIcon } from '../assets/icons/github-mark-white.svg';
 import { Box, Typography, Button, IconButton, Tooltip, Menu, MenuItem, Divider } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_ENDPOINTS } from './apiConfig';
-import { UserContext } from './UserContext';
+import { API_ENDPOINTS } from '../apiConfig';
+import { UserContext } from '../context/UserContext';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import HomeIcon from '@mui/icons-material/Home';
@@ -21,6 +21,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import { Comment, Discord, AttachMoney } from '@mui/icons-material';
 import PaidIcon from '@mui/icons-material/Paid';
 import { useTheme } from '@mui/material/styles';
+import UserSettingsPage from '../pages/UserSettingsPage';
 
 axios.defaults.withCredentials = true;
 
@@ -28,6 +29,7 @@ const Header = () => {
     const theme = useTheme();
     const { user, logout } = React.useContext(UserContext); // Access user and logout function
     const navigate = useNavigate();
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     // Dropdown state
     const [anchorEl, setAnchorEl] = useState(null);
@@ -56,10 +58,10 @@ const Header = () => {
     };
 
     return (
-        <Box sx={{ 
+        <Box sx={{
             width: '100%',
             padding: theme.spacing(2),
-            backgroundColor: theme.palette.primary.main,
+            backgroundColor: theme.palette.primary.secondary,
             color: theme.palette.primary.contrastText,
             display: 'flex',
             alignItems: 'center',
@@ -70,12 +72,12 @@ const Header = () => {
             boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" // Optional: Adds a shadow for better visibility
         }}>
             {/* Left Section: Banner & Navigation Links */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: "fit-content" }}>  
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: "fit-content" }}>
                 {/* Banner Image */}
                 <Tooltip title="Satisfactory Tracker - Home">
                     <a href="/">
                         <img
-                            src="images/Satisfactory_Tracker_Banner.png"
+                            src="images/app/Satisfactory_Tracker_Banner.png"
                             alt="Banner"
                             style={{ height: '60px', maxWidth: '100%' }}
                         />
@@ -84,7 +86,7 @@ const Header = () => {
                 {/* </Box> */}
 
                 {/* Navigation Buttons */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: "fit-content", width: "fit-content",  whiteSpace: "nowrap" }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: "fit-content", width: "fit-content", whiteSpace: "nowrap" }}>
                     <Button
                         variant="outlined"
                         fontSize="small"
@@ -92,15 +94,15 @@ const Header = () => {
                         //color= {theme.palette.secondary.main}
                         component={Link}
                         to="/"
-                        //onClick={handleHomeClick}
-                        // sx={{
-                        //     color: 'primary.contrastText',
-                        //     backgroundColor: "secondary.main",
-                        //     borderColor: 'primary.contrastText',
-                        //     '&:hover': {
-                        //         borderColor: 'primary.contrastText',
-                        //     },
-                        // }}
+                    //onClick={handleHomeClick}
+                    // sx={{
+                    //     color: 'primary.contrastText',
+                    //     backgroundColor: "secondary.main",
+                    //     borderColor: 'primary.contrastText',
+                    //     '&:hover': {
+                    //         borderColor: 'primary.contrastText',
+                    //     },
+                    // }}
                     >
                         Home
                     </Button>
@@ -112,15 +114,15 @@ const Header = () => {
                         // color="secondary.contrastText"
                         component={Link}
                         to="/data"
-                        //onClick={handleDataManagementClick}
-                        // sx={{
-                        //     color: 'primary.contrastText',
-                        //     backgroundColor: "secondary.main",
-                        //     borderColor: 'primary.contrastText',
-                        //     '&:hover': {
-                        //         borderColor: 'primary.contrastText',
-                        //     },
-                        // }}
+                    //onClick={handleDataManagementClick}
+                    // sx={{
+                    //     color: 'primary.contrastText',
+                    //     backgroundColor: "secondary.main",
+                    //     borderColor: 'primary.contrastText',
+                    //     '&:hover': {
+                    //         borderColor: 'primary.contrastText',
+                    //     },
+                    // }}
                     >
                         Data Management
                     </Button>
@@ -132,15 +134,15 @@ const Header = () => {
                         // color="secondary.contrastText"
                         component={Link}
                         to="/dependencies"
-                        //onClick={handleDependenciesClick}
-                        // sx={{
-                        //     color: 'primary.contrastText',
-                        //     backgroundColor: "secondary.main",
-                        //     borderColor: 'primary.contrastText',
-                        //     '&:hover': {
-                        //         borderColor: 'primary.contrastText',
-                        //     },
-                        // }}
+                    //onClick={handleDependenciesClick}
+                    // sx={{
+                    //     color: 'primary.contrastText',
+                    //     backgroundColor: "secondary.main",
+                    //     borderColor: 'primary.contrastText',
+                    //     '&:hover': {
+                    //         borderColor: 'primary.contrastText',
+                    //     },
+                    // }}
                     >
                         Dependencies
                     </Button>
@@ -152,15 +154,15 @@ const Header = () => {
                         // color="secondary.contrastText"
                         component={Link}
                         to="/tracker"
-                        //onClick={handleTrackerClick}
-                        // sx={{
-                        //     color: 'primary.contrastText',
-                        //     backgroundColor: "secondary.main",
-                        //     borderColor: 'primary.contrastText',
-                        //     '&:hover': {
-                        //         borderColor: 'primary.contrastText',
-                        //     },
-                        // }}
+                    //onClick={handleTrackerClick}
+                    // sx={{
+                    //     color: 'primary.contrastText',
+                    //     backgroundColor: "secondary.main",
+                    //     borderColor: 'primary.contrastText',
+                    //     '&:hover': {
+                    //         borderColor: 'primary.contrastText',
+                    //     },
+                    // }}
                     >
                         Tracker
                     </Button>
@@ -174,19 +176,11 @@ const Header = () => {
                 {/* Settings & User Info */}
                 {user ? (
                     <>
-                        {/* // <Box */}
-                        {/* //     sx={{
-                    //         display: 'flex',
-                    //         justifyContent: 'flex-end', // Align items to the right
-                    //         alignItems: 'center',
-                    //         gap: 0,
-                    //     }}
-                    // > */}
                         <Typography variant="h2">
                             Welcome, {user.username}!
                         </Typography>
                         {/* Contribute Dropdown */}
-                        <Tooltip title="Contribute">
+                        <Tooltip title="Contribute" arrow> 
                             <IconButton onClick={handleMenuOpen} color="inherit">
                                 <FavoriteIcon />
                             </IconButton>
@@ -227,16 +221,14 @@ const Header = () => {
                         </Menu>
 
                         <Tooltip title="Settings" arrow>
-                            <IconButton
-                                component={Link} to="/"
-                                color="inherit"
-                                aria-label="clickable-button"
-                            // TODO: onClick={hanldeSettings}
-                            >
+                            <IconButton onClick={() => setSettingsOpen(true)} color="inherit"
+                                >
+                            
                                 <SettingsIcon />
-
+                            
                             </IconButton>
                         </Tooltip>
+                        <UserSettingsPage open={settingsOpen} onClose={() => setSettingsOpen(false)} />
                         <Tooltip title="Logout" arrow>
                             <IconButton
                                 component={Link} to="/"
@@ -256,14 +248,14 @@ const Header = () => {
                             variant="outlined"
                             startIcon={<LoginIcon />}
                             onClick={handleLogin}
-                            // sx={{
-                            //     color: 'primary.contrastText',
-                            //     backgroundColor: 'secondary.main',
-                            //     borderColor: 'primary.contrastText',
-                            //     '&:hover': {
-                            //         borderColor: 'primary.contrastText',
-                            //     },
-                            // }}
+                        // sx={{
+                        //     color: 'primary.contrastText',
+                        //     backgroundColor: 'secondary.main',
+                        //     borderColor: 'primary.contrastText',
+                        //     '&:hover': {
+                        //         borderColor: 'primary.contrastText',
+                        //     },
+                        // }}
                         >
                             Login
                         </Button>

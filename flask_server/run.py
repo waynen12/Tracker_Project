@@ -13,3 +13,4 @@ migrate = Migrate(app, db)
 if __name__ == '__main__':
     # Use Waitress to serve the Flask app
     serve(app, host="0.0.0.0", port=5000)
+

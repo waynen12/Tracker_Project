@@ -17,8 +17,6 @@ load_dotenv()
 class Config:
     RUN_MODE = os.getenv('RUN_MODE_LOCATION')
     #print(f'RUN_MODE_LOCATION: {RUN_MODE_LOCATION}')
-    
-    
 
 # Set DB config values based on RUN_MODE_LOCATION
 if Config.RUN_MODE == 'local':
@@ -43,6 +41,7 @@ else:
 
 #print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
 
+# Flask-login variables
 SECRET_KEY = os.getenv('SECRET_KEY') or 'dev_default_secret_key'
 SESSION_TYPE = 'filesystem'
 
@@ -53,9 +52,20 @@ REACT_APP_RECAPTCHA_SITE_KEY = os.getenv('REACT_APP_RECAPTCHA_SITE_KEY')
 RECAPTCHA_API_KEY = os.getenv('RECAPTCHA_API_KEY')
 
 # .sav file upload config
-UPLOAD_FOLDER = "uploads"  # Define where files will be stored
-ALLOWED_EXTENSIONS = {"sav"}  # Define allowed file extensions
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER')  # Define upload folder for save files
+ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS')  # Define allowed file extensions
 
 # Table and column whitelist
-VALID_TABLES = os.getenv('VALID_TABLES')
-VALID_COLUMNS = os.getenv('VALID_COLUMNS')
+VALID_TABLES = {'alternate_recipe', 'data_validation', 'machine', 'machine_level', 'miner_supply', 'node_purity', 'part', 'power_shards', 
+                'recipe', 'recipe_mapping', 'resource_node', 'tracker', 'user', 'user_save', 'user_selected_recipe', 'conveyor_level' , 'user_save_connections', 'user_save_conveyors'
+                }
+VALID_COLUMNS = {'id', 'selected', 'column_name', 'description', 'table_name', 'value', 'machine_level_id', 'machine_name', 'save_file_class_name', 
+                 'machine_level', 'base_supply_pm', 'node_purity_id', 'node_purity', 'save_file_path_name', 'category', 'level', 'part_name', 
+                 'output_increase', 'quantity', 'base_demand_pm', 'base_input', 'base_production_type', 'byproduct', 'byproduct_supply_pm', 
+                 'ingredient_count', 'part_id', 'produced_in_automated', 'produced_in_manual', 'recipe_name', 'source_level', 'save_file_recipe',
+                 'created_at', 'target_quantity', 'updated_at', 'user_id', 'email', 'is_verified', 'password', 'role', 'username', 'machine_id', 
+                 'machine_power_modifier', 'resource_node_id', 'sav_file_name', 'recipe_id',
+                 'conveyor_level_id', 'supply_pm', 'connected_component', 'connection_inventory', 'direction', 'conveyor_first_belt', 'conveyor_last_belt',
+                 'current_progress', 'input_inventory', 'output_inventory', 'time_since_last_change', 'production_duration', 'productivity_measurement_duration', 
+                 'productivity_monitor_enabled', 'is_producing'
+                }

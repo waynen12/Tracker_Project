@@ -54,5 +54,5 @@ def create_app():
     # for rule in app.url_map.iter_rules():
     #     print(f"Endpoint: {rule.endpoint}, URL: {rule.rule}")
     
-    logger.info("Flask Application successfully created")
+    logger.info("✅ Flask Application successfully created")
     return app 

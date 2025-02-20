@@ -3,7 +3,7 @@ import { Box, Typography, Button, Stack, Grid2, Card, CardContent } from '@mui/m
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from "../apiConfig";
-import { UserContext } from '../UserContext';
+import { UserContext } from '../context/UserContext';
 import { useTheme } from '@mui/material/styles';
 import LoginIcon from "@mui/icons-material/Login";
 import BuildIcon from "@mui/icons-material/Build";

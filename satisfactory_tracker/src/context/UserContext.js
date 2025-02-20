@@ -10,6 +10,8 @@ const UserContext = createContext();
 const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
+    const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+    
 
     useEffect(() => {
         // Retrieve user info and token from localStorage
@@ -24,6 +26,10 @@ const UserProvider = ({ children }) => {
             setToken(storedToken);
         }
     }, []);
+
+    const resetGraphData = () => {
+        setGraphData({ nodes: [], links: [] });
+    };
 
     // Login function
     const login = (userInfo, authToken) => {
@@ -49,10 +55,13 @@ const UserProvider = ({ children }) => {
     };
 
     return (
-        <UserContext.Provider value={{ user, token, login, logout }}>
+        <UserContext.Provider value={{ user, token, login, logout, graphData, setGraphData, resetGraphData }}>
             {children}
         </UserContext.Provider>
     );
 };
+ 
+
 
 export { UserContext, UserProvider };
+export const useUserContext = () => useContext(UserContext);

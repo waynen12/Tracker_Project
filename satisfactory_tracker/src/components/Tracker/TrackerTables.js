@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { useTheme } from "@mui/material/styles";
 
 const TrackerTables = ({ trackerData, totals, isLoading }) => {
+    const theme = useTheme();
+  
   // Define columns for the DataGrid
   const columns = [
     { field: 'part_name', headerName: 'Part', flex: 1 },
@@ -25,29 +28,14 @@ const TrackerTables = ({ trackerData, totals, isLoading }) => {
   return (
     <Box>
       <Typography variant="h2" gutterBottom>
-        Tracker Details
+        Tracker Data
       </Typography>
 
       {isLoading ? (
         <Typography>Loading...</Typography>
       ) : (
-        <Box sx={{ height: 600, width: "100%" }}>
+      <Box sx={{ height: 600, width: "100%", mt: theme.spacing(4) }}>
           <DataGrid rows={rows} columns={columns} />
-          {/* <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[5, 10, 20]}
-            checkboxSelection
-            disableSelectionOnClick
-            sortingOrder={['asc', 'desc']}
-            slots={{ toolbar: GridToolbar }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-              },
-            }}
-          /> */}
         </Box>
       )}
     </Box>

@@ -10,4 +10,11 @@ const logToBackend = async (message, level = "INFO") => {
     }
 };
 
+export const formatLogMessage = (title, content) => {
+    return `
+  *********${title}*************
+  ${content}
+  `;
+  };
+
 export default logToBackend;

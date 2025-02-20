@@ -10,11 +10,12 @@ import LoginPage from './pages/LoginPage';
 import DataManagementPage from './pages/DataManagementPage';
 import DependencyTreePage from "./pages/DependencyTreePage";
 import SignupPage from './pages/SignupPage';
-import Header from './Header';
+import Header from './components/Header';
 import Footer from './components/Footer.js';
-import { UserProvider } from './UserContext';
+import { UserProvider } from './context/UserContext';
 import TrackerPage from './pages/TrackerPage';
 import ProtectedRoute from './components/ProtectedRoute.js';
+import UserSettings from './pages/UserSettingsPage';
 
 
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/dependencies" element={<DependencyTreePage />} />
               <Route path="/tracker" element={<TrackerPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/settings" element={<UserSettings />} />
             </Routes>
           </Router>
           <Footer />

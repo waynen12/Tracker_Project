@@ -401,6 +401,20 @@ Run refresh_data.py in SQLite_stuff directory to delete all data and reload eith
     logger.info("Info")
     logger.warning("Warning")
     logger.error("Error")
+#### Example multi-line log:
+- ##### Frontend
+        const logMessage = `
+            *********TrackerPage*************
+            Tracker Reports:
+            ${JSON.stringify(limitedTrackerReports, null, 2)}
+            `;
+
+        logToBackend(logMessage, "DEBUG");
+
+- ##### Backend
+        logger.info("*********TrackerPage*************\n"
+                    f"Save Data: {save_data}"
+                   )
 
 ## <h1 id="section-12">Section 12 - Project relative paths 
 <a href="#table-of-contents" style="font-size: 14px; float: right;">Back to top</a></h1>

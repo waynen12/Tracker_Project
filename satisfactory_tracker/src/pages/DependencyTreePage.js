@@ -27,7 +27,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Tooltip from "@mui/material/Tooltip";
 import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
-import { UserContext } from '../UserContext';
+import { UserContext } from '../context/UserContext';
 import { useAlert } from "../context/AlertContext";
 import logToBackend from '../services/logService';
 
@@ -48,14 +48,14 @@ const DependencyTreePage = () => {
     const [visualData, setVisualData] = useState(null);
     const [flattenedData, setFlattenedData] = useState([]);
     const [error, setError] = useState("");
-    const [isCollapsed, setIsCollapsed] = useState(false); // Track collapse state
-    const [isExpanded, setIsExpanded] = useState(false); // Track collapse state
-    const [activeTab, setActiveTab] = useState(""); // Track active tab ("" means no active tab)
-    const [expandedNodes, setExpandedNodes] = useState([]); // Track expanded nodes
-    const [tabWidth, setTabWidth] = useState(0); // Initial width for the Tab section
+    const [isCollapsed, setIsCollapsed] = useState(false); 
+    const [isExpanded, setIsExpanded] = useState(false); 
+    const [activeTab, setActiveTab] = useState(""); 
+    const [expandedNodes, setExpandedNodes] = useState([]); 
+    const [tabWidth, setTabWidth] = useState(0); 
     const [isResizing, setIsResizing] = useState(false);
-    const [startX, setStartX] = useState(0); // Track starting mouse position
-    const [startWidth, setStartWidth] = useState(tabWidth); // Track starting width
+    const [startX, setStartX] = useState(0); 
+    const [startWidth, setStartWidth] = useState(tabWidth); 
     const [trackerData, setTrackerData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedRows, setSelectedRows] = useState([]);
@@ -136,17 +136,16 @@ const DependencyTreePage = () => {
     // Build the tree data structure
     const buildTreeData = (node, parentId = "root", counter = { id: 1 }) => {
         // logToBackend("Building Tree Data for Node: " + node + "Parent ID: " + parentId, "INFO");
-        console.log("Building Tree Data for Node:", node, "Parent ID:", parentId); // Debug log
+        // console.log("Building Tree Data for Node:", node, "Parent ID:", parentId); // Debug log
         const tree = [];
         if (!node || typeof node !== "object") return tree;
 
         for (const [key, value] of Object.entries(node)) {
-            console.log("Node Key:", key, "Value:", value); // Debug log
-            if (!value || typeof value !== "object") continue; // Skip invalid nodes
-
+            // console.log("Node Key:", key, "Value:", value); // Debug log
+            if (!value || typeof value !== "object") continue; 
             // Generate a unique ID for this node
             const uniqueId = `${parentId}-${counter.id++}`;
-            console.log(`Generated ID: ${uniqueId} for Node: ${key}`); // Debug log
+            // console.log(`Generated ID: ${uniqueId} for Node: ${key}`); // Debug log
 
             // Build the new node structure
             const newNode = {
@@ -902,19 +901,15 @@ const DependencyTreePage = () => {
                                 * Double-click on the <strong>Target Quantity</strong> field to edit. Press Enter to save.
                             </Typography>
                             <div style={{ height: 600, width: "100%" }}>
-                                <DataGrid rows={rows} columns={columns} loading={loading} />
-                                {/* <DataGrid
-                                    rows={rows}
-                                    columns={columns}
-                                    loading={loading}
-                                    pageSize={5}
-                                    rowsPerPageOptions={[5, 10]}
-                                    checkboxSelection
-                                    disableSelectionOnClick
+                                <DataGrid 
+                                    rows={rows} 
+                                    columns={columns} 
+                                    loading={loading} 
                                     onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
                                     processRowUpdate={handleProcessRowUpdate}
-                                    experimentalFeatures={{ newEditingApi: true }} */}
-                                {/* /> */}
+                                    experimentalFeatures={{ newEditingApi: true }}
+                                
+                                /> 
                             </div>
                         </Box>
 

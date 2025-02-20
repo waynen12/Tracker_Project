@@ -3,6 +3,7 @@ import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from "../apiConfig";
+import logToBackend from "../services/logService";
 
 axios.defaults.withCredentials = true;
 
@@ -18,7 +19,9 @@ const SignupPage = () => {
   const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
   const [recaptchaRendered, setRecaptchaRendered] = useState(false); // Add state to track rendering
   
-  console.log("Using reCAPTCHA site key:", RECAPTCHA_SITE_KEY);
+  // console.log("Using reCAPTCHA site key:", RECAPTCHA_SITE_KEY);
+  // logToBackend("SignupPage - Using reCAPTCHA site key: " + RECAPTCHA_SITE_KEY, "INFO");
+  
   useEffect(() => {
     console.log("reCAPTCHA container state:", document.getElementById('recaptcha-container'));
     if (window.grecaptcha && !recaptchaRendered) {

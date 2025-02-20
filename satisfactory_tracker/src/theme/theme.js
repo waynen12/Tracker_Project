@@ -1,260 +1,190 @@
 import { createTheme } from '@mui/material/styles';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import logToBackend from "../services/logService";
+import { dark } from '@mui/material/styles/createPalette';
+import { USE_THEME, THEME_LIGHT, THEME_DARK, COMMON_SETTINGS } from './themeConfig';
+import { useTheme } from '@emotion/react';
+
+let scheme = {};
+
+// get theme from .env file
+// const envUseTheme = process.env.REACT_APP_USE_THEME;
+// logToBackend("theme.js - Theme from .env file: " + envUseTheme, "INFO");
+
+switch (USE_THEME) {
+  case 'dark':
+    scheme = THEME_DARK;
+    break;
+  case 'light':
+    scheme = THEME_LIGHT;
+    break;
+  default:
+    scheme = THEME_LIGHT;
+    break;
+}
+
+
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#3a3e61', // #3a3e61 
-      contrastText: '#FFFFFF', // White text on primary background #FFFFFF
+      main: scheme.primary_main,
+      secondary: scheme.primary_secondary,
+      contrastText: scheme.primary_contrastText
     },
     secondary: {
-      main: '#264431', // #0F705C #264431
-      contrastText: '#FFFFFF', // White text on secondary background #FFFFFF
+      main: scheme.secondary_main,
+      contrastText: scheme.secondary_contrastText
     },
     background: {
-      default: '#264431', // #264431
-      mid: '#32527b', // Blue Violet for mid-level components #32527b
-      paper: '#364b61', // Medium dark shade of cyan-blue #364b61
-      dropdown: '#FFFFFF', // White background for dropdowns #FFFFFF
+      default: scheme.background_default,
+      mid: scheme.background_mid,
+      paper: scheme.background_paper,
+      dropdown: scheme.background_dropdown,
+      tabs: scheme.background_tabs
+    },
+    border: {
+      tabs: scheme.border_tabs      
     },
     text: {
-      primary: '#FFFFFF', // White text for general use #FFFFFF
-      secondary: '#DDA0DD', // Plum for secondary text #DDA0DD #FFFFFF
-      disabled: '#C4C4C4', // Disabled text color #C4C4C4
-      dropdown: '#000000', // Black text for dropdowns #000000
+      primary: scheme.text_primary,
+      secondary: scheme.text_secondary,
+      disabled: scheme.text_disabled,
+      dropdown: scheme.text_dropdown
     },
     button: {
-      main: '#264431', // #0F705C #264431
-      contrastText: '#FFFFFF', // White text on primary background #FFFFFF
-      hover: '#1d3a2a', // Hover color #1d3a2a
-      disabled: '#1d3a2a', // Disabled button color #1d3a2a
-      disabledText: '#264431', // White text on disabled button #264431
+      main: scheme.button_main,
+      contrastText: scheme.button_contrastText,
+      hover: scheme.button_hover,
+      disabled: scheme.button_disabled,
+      disabledText: scheme.button_disabledText
     },
     progressIndicator: {
-      main: '#0bc260', // #0bc260
-    }
-  },
-  typography: {
-    fontFamily: 'Arial, sans-serif',
-    h1: { fontSize: '48px', fontWeight: 700 },
-    h2: { fontSize: '32px', fontWeight: 600 },
-    h3: { fontSize: '20px', fontWeight: 600 },
-    body1: { fontSize: '18px' },
-    body2: { fontSize: '16px' },
-    body3: { fontSize: '14px' },
-    body4: { fontSize: '12px' },
+      main: scheme.progressIndicator_main,
+    },
+    graphs: {
+      background: scheme.graphs_background,
+    },
   },
 
-  spacing: 4, // Default spacing unit
+  typography: {
+    fontFamily: COMMON_SETTINGS.typography_fontFamily,
+    h1: COMMON_SETTINGS.typography_h1,
+    h1_italic: COMMON_SETTINGS.typography_h1_italic,
+    h1_underline: COMMON_SETTINGS.typography_h1_underline,
+    h2: COMMON_SETTINGS.typography_h2,
+    h2_italic: COMMON_SETTINGS.typography_h2_italic,
+    h2_underline: COMMON_SETTINGS.typography_h2_underline,
+    h3: COMMON_SETTINGS.typography_h3,
+    h3_italic: COMMON_SETTINGS.typography_h3_italic,
+    h3_underline: COMMON_SETTINGS.typography_h3_underline,
+    h4: COMMON_SETTINGS.typography_h4,
+    h4_italic: COMMON_SETTINGS.typography_h4_italic,
+    h4_underline: COMMON_SETTINGS.typography_h4_underline,
+    h5: COMMON_SETTINGS.typography_h5,
+    h5_italic: COMMON_SETTINGS.typography_h5_italic,
+    h5_underline: COMMON_SETTINGS.typography_h5_underline,
+    h6: COMMON_SETTINGS.typography_h6,
+    h6_italic: COMMON_SETTINGS.typography_h6_italic,
+    h6_underline: COMMON_SETTINGS.typography_h6_underline,
+    body1: COMMON_SETTINGS.typography_body1,
+    body1_italic: COMMON_SETTINGS.typography_body1_italic,
+    body1_underline: COMMON_SETTINGS.typography_body1_underline,
+    body2: COMMON_SETTINGS.typography_body2,
+    body2_italic: COMMON_SETTINGS.typography_body2_italic,
+    body2_underline: COMMON_SETTINGS.typography_body2_underline,
+    body3: COMMON_SETTINGS.typography_body3,
+    body3_italic: COMMON_SETTINGS.typography_body3_italic,
+    body3_underline: COMMON_SETTINGS.typography_body3_underline,
+    body4: COMMON_SETTINGS.typography_body4,
+    body4_italic: COMMON_SETTINGS.typography_body4_italic,
+    body4_underline: COMMON_SETTINGS.typography_body4_underline,
+  },
+
+  spacing: COMMON_SETTINGS.spacing,
 
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        select: {
-          padding: "4px",
-          borderRadius: "8px",
-          border: "1px solid #C4C4C4", // Using the disabled text color
-          backgroundColor: "#FFFFFF",
-          color: "#000000",
-          "&:focus": {
-            borderColor: "#8A2BE2", // Blue Violet focus color
-            outline: "none",
-          },
-        },
-        body: {
-          background: `linear-gradient(to right, #364b61, #3e596c)`,
-          color: '#FFFFFF',
-        },
-        a: {
-          color: '#3a3e61', // #3a3e61
-          textDecoration: 'none',
-          '&:hover': {
-            textDecoration: 'underline',
-          },
-        },
+        select: scheme.components_MuiCssBaseline_select,
+        body: scheme.components_MuiCssBaseline_body,
       },
     },
-    
+
     MuiTable: {
       styleOverrides: {
-        root: {
-          backgroundColor: "#364b61", // Default background for the whole table
-          color: "#FFFFFF", // Default text color
-        },
+        root: scheme.components_MuiTable_root,
       },
     },
+
     MuiTableHead: {
       styleOverrides: {
-        root: {
-          position: "sticky", // ✅ Makes the header stick
-          top: 0, // ✅ Keeps it at the top when scrolling
-          zIndex: 2, // ✅ Ensures it stays above other rows
-          backgroundColor: "#264431", // ✅ Ensures background color remains visible #264431
-        },
+        root: scheme.components_MuiTableHead_root,
       },
     },
+
     MuiTableRow: {
       styleOverrides: {
-        root: {
-          height: "15px", // ✅ Sets row height
-          "&:nth-of-type(even)": {
-            backgroundColor: "#3e596c",
-          },
-          "&:hover": {
-            backgroundColor: "#3a3e61",
-          },
-        },
+        root: scheme.components_MuiTableRow_root,
       },
     },
+
     MuiTableCell: {
       styleOverrides: {
-        root: {
-          padding: "1px 4px", // ✅ Controls cell padding (affects row height)
-          color: "#FFFFFF",
-          borderBottom: "1px solid #8A2BE2",
-          fontSize: "14px", // ✅ Sets a default font size for table cells
-          fontFamily: "Arial, sans-serif", // ✅ Ensure font consistency
-        },
-        head: {
-          fontWeight: "bold",
-          textTransform: "uppercase",
-          backgroundColor: "#264431", // ✅ Header background color #3a3e61
-          color: "#FFFFFF",
-          padding: "14px 16px", // ✅ Increase header row height
-          fontSize: "16px", // ✅ Larger font size for headers
-          position: "sticky", // ✅ Ensures column headers remain visible
-          top: 0, // ✅ Keeps it at the top
-          zIndex: 3, // ✅ Higher than rows to prevent overlap
-        },
-      },
-    },
-    
-    MuiDataGrid: {
-      defaultProps: {
-        rowHeight: 40,
-        pageSize: 25,
-        pageSizeOptions: [10, 25, 100, { value: -1, label: 'All' }],
-        checkboxSelection: true,
-        disableSelectionOnClick: true,
-        sortingOrder: ['asc', 'desc'],
-        slots: {
-          toolbar: GridToolbar,
-        },
-        slotProps: {
-          toolbar: { showQuickFilter: true },
-        },
-      },
-      styleOverrides: {
-        root: {
-          backgroundColor: "#364b61", // ✅ Default background color #364b61
-          borderRadius: "8px",
-          color: "#FFFFFF",
-          border: `1px solid #8A2BE`, // ✅ Border color #C4C4C4
-        },
-        columnHeaders: {
-          backgroundColor: "#264431", // ✅ Header background color #264431
-          color: "#FFFFFF",
-          fontSize: "16px",
-          fontWeight: "bold",
-          textTransform: "uppercase",
-        },
-        row: {
-          "&:nth-of-type(even)": {
-            backgroundColor: "#3e596c", // ✅ Alternating row color #3e596c
-          },
-          "&:hover": {
-            backgroundColor: "#3a3e61", // ✅ Hover effect color #8A2BE2
-          },
-        },
-        cell: {
-          borderColor: "#8A2BE2 !important", // ✅ Purple cell borders
-        },
-        columnSeparator: {
-          color: "#8A2BE2 !important", // ✅ Purple dividers between columns
-        },
-        footerContainer: {
-          backgroundColor: "#264431", // ✅ Footer background color #264431
-          color: "#FFFFFF",
-        },
-        toolbar: {
-          backgroundColor: "#264431", // ✅ Toolbar background color #264431
-          color: "#FFFFFF",        
-        },
+        root: scheme.components_MuiTableCell_root,
+        head: scheme.components_MuiTableCell_head
       },
     },
 
+    MuiDataGrid: {
+      defaultProps: scheme.components_MuiDataGrid_defaultProps,
+      styleOverrides: {
+        root: scheme.components_MuiDataGrid_root,
+        columnHeaders: scheme.components_MuiDataGrid_columnHeaders,
+        row: scheme.components_MuiDataGrid_row,
+        columnSeparator: scheme.components_MuiDataGrid_columnSeparator,
+        cell: scheme.components_MuiDataGrid_cell,
+        footerContainer: scheme.components_MuiDataGrid_footerContainer,
+        toolbar: scheme.components_MuiDataGrid_toolbar,
+      },
+    },
     MuiButton: {
       styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: 'none',
-        },
-        containedPrimary: {
-          backgroundColor: '#264431', // #264431
-          color: '#FFFFFF', // White text color #FFFFFF
-          '&:hover': {
-            backgroundColor: '#1d3a2a', // #1d3a2a
-          },
-        },
-        containedSecondary: {
-          backgroundColor: '#264431', // #264431
-          color: '#FFFFFF', // White text color #FFFFFF
-          '&:hover': {
-            backgroundColor: '#1d3a2a', // #1d3a2a
-          },
-        },
-        outlinedPrimary: {
-          backgroundColor: '#264431', // #264431
-          color: '#FFFFFF', // White text color #FFFFFF
-          '&:hover': {
-            backgroundColor: '#1d3a2a', // #2a2e51
-          },
-        },
-        outlinedSecondary: {
-          backgroundColor: '#264431', // #264431
-          color: '#FFFFFF', // White text color #FFFFFF
-          '&:hover': {
-            backgroundColor: '#1d3a2a', // #1d3a2a
-          },
-        },
+        root: scheme.components_MuiButton_root,
+        containedPrimary: scheme.components_MuiButton_containedPrimary,
+        containedSecondary: scheme.components_MuiButton_containedSecondary,
+        outlinedPrimary: scheme.components_MuiButton_outlinedPrimary,
+        outlinedSecondary: scheme.components_MuiButton_outlinedSecondary,
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: scheme.components_MuiTextField_root,
       },
     },
 
-    MuiTextField: {
+    components_MuiTabList_root: {
       styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: '#8A2BE2', // Blue Violet border color #8A2BE2
-            },
-            '&:hover fieldset': {
-              borderColor: '#DDA0DD', // Plum border color #DDA0DD
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#FFFFFF',   // White border color #FFFFFF
-            },
-          },
-        },
+        root: scheme.components_MuiTabList_root,
       },
     },
+
     Dropzone: {
       styleOverrides: {
-        root: {
-          border: '2px dashed #8A2BE2', // Blue Violet border #8A2BE2
-          padding: '20px',
-          textAlign: 'center',
-          cursor: 'pointer',
-          backgroundColor: '#364b61', // Medium dark shade of cyan-blue #364b61
-          transition: 'background-color 0.3s ease-in-out',
-          color: '#FFFFFF', // White text color   #FFFFFF
-        },
-        active: {
-          backgroundColor: '#8A2BE2', // Blue Violet when dragging #8A2BE2
-          borderColor: '#DDA0DD', // Plum border color #DDA0DD
-        },
+        root: scheme.components_Dropzone_root,
+        active: scheme.components_Dropzone_active,
+      },
+    },
+
+    DropZoneArrow: {
+      styleOverrides: {
+        root: scheme.components_Drop_Zone_Arrow_Box,
       },
     },
   },
+  trackerPageStyles: scheme.trackerPageStyles,
+  // trackerPageSettings: scheme.trackerPageSettings // Uncommented for future use
 });
+
 
 export default theme;
 

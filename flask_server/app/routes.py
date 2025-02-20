@@ -10,9 +10,12 @@ import uuid
 import logging
 from logging.handlers import RotatingFileHandler
 import math
-from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Level, Node_Purity, Resource_Node
+import json
+from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Level, Node_Purity, Resource_Node, UserSettings, User_Save_Pipes
+from sqlalchemy.exc import SQLAlchemyError
 from . import db
 from .build_tree import build_tree
+from .build_connection_graph import detect_cycles, format_graph_for_frontend, traverse_factory_graph, build_factory_graph
 from flask import request, flash, redirect, url_for
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
@@ -65,12 +68,13 @@ ALLOWED_EXTENSIONS = config.ALLOWED_EXTENSIONS
 # Simulated processing tracker
 PROCESSING_STATUS = {}
 
-
+logger.info(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @main.route('/')
 def serve_react_app():
@@ -272,10 +276,11 @@ def build_tree_route():
     visited = request.args.get('visited')
 
     if not part_id:
+        logger.error("part_id is required")
         return jsonify({"error": "part_id is required"}), 400
     
     result = build_tree(part_id, recipe_name, target_quantity, visited)
-
+    logger.info(f"Build Tree Result: {result}")
     return jsonify(result)
 
 @main.route('/api/<table_name>', methods=['GET'])
@@ -684,7 +689,7 @@ def upload_sav():
 
         # Process file in a background task
         try:
-            user_id = current_user.id  # Replace this with actual user ID from authentication
+            user_id = current_user.id  
             logger.info(f"BEFORE PROCESS_SAVE_FILE CALL - Processing file: {filename} for user ID: {user_id}")
             process_save_file(filepath, user_id)
             PROCESSING_STATUS[processing_id] = "completed"
@@ -702,16 +707,13 @@ def get_processing_status(processing_id):
 @main.route("/user_save", methods=["GET"])
 def get_user_save():
     user_id = current_user.id
-    # sav_file_name = request.args.get("sav_file_name", type=str)
-
-    # if not user_id or not sav_file_name:
-    #     return jsonify({"error": "Missing required parameters: user_id and sav_file_name"}), 400
-
     user_saves = (
         db.session.query(
             User_Save.id,
             Part.part_name,
             Recipe.recipe_name,
+            Recipe.base_supply_pm,
+            User_Save.machine_id,
             Machine.machine_name,
             Machine_Level.machine_level,
             Node_Purity.node_purity,
@@ -729,19 +731,355 @@ def get_user_save():
         #.filter(User_Save.sav_file_name == sav_file_name)  # ✅ Only return records for the relevant save file
         .all()
     )
+
     #logger.info(f"User Saves: {user_saves}")
     return jsonify([
         {
             "id": us.id,
             "part_name": us.part_name,
             "recipe_name": us.recipe_name,
+            "machine_id": us.machine_id,
             "machine_name": us.machine_name,
             "machine_level": us.machine_level,
             "node_purity": us.node_purity,
-            "machine_power_modifier": us.machine_power_modifier,
+            "machine_power_modifier": us.machine_power_modifier or 1,
+            "base_supply_pm": us.base_supply_pm or 0,
+            "actual_ppm": (us.base_supply_pm or 0) * (us.machine_power_modifier or 1), 
             "created_at": us.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "sav_file_name": us.sav_file_name,
         } for us in user_saves
         
     ])
     
+# API: Get user settings
+@main.route('/api/user_settings', methods=['GET'])
+@login_required
+def get_user_settings():
+    category = request.args.get('category')
+    query = UserSettings.query.filter_by(user_id=current_user.id)
+    
+    if category:
+        query = query.filter_by(category=category)
+    
+    settings = query.all()
+    return jsonify([{ "key": s.key, "value": s.value } for s in settings]), 200
+
+# API: Update user settings
+@main.route('/api/user_settings', methods=['POST'])
+@login_required
+def update_user_settings():
+    data = request.json
+    category = data.get('category')
+    key = data.get('key')
+    value = data.get('value')
+    
+    if not category or not key or value is None:
+        return jsonify({"error": "Category, key, and value are required"}), 400
+    
+    setting = UserSettings.query.filter_by(user_id=current_user.id, category=category, key=key).first()
+    if setting:
+        setting.value = value
+    else:
+        setting = UserSettings(user_id=current_user.id, category=category, key=key, value=value)
+        db.session.add(setting)
+    
+    try:
+        db.session.commit()
+        return jsonify({"message": "Setting updated successfully"}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@main.route('/api/production_report', methods=['POST'])
+@login_required
+def get_production_report():
+    try:
+        #logger.info("Generating production report")
+        data = request.json
+        tracker_data = data.get("trackerData", [])
+        save_data = data.get("saveData", [])
+        
+        #logger.info(f"Tracker Data: {tracker_data}, Save Data: {save_data}")
+
+        if not tracker_data or not save_data:
+            return jsonify({"error": "trackerData and saveData are required"}), 400
+        
+        part_production = {}
+        
+        def extract_required_quantities(tree, part_production):
+            """Recursively extract required quantities from the dependency tree."""
+            for part_name, details in tree.items():
+                if part_name not in part_production:
+                    part_production[part_name] = {"target": 0, "actual": 0}
+                
+                # Add required quantity
+                part_production[part_name]["target"] += details.get("Required Quantity", 0)
+
+                # Recursively process the subtree
+                if "Subtree" in details and isinstance(details["Subtree"], dict):
+                    extract_required_quantities(details["Subtree"], part_production)
+
+        #logger.info("Processing trackerData for target production")
+        # Process trackerData for target production
+        for report in tracker_data:
+            if not report.get("tree"):
+                continue
+               # ✅ Process trackerData for ALL dependencies, not just root parts
+        for report in tracker_data:
+            if not report.get("tree"):
+                continue
+            extract_required_quantities(report["tree"], part_production)
+        
+        #logger.info("Processing saveData for actual production")
+        # Process saveData for actual production using base_supply_pm
+        for save in save_data:
+            base_supply_pm = save["base_supply_pm"] if save["base_supply_pm"] is not None else 0.0
+            machine_power_modifier = save["machine_power_modifier"] if save["machine_power_modifier"] is not None else 1.0
+            
+            actual_ppm = base_supply_pm * machine_power_modifier
+
+            save_part_name = save["part_name"] if save["part_name"] else "UNKNOWN_PART"
+            
+            if save_part_name == "UNKNOWN_PART":
+                #logger.warning(f"Missing part name detected in user save data: {save}")
+                continue
+
+            if save_part_name not in part_production:
+                part_production[save["part_name"]] = {"target": 0, "actual": 0}
+            
+            part_production[save["part_name"]]["actual"] += actual_ppm
+            #logger.info(f"Save File Actual: {part_production[save_part_name]['actual']}")
+        return jsonify(part_production), 200
+    except Exception as e:
+        logger.error(f"Error generating production report: {e}")
+        return jsonify({"error": "Failed to generate production report"}), 500
+    
+@main.route('/api/machine_usage_report', methods=['POST'])
+@login_required
+def get_machine_usage_report():
+    try:
+        #logger.info("Generating machine usage report")
+        data = request.json
+        tracker_data = data.get("trackerData", [])
+        save_data = data.get("saveData", [])
+
+        if not tracker_data or not save_data:
+            return jsonify({"error": "trackerData and saveData are required"}), 400
+
+        machine_usage = {}
+
+        # 📌 Step 1: Process trackerData for target machines
+        def extract_machines(tree):
+            # Debugging
+            #logger.debug(f"Extracting machines from tree")
+            for part, details in tree.items():
+                if "Produced In" in details and "No. of Machines" in details:
+                    machine_name = details["Produced In"]
+                    num_machines = details["No. of Machines"]
+
+                    if machine_name not in machine_usage:
+                        machine_usage[machine_name] = {"target": 0, "actual": 0}
+
+                    machine_usage[machine_name]["target"] += num_machines
+
+                # Recursively extract from subtrees
+                if "Subtree" in details and details["Subtree"]:
+                    extract_machines(details["Subtree"])
+
+        for report in tracker_data:
+            if "tree" in report and report["tree"]:
+                extract_machines(report["tree"])
+        # Debugging
+        #logger.debug("Processing saveData for actual machine usage")
+        query = """
+            SELECT id, machine_name FROM machine
+        """
+        # Debugging
+        #logger.info(f"Mapping machines - Machine Query: {query}")
+        machine_map = {row.id: row.machine_name for row in db.session.execute(text(query))}
+        
+        # Debugging
+        #logger.info(f"Machine Map: {machine_map}")
+
+        for save in save_data:
+            # Debugging
+            #logger.debug(f"Processing save data record, getting machine_id ")            
+            machine_id = save["machine_id"]
+           
+            # Debugging
+            #logger.debug(f"Got Machine ID, {machine_id} Getting power_modifier")           
+            power_modifier = save["machine_power_modifier"] if save["machine_power_modifier"] is not None else 1.0
+            
+            # Debugging
+            #logger.debug(f"Got Power Modifier, {power_modifier} Getting machine_name")
+            machine_name = machine_map.get(machine_id, "Unknown Machine")
+            
+            # Debugging
+            #logger.debug(f"Got Machine Name: {machine_name}")
+            if machine_name == "Unknown Machine":
+                #logger.warning(f"Unidentified Machine detected in user save data: {save}")
+                continue
+            
+            # Check if machine_name is in machine_usage and initialize if not
+            if machine_name not in machine_usage:
+                #logger.info(f"Machine Name not in machine_usage, adding to machine_usage")
+                machine_usage[machine_name] = {"target": 0, "actual": 0}
+
+            # Debugging
+            #logger.debug(f"Multiplying Machine Name: {machine_name}, Power Modifier: {power_modifier}")
+            machine_usage[machine_name]["actual"] += 1 * power_modifier
+        # Debugging
+        #logger.debug(f"Detailed Machine Usage: {machine_usage}")
+                
+        # Remove None keys before returning
+        cleaned_machine_usage = {str(k): v for k, v in machine_usage.items() if k is not None}
+
+        #logger.debug(f"Returning cleaned machine usage report {cleaned_machine_usage}")
+        return jsonify(cleaned_machine_usage), 200
+
+    except Exception as e:
+        logger.error(f"Error generating machine usage report: {e}")
+        return jsonify({"error": "Failed to generate machine usage report"}), 500
+    
+@main.route('/api/conveyor_levels', methods=['GET'])
+def get_conveyor_levels():
+    """Fetch conveyor belt levels."""
+    query = text("SELECT * FROM conveyor_level")
+    conveyor_levels = db.session.execute(query).fetchall()
+    return jsonify([dict(row._mapping) for row in conveyor_levels])
+
+@main.route('/api/conveyor_supply_rate', methods=['GET'])
+def get_conveyor_supplies():
+    """Fetch conveyor belt supply rates."""
+    query = text("""
+        SELECT cs.id, cl.conveyor_level, cs.supply_pm
+        FROM conveyor_supply cs
+        JOIN conveyor_level cl ON cs.conveyor_level_id = cl.id
+    """)
+    conveyor_supplies = db.session.execute(query).fetchall()
+    return jsonify([dict(row._mapping) for row in conveyor_supplies])
+
+@main.route('/api/user_save_connections', methods=['GET'])
+def get_user_save_connections():
+    """Fetch all user save connections."""
+    query = text("SELECT * FROM user_save_connections")
+    connections = db.session.execute(query).fetchall()
+    return jsonify([dict(row._mapping) for row in connections])
+
+@main.route('/api/user_save_conveyors', methods=['GET'])
+def get_user_save_conveyors():
+    """Fetch all user save conveyor chains."""
+    query = text("SELECT * FROM user_save_conveyors")
+    conveyors = db.session.execute(query).fetchall()
+    return jsonify([dict(row._mapping) for row in conveyors])
+
+@main.route('/api/machine_connections', methods=['GET'])
+def get_machine_connections():
+    """Fetch machine connections with production details."""
+    try:
+        query = text("""
+            WITH conveyor_data AS (
+                SELECT 
+                    usc.connected_component, 
+                    usc.connection_inventory, 
+                    usc.direction, 
+                    usc.outer_path_name, 
+                    us.output_inventory, 
+                    m.machine_name, 
+                    p.part_name, 
+                    r.base_supply_pm, 
+                    usc.conveyor_speed
+                FROM user_save_connections usc
+                LEFT JOIN user_save us ON usc.connection_inventory = us.output_inventory
+                LEFT JOIN machine m ON us.machine_id = m.id
+                LEFT JOIN recipe r ON us.recipe_id = r.id
+                LEFT JOIN part p ON r.part_id = p.id
+            ),
+            deduplicated_conveyors AS (
+                SELECT 
+                    connected_component, 
+                    connection_inventory, 
+                    direction, 
+                    outer_path_name, 
+                    output_inventory, 
+                    MAX(machine_name) AS machine_name,  -- ✅ Keep machine data if available
+                    MAX(part_name) AS part_name, 
+                    MAX(base_supply_pm) AS base_supply_pm, 
+                    MAX(conveyor_speed) AS conveyor_speed
+                FROM conveyor_data
+                GROUP BY connected_component, connection_inventory, direction, outer_path_name, output_inventory
+            )
+            SELECT * FROM deduplicated_conveyors;
+        """)
+        
+        connections = db.session.execute(query).fetchall()
+        return jsonify([dict(row._mapping) for row in connections])
+    except Exception as e:
+        logger.error(f"Error fetching machine connections: {e}")
+        return jsonify({"error": "Failed to fetch machine connections"}), 500
+
+@main.route('/api/connection_graph', methods=['GET'])
+def get_connection_graph():
+    """Fetches the machine connection graph based on actual item flow."""
+    try:
+        user_id = current_user.id,
+        #logger.info(f"Generating machine connections for user ID: {user_id}")
+        graph, metadata = build_factory_graph(user_id)
+        formatted_graph = format_graph_for_frontend(graph, metadata)
+        #logger.debug(f"Formatted Graph {formatted_graph}")
+        return jsonify(formatted_graph)
+    
+    except Exception as e:
+        logger.error(f"Error generating factory graph: {e}")
+        return jsonify({"error": "Failed to generate connection graph"}), 500
+    
+@main.route('/api/machine_metadata', methods=['GET'])
+def get_machine_metadata():
+    """Fetch machine metadata including the produced item, base supply, and conveyor speed."""
+    try:
+        query = text("""
+            SELECT us.output_inventory, m.machine_name, p.part_name AS produced_item, 
+                     r.base_supply_pm, cs.supply_pm AS conveyor_speed, i.icon_path AS icon_path
+            FROM user_save us
+            JOIN machine m ON us.machine_id = m.id
+            JOIN recipe r ON us.recipe_id = r.id
+            JOIN part p ON r.part_id = p.id
+            LEFT JOIN user_save_connections usc ON us.output_inventory = usc.connection_inventory
+            LEFT JOIN conveyor_supply cs ON usc.conveyor_speed = cs.supply_pm
+            LEFT JOIN icon i ON m.icon_id = i.id
+        """)
+
+        # logger.debug(f"Machine Metadata Query: {query}")
+        metadata = db.session.execute(query).fetchall()
+        return jsonify([dict(row._mapping) for row in metadata])
+
+    except Exception as e:
+        logger.error(f"Error fetching machine metadata: {e}")
+        return jsonify({"error": "Failed to fetch machine metadata"}), 500
+
+
+@main.route('/api/pipe_network', methods=['GET'])
+@login_required
+def get_pipe_network():
+    """
+    API route to fetch pipe networks for the logged-in user.
+    """
+    try:
+        user_id = current_user.id  # Ensure we filter by user
+        pipes = User_Save_Pipes.query.filter_by(user_id=user_id).all()
+
+        pipe_data = [
+            {
+                "instance_name": pipe.instance_name,
+                "fluid_type": pipe.fluid_type,
+                "connections": json.loads(pipe.connection_points)
+            }
+            for pipe in pipes
+        ]
+        logger.info(f"✅ Succesfully fetched pipe network data for user {user_id}")
+        return jsonify(pipe_data), 200
+
+    except Exception as e:
+        logger.error(f"❌ Error fetching pipe network data for user {user_id}: {e}")
+        return jsonify({"error": "Failed to retrieve pipe network data"}), 500
+

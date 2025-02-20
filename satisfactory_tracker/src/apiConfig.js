@@ -1,7 +1,10 @@
+import logToBackend from "./services/logService";
+
 let flask_port = "";
 
 if (process.env.RUN_MODE_LOCATION === 'prod') {
   flask_port = "http://192.168.50.33:5000";
+  // logToBackend("apiConfig.js - Run Mode:" + process.env.RUN_MODE_LOCATION, "INFO");
 } else {
   flask_port = "http://localhost:5000";
 }
@@ -29,4 +32,11 @@ export const API_ENDPOINTS = {
   upload_sav: `${flask_port}/upload_sav`,
   user_save: `${flask_port}/user_save`,
   processing_status: `${flask_port}/processing_status`,
+  user_settings: `${flask_port}/api/user_settings`,
+  production_report: `${flask_port}/api/production_report`,
+  machine_report: `${flask_port}/api/machine_usage_report`,
+  machine_connections: `${flask_port}/api/machine_connections`,
+  connection_graph: `${flask_port}/api/connection_graph`,
+  machine_metadata: `${flask_port}/api/machine_metadata`,
+  pipe_network: `${flask_port}/api/pipe_network`,  
   };

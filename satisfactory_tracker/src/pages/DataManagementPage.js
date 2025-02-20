@@ -159,10 +159,10 @@ const DataManagementPage = () => {
         sx={{
           flex: 4,
           padding: theme.spacing(2),
-          background: theme.palette.background, //`linear-gradient(to right, ${theme.palette.background.linearGradientLeft}, ${theme.palette.background.linearGradientRight})`,
+          background: theme.palette.background,
           color: theme.palette.text.primary,
-          width: "100%", // Ensure full width
-          maxWidth: "100vw", // Prevent overflow
+          width: "100%", 
+          maxWidth: "100vw", 
           display: "flex",
           flexDirection: "column",
         }}

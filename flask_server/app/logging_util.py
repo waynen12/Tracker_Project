@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 import importlib.util
 import os
 from datetime import datetime
@@ -44,12 +45,12 @@ def setup_logger(name):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)       
     
-    # Log file with dynamic date-based naming
+    # Log file with dynamic date-based naming and counter
     log_file = os.path.join(log_dir, f"app_{datetime.now().strftime('%Y-%m-%d')}.log")
 
-    # Time-based rotating log file handler
-    file_handler = TimedRotatingFileHandler(
-        log_file, when='midnight', interval=1, backupCount=7, encoding='utf-8'
+    # File size-based rotating log file handler
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=4 * 1024 * 1024, backupCount=0, encoding='utf-8'
     )
     
     # Create a file handler
@@ -73,4 +74,10 @@ def setup_logger(name):
 
     return logger
 
+def format_log_message(title, content):
+    return f"*********{title}*************\n{content}"
 
+# # Usage Example
+# logger = setup_logger(__name__)
+# log_message = format_log_message("TrackerPage", f"Save Data: {save_data}")
+# logger.debug(log_message)

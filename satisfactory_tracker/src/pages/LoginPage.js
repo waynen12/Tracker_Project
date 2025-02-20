@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from "../apiConfig";
-import { UserContext } from '../UserContext'; // Import the UserContext
+import { UserContext } from '../context/UserContext'; // Import the UserContext
 
 axios.defaults.withCredentials = true;  
 

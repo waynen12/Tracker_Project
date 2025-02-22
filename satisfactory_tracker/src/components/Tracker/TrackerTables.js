@@ -34,8 +34,9 @@ const TrackerTables = ({ trackerData, totals, isLoading }) => {
       {isLoading ? (
         <Typography>Loading...</Typography>
       ) : (
-      <Box sx={{ height: 600, width: "100%", mt: theme.spacing(4) }}>
-          <DataGrid rows={rows} columns={columns} />
+      // <Box sx={{ height: 600, width: "100%", mt: theme.spacing(4) }}>
+        <Box sx={theme.trackerPageStyles.reportBox}>
+          <DataGrid density="compact" rows={rows} columns={columns} />
         </Box>
       )}
     </Box>

@@ -223,6 +223,7 @@ const DataManagementPage = () => {
         {selectedTable && (
           <Box sx={{ height: "calc(100vh - 200px)", width: "100%", minWidth: 0 }}>
           <DataGrid
+              density="compact"
               rows={rows}
               columns={[
                   ...gridColumns,
@@ -251,22 +252,6 @@ const DataManagementPage = () => {
                   ),
                 },
               ]}
-              // <DataGrid
-              // pageSize={20}
-              // rowsPerPageOptions={[5, 10, 20]}
-              // checkboxSelection
-              // disableSelectionOnClick
-              // sortingOrder={['asc', 'desc']}
-              // slots={{ toolbar: GridToolbar }}
-              // slotProps={{ toolbar: { showQuickFilter: true } }}
-              // sx={{
-              //   '& .MuiDataGrid-columnHeaders': {
-              //     color: theme.palette.text.primary,
-              //     textTransform: 'uppercase',
-              //     fontSize: theme.typography.body2.fontSize,
-              //     fontWeight: 'bold',
-              //   },
-              // }}
             />
           </Box>
         )}

@@ -8,7 +8,7 @@ import { useAlert } from "../../context/AlertContext";
 import { useTheme } from "@mui/material/styles";
 import { useUserContext } from "../../context/UserContext";
 import ConnectionGraphTable from "./Connections/ConnectionGraphTable";
-import FinalGraphDataTable from "./Connections//FinalGraphDataTable";
+import FinalGraphDataTable from "./Connections/FinalGraphDataTable";
 import MachineMetadataTable from "./Connections/MachineMetadataTable";
 import UpdatedLinksTable from "./Connections/UpdatedLinksTable";
 import { Water } from "@mui/icons-material";
@@ -17,7 +17,7 @@ import { DataGrid } from "@mui/x-data-grid";
 
 
 
-const MachineGraph = () => {
+const ConnectionData = () => {
     const theme = useTheme();
     const [tableData, setTableData] = useState([]);
     const { graphData, setGraphData } = useUserContext();
@@ -164,11 +164,9 @@ const MachineGraph = () => {
                     <CircularProgress />
                 </Box>
             ) : (
-                <Box sx={{ height: 600, width: "100%" }}>
-                    <Typography variant="h6" sx={{ marginBottom: 1 }}>
-                        Total Connections: {graphData.links.length}
-                    </Typography>
-                    <DataGrid
+                <Box sx={theme.trackerPageStyles.reportBox}>
+                {/* <Box sx={{ height: 600, width: "100%" }}> */}
+                    <DataGrid density="compact"
                         rows={graphData.links.map((link, index) => ({
                             id: `link-${index}`,
                             type: link.type === "pipe" ? "Pipe" : "Conveyor",
@@ -204,4 +202,4 @@ const MachineGraph = () => {
     );
 }
 
-export default MachineGraph;
+export default ConnectionData;

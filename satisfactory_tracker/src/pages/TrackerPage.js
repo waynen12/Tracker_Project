@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useDropzone } from "react-dropzone";
-import { Box, Grid2, Typography, CircularProgress, LinearProgress, Tabs, Tab } from "@mui/material";
+import { Box, Typography, CircularProgress, Tab } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-// import { useMaterialReactTable } from "use-material-react-table";
-import { CheckCircle, ErrorOutline, East } from "@mui/icons-material";
+import { CheckCircle, ErrorOutline } from "@mui/icons-material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import TrackerHeader from "../components/Tracker/TrackerHeader";
 import TrackerTables from "../components/Tracker/TrackerTables";
 import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
@@ -13,10 +11,11 @@ import { UserContext, useUserContext } from "../context/UserContext";
 import logToBackend from "../services/logService";
 import ProductionChart from "../components/Tracker/ProductionChart";
 import MachineChart from "../components/Tracker/MachineChart";
-import MachineGraph from "../components/Tracker/MachineGraph";
+import ConnectionData from "../components/Tracker/ConnectionData";
 import { useTheme } from "@mui/material/styles";
 import { useAlert } from "../context/AlertContext";
 import { motion } from "framer-motion";
+import Tooltip from "@mui/material/Tooltip";
 
 
 const TrackerPage = () => {
@@ -28,14 +27,13 @@ const TrackerPage = () => {
   const [trackerReports, setTrackerReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({});
-  const [modifiers, setModifiers] = useState({}); // Stores user-specified modifiers
   const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState({ partProduction: {}, machineUsage: {} });
   const [flattenedTreeData, setFlattenedTreeData] = useState([]);
   const [userSaveData, setUserSaveData] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(null); // true = success, false = error
+  const [uploadSuccess, setUploadSuccess] = useState(null);
   const [progress, setProgress] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [machineUsageReports, setMachineUsageReports] = useState([]);
@@ -43,7 +41,7 @@ const TrackerPage = () => {
   const isDataReady = userSaveData.length > 0 &&
     Object.keys(reports.partProduction).length > 0 &&
     Object.keys(reports.machineUsage).length > 0;
-  const [activeTab, setActiveTab] = useState("1"); // Track the selected tab
+  const [activeTab, setActiveTab] = useState("1");
   const uploadedFileName = hasUploadedSaveFile ? userSaveData[0]?.sav_file_name : "";
   const { resetGraphData } = useUserContext();
 
@@ -204,13 +202,7 @@ const TrackerPage = () => {
     { field: "recipe", headerName: "Recipe Name", flex: 1 },
   ];
 
-  // Handle updates to modifiers and totals
-  const handleModifiersChange = (updatedModifiers) => {
-    setModifiers(updatedModifiers);
-    recalculateTotals(updatedModifiers);
-  };
-
-  const recalculateTotals = (modifiers) => {
+    const recalculateTotals = (modifiers) => {
     const updatedTotals = {}; // Perform calculations here
     setTotals(updatedTotals);
   };
@@ -249,12 +241,6 @@ const TrackerPage = () => {
       setUploadSuccess(true);
       setUploading(false);
 
-      // // Start polling for processing status
-      // if (response.data.processing_id) {
-      //   setProcessing(true);
-      //   fetchUserSaveData();
-      //   pollProcessingStatus(response.data.processing_id);
-      // }
       showAlert("success", "File uploaded successfully!");
       fetchData();
 
@@ -291,22 +277,22 @@ const TrackerPage = () => {
 
   //  Define columns for DataGrid
   const userColumns = [
-    { field: "id", headerName: "ID", width: 80 }, //  use the user_save.id
-    { field: "part_name", headerName: "Part Name", width: 180 }, //  use the user_save.recipe_id to get the recipe.part_id from the recipe table and then the part.part_name from the part table
-    { field: "recipe_name", headerName: "Recipe", width: 200 }, //  use the user_save.recipe_id to get the recipe.recipe_name from the recipe table
-    { field: "machine_name", headerName: "Machine", width: 200 }, //  use the user_save.machine_id to get the machine.machine_name from the machine table
-    { field: "machine_level", headerName: "Machine Level", width: 200 }, //  use the user_save.machine_id to get the machine.machine_level_id from the machine_table and then the machine_level.machine_level from the machine_level table
-    { field: "resource_node_purity", headerName: "Node Purity", width: 200 }, //  use the user_save.resource_node_id to get the resource_node.node_purity_id from the resource_node table and then the node_purity.node_purity from the node_purity table
-    { field: "machine_power_modifier", headerName: "Power Modifier", width: 150 }, //  use the user_save.machine_power_modifier
-    { field: "base_supply_pm", headerName: "Base Supply PM", width: 200 }, //  use the user_save.base_supply_pm
-    { field: "actual_ppm", headerName: "Actual PPM", width: 200 }, //  use the user_save.actualPPM
-    { field: "created_at", headerName: "Created", width: 180 }, //  use the user_save.created_at
-    { field: "sav_file_name", headerName: "Save File", width: 180 }, //  use the user_save.sav_file_name
+    { field: "id", headerName: "ID", width: 80 },
+    { field: "part_name", headerName: "Part Name", width: 180 },
+    { field: "recipe_name", headerName: "Recipe", width: 200 },
+    { field: "machine_name", headerName: "Machine", width: 200 },
+    { field: "machine_level", headerName: "Machine Level", width: 200 },
+    { field: "resource_node_purity", headerName: "Node Purity", width: 200 },
+    { field: "machine_power_modifier", headerName: "Power Modifier", width: 150 },
+    { field: "base_supply_pm", headerName: "Base Supply PM", width: 200 },
+    { field: "actual_ppm", headerName: "Actual PPM", width: 200 },
+    { field: "created_at", headerName: "Created", width: 180 },
+    { field: "sav_file_name", headerName: "Save File", width: 180 },
   ];
 
   return (
     <Box sx={{
-      borderBottom: 2, // Thicker bottom border 
+      borderBottom: 2,
       display: "flex",
       flexDirection: "column",
       minHeight: "100vh",
@@ -315,54 +301,79 @@ const TrackerPage = () => {
       background: theme.palette.background,
     }}
     >
-      <Typography variant="h1" gutterBottom>
-        My Tracker
-      </Typography>
 
-      <TrackerHeader />
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "left", mb: 2, width: "50%" }}>
 
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography variant="h6" sx={{ textAlign: "left", fontWeight: "bold" }}>
-          {hasUploadedSaveFile
-            ? "Drag & drop a new Satisfactory save file here, or click to select one.\n This will overwrite your current save file."
-            : "Drag & drop a Satisfactory save file below, or click to select one."
-          }
-        </Typography>
-
-
-        <Box sx={theme.trackerPageStyles.tracker_Drop_Zone_Arrow}>
-          <East fontSize="large" />
-        </Box>
         {/* Drag and Drop Zone */}
-        <Box
-          {...getRootProps()}
-          sx={{
-            ...theme.components.Dropzone.styleOverrides.root,
-            ...(isDragActive && theme.components.Dropzone.styleOverrides.active),
+        <Tooltip
+          title={
+            <Typography variant="body4" sx={{ color: "#FFFFFF" }}>
+              Drag & drop your Satisfactory save file here, or click to browse.
+              <br />
+              {hasUploadedSaveFile ? (
+                <span style={{ color: "#FFA500", fontSize: "14px", fontWeight: "bold" }}>This will overwrite your current save file.</span>
+              ) : null}
+            </Typography>
+          }
+          arrow
+          slotProps={{
+            popper: {
+              modifiers: [
+                {
+                  name: "preventOverflow",
+                  options: {
+                    boundary: "window",
+                  },
+                },
+              ],
+            },
+            tooltip: {
+              sx: {
+                backgroundColor: "#222831", // Dark grey background for contrast
+                color: "#EEEEEE", // Light grey text for readability
+                padding: "10px",
+                fontSize: "14px",
+                borderRadius: "8px",
+                border: "1px solid #444", // Optional subtle border
+              },
+            },
+            arrow: {
+              sx: {
+                color: "#222831", // Match arrow color with tooltip background
+              },
+            },
           }}
         >
-          <input {...getInputProps()} />
+          <Box
+            {...getRootProps()}
+            sx={{
+              ...theme.components.Dropzone.styleOverrides.root,
+              ...(isDragActive && theme.components.Dropzone.styleOverrides.active),
+            }}
+          >
+            <input {...getInputProps()} />
 
-          {/* Animated Upload State */}
-          {uploading ? (
-            <>
-              <CircularProgress color="progressIndicator.main" />
-            </>
-          ) : uploadSuccess === true ? (
-            <CheckCircle sx={{ fontSize: 50, color: "success.main" }} />
-          ) : uploadSuccess === false ? (
-            <ErrorOutline sx={{ fontSize: 50, color: "red" }} />
-          ) : hasUploadedSaveFile ? (
-            <Typography variant="h6" sx={{ fontWeight: "bold", color: "success.main" }}>
-              Current save file <br />
-              {uploadedFileName}
-            </Typography>
-          ) : (
-            <Typography variant="body3">
-              Drop your Satisfactory save file here...
-            </Typography>
-          )}
-        </Box>
+            {/* Animated Upload State */}
+            {uploading ? (
+              <>
+                <CircularProgress color="progressIndicator.main" />
+              </>
+            ) : uploadSuccess === true ? (
+              <CheckCircle sx={{ fontSize: 50, color: "success.main" }} />
+            ) : uploadSuccess === false ? (
+              <ErrorOutline sx={{ fontSize: 50, color: "red" }} />
+            ) : hasUploadedSaveFile ? (
+              <Typography variant="body4" sx={{ fontWeight: "bold", color: "success.main" }}>
+                Current save file <br />
+                {uploadedFileName}
+              </Typography>
+            ) : (
+              <Typography variant="body3">
+                Drop your Satisfactory save file here...
+              </Typography>
+            )}
+          </Box>
+        </Tooltip>
       </Box>
       {/* Tabs Container */}
       <TabContext value={activeTab}>
@@ -370,7 +381,7 @@ const TrackerPage = () => {
           <TabList onChange={handleChange} aria-label="Tracker Sections" sx={theme.trackerPageStyles.tabList}>
             <Tab label="Charts" value="1" />
             <Tab label="Save File Data" value="2" />
-            <Tab label="Machine Graph" value="3" />
+            <Tab label="Connection Data" value="3" />
             <Tab label="Main Tables" value="4" />
             <Tab label="Dependency Data" value="5" />
           </TabList>
@@ -410,13 +421,13 @@ const TrackerPage = () => {
 
         {/* User Save Data Panel */}
         <TabPanel value="2">
-          <Box sx={theme.trackerPageStyles.trackerBox}>
+          <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
               <CircularProgress />
             ) : (
               <>
                 <Box sx={theme.trackerPageStyles.reportBox}>
-                  <DataGrid rows={userSaveData} columns={userColumns} />
+                  <DataGrid density="compact" rows={userSaveData} columns={userColumns} />
                 </Box>
               </>
             )}
@@ -432,7 +443,7 @@ const TrackerPage = () => {
               <>
 
                 <Box sx={theme.trackerPageStyles.reportBox}>
-                  <MachineGraph />
+                  <ConnectionData/>
                 </Box>
               </>
             )}
@@ -441,7 +452,7 @@ const TrackerPage = () => {
 
         {/* Main Tables Section */}
         <TabPanel value="4">
-          <Box sx={theme.trackerPageStyles.trackerBox}>
+          <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
               <CircularProgress />
             ) : (
@@ -460,13 +471,13 @@ const TrackerPage = () => {
 
         {/* Dependency Data Panel */}
         <TabPanel value="5">
-          <Box sx={theme.trackerPageStyles.trackerBox}>
+          <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
               <CircularProgress />
             ) : (
               <>
                 <Box sx={theme.trackerPageStyles.reportBox}>
-                  <DataGrid rows={flattenedTreeData} columns={columns} />
+                  <DataGrid density="compact" rows={flattenedTreeData} columns={columns} />
                 </Box>
 
               </>

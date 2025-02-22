@@ -44,12 +44,9 @@ const MachineMetadataTable = () => {
     <Box sx={{ display: "flex", width: "100%", minHeight: 400 }}>
       <Typography variant="h6">machine_metadata Results</Typography>
       <DataGrid
+        density="compact"
         rows={rows}
         columns={columns}
-        disableSelectionOnClick
-        autoHeight
-        rowsPerPageOptions={[5, 10, 50]}
-        pageSize={5}
       />
     </Box>
   );

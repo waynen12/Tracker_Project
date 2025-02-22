@@ -41,7 +41,7 @@ const UpdatedLinksTable = ({ updatedLinks }) => {
   return (
     <Box sx={{ display: "flex", width: "100%", minHeight: 400 }}>
       <Typography variant="h6">updatedLinks Results</Typography>
-      <DataGrid rows={rows} columns={columns}/>
+      <DataGrid density="compact" rows={rows} columns={columns}/>
     </Box>
   );
 };

@@ -64,6 +64,13 @@ const theme = createTheme({
     graphs: {
       background: scheme.graphs_background,
     },
+    menu_divider: {
+      colour: scheme.menu_divider,
+    },
+    tooltip77: {
+      background: scheme.tooltip_background,      
+    },
+
   },
 
   typography: {

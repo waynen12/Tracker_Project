@@ -54,24 +54,18 @@ const ConnectionGraphTable = () => {
     <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
       <Box sx={{ display: "flex", width: "100%" }}>
         <Typography variant="h6">connection_graph: Nodes</Typography>
-        <DataGrid
+        <DataGrid 
+          density="compact"
           rows={nodeRows}
           columns={nodeColumns}
-          disableSelectionOnClick
-          autoHeight
-          rowsPerPageOptions={[5, 10, 50]}
-          pageSize={5}
         />
       </Box>
       <Box sx={{ display: "flex", width: "100%" }}>
         <Typography variant="h6">connection_graph: Links</Typography>
-        <DataGrid
+        <DataGrid 
+          density="compact"
           rows={linkRows}
           columns={linkColumns}
-          disableSelectionOnClick
-          autoHeight
-          rowsPerPageOptions={[5, 10, 50]}
-          pageSize={5}
         />
       </Box>
     </Box>

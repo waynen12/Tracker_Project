@@ -902,6 +902,7 @@ const DependencyTreePage = () => {
                             </Typography>
                             <div style={{ height: 600, width: "100%" }}>
                                 <DataGrid 
+                                    density="compact"
                                     rows={rows} 
                                     columns={columns} 
                                     loading={loading} 
@@ -947,10 +948,6 @@ const DependencyTreePage = () => {
                     overflow: "hidden",
                 }}
             >
-                <Typography variant="h1" gutterBottom>
-                    Dependency Tree Table
-                </Typography>
-
                 {/* Selection Inputs */}
                 <Box
                     sx={{
@@ -986,7 +983,7 @@ const DependencyTreePage = () => {
 
                     {/* Target Quantity */}
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ marginBottom: theme.spacing(0.5) }}>Target Quantity:</label>
+                        <label style={{ marginBottom: theme.spacing(0.5) }}>Target Quantity Per Minute:</label>
                         <input
                             type="number"
                             placeholder="Enter Quantity"
@@ -1015,18 +1012,7 @@ const DependencyTreePage = () => {
 
                 {/* DataGrid */}
                 <Box sx={{ height: 650, width: "100%" }}>
-                    <DataGrid rows={rows} columns={columns} loading={loading} />
-                    {/* <DataGrid
-                        rows={rows}
-                        columns={columns}
-                        pageSize={10}
-                        rowsPerPageOptions={[5, 10, 20]}
-                        checkboxSelection
-                        disableSelectionOnClick
-                        sortingOrder={['asc', 'desc']}
-                        slots={{ toolbar: GridToolbar }}
-                        slotProps={{ toolbar: { showQuickFilter: true } }}
-                    /> */}
+                    <DataGrid density="compact" rows={rows} columns={columns} loading={loading} />
                 </Box>
             </Box>
 

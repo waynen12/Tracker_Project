@@ -1,302 +1,10 @@
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { dark } from '@mui/material/styles/createPalette';
 import logToBackend from "../services/logService";
+import { DensitySmall, WrapText } from '@mui/icons-material';
+import { fontSize, minHeight } from '@mui/system';
 
 export const USE_THEME = 'dark'; // 'light' or 'dark'
-
-// Color Palettes
-// export const THEME_LIGHT = {
-//     // Primary color palette
-//     primary_main: '#3a3e61', // #3a3e61 
-//     primary_contrastText: '#FFFFFF', // White text on primary background #FFFFFF
-//     // Secondary color palette
-//     secondary_main: '#264431', // #0F705C #264431
-//     secondary_contrastText: '#FFFFFF', // White text on secondary background #FFFFFF
-//     // Background color palette
-//     background_default: '#264431', // #264431
-//     background_mid: '#32527b', // Blue Violet for mid-level components #32527b
-//     background_paper: '#364b61', // Medium dark shade of cyan-blue #364b61
-//     background_dropdown: '#FFFFFF', // White background for dropdowns #FFFFFF
-//     background_tabs: '#1E1E1E', // Dark Gray for tabs #1E1E1E
-//     // Text color palette
-//     text_primary: '#FFFFFF', // White text for general use #FFFFFF
-//     text_secondary: '#DDA0DD', // Plum for secondary text #DDA0DD #FFFFFF
-//     text_disabled: '#C4C4C4', // Disabled text color #C4C4C4
-//     text_dropdown: '#000000', // Black text for dropdowns #000000
-//     // Button color palette
-//     button_main: '#264431', // #0F705C #264431
-//     button_contrastText: '#FFFFFF', // White text on primary background #FFFFFF
-//     button_hover: '#1d3a2a', // Hover color #1d3a2a
-//     button_disabled: '#1d3a2a', // Disabled button color #1d3a2a
-//     button_disabledText: '#264431', // White text on disabled button #264431
-//     // Progress indicator color palette
-//     progressIndicator_main: '#0bc260', // #0bc260
-
-//     // Typography
-//     typography_fontFamily: 'Arial, sans-serif',
-//     typography_h1: { fontSize: '48px', fontWeight: 700 },
-//     typography_h2: { fontSize: '32px', fontWeight: 600 },
-//     typography_h3: { fontSize: '20px', fontWeight: 600 },
-//     typography_body1: { fontSize: '18px' },
-//     typography_body2: { fontSize: '16px' },
-//     typography_body3: { fontSize: '14px' },
-//     typography_body4: { fontSize: '12px' },
-
-//     // Spacing
-//     spacing: 4, // Default spacing unit
-
-//     border_tabs: "2px solid #FFFFFF", // White border for selected tab
-
-
-//     // Components
-//     components_MuiCssBaseline_select: {
-//         padding: "4px",
-//         borderRadius: "8px",
-//         border: "1px solid #C4C4C4", // Using the disabled text color
-//         backgroundColor: "#FFFFFF",
-//         color: "#000000",
-//         "&:focus": {
-//             borderColor: "#8A2BE2", // Blue Violet focus color
-//             outline: "none",
-//         },
-//     },
-//     components_MuiCssBaseline_body: {
-//         background: `linear-gradient(to right, #364b61, #3e596c)`,
-//         color: '#FFFFFF',
-//         a: {
-//             color: '#3a3e61', // #3a3e61
-//             textDecoration: 'none',
-//             '&:hover': {
-//                 textDecoration: 'underline',
-//             },
-//         },
-//     },
-
-//     components_MuiTable_root: {
-//         backgroundColor: "#364b61", // Default background for the whole table
-//         color: "#FFFFFF", // Default text color
-//     },
-//     components_MuiTableHead_root: {
-//         position: "sticky", //  Makes the header stick
-//         top: 0, //  Keeps it at the top when scrolling
-//         zIndex: 2, //  Ensures it stays above other rows
-//         backgroundColor: "#264431", //  Ensures background color remains visible #264431
-//     },
-//     components_MuiTableRow_root: {
-//         height: "15px", //  Sets row height
-//         "&:nth-of-type(even)": {
-//             backgroundColor: "#3e596c",
-//         },
-//         "&:hover": {
-//             backgroundColor: "#3a3e61",
-//         },
-//     },
-
-//     components_MuiTableCell_root: {
-//         padding: "1px 4px", //  Controls cell padding (affects row height)
-//         color: "#FFFFFF",
-//         borderBottom: "1px solid #8A2BE2",
-//         fontSize: "14px", //  Sets a default font size for table cells
-//         fontFamily: "Arial, sans-serif", //  Ensure font consistency
-//     },
-
-//     components_MuiCssBaseline_head: {
-//         fontWeight: "bold",
-//         textTransform: "uppercase",
-//         backgroundColor: "#264431", //  Header background color #3a3e61
-//         color: "#FFFFFF",
-//         padding: "14px 16px", //  Increase header row height
-//         fontSize: "16px", //  Larger font size for headers
-//         position: "sticky", //  Ensures column headers remain visible
-//         top: 0, //  Keeps it at the top
-//         zIndex: 3, //  Higher than rows to prevent overlap
-//     },
-//     components_MuiDataGrid_defaultProps: {
-//         rowHeight: 40,
-//         pageSize: 25,
-//         pageSizeOptions: [10, 25, 100, { value: -1, label: 'All' }],
-//         checkboxSelection: true,
-//         disableSelectionOnClick: true,
-//         sortingOrder: ['asc', 'desc'],
-//         slots: {
-//             toolbar: GridToolbar,
-//         },
-//         slotProps: {
-//             toolbar: { showQuickFilter: true },
-//         },
-//     },
-//     components_MuiDataGrid_root: {
-//         backgroundColor: "#364b61", //  Default background color #364b61
-//         borderRadius: "8px",
-//         color: "#FFFFFF",
-//         border: `1px solid #8A2BE`, //  Border color #C4C4C4
-//     },
-//     components_MuiDataGrid_columnHeaders: {
-//         backgroundColor: "#264431", //  Header background color #264431
-//         color: "#FFFFFF",
-//         fontSize: "16px",
-//         fontWeight: "bold",
-//         textTransform: "uppercase",
-//     },
-//     components_MuiDataGrid_row: {
-//         "&:nth-of-type(even)": {
-//             backgroundColor: "#3e596c", //  Alternating row color #3e596c
-//         },
-//         "&:hover": {
-//             backgroundColor: "#3a3e61", //  Hover effect color #8A2BE2
-//         },
-//     },
-
-//     components_MuiDataGrid_cell: {
-//         borderColor: "#264431 !important", //  Purple cell borders
-//     },
-
-//     components_MuiDataGrid_footerContainer: {
-//         backgroundColor: "#264431", //  Footer background color #264431
-//         color: "#FFFFFF",
-//     },
-
-//     components_MuiDataGrid_toolbar: {
-//         backgroundColor: "#264431", //  Toolbar background color #264431
-//         color: "#FFFFFF",
-//     },
-
-//     components_MuiButton_root: {
-//         borderRadius: 8,
-//         textTransform: 'none',
-//     },
-//     components_MuiButton_containedPrimary: {
-//         backgroundColor: '#264431', // #264431
-//         color: '#FFFFFF', // White text color #FFFFFF
-//         '&:hover': {
-//             backgroundColor: '#1d3a2a', // #1d3a2a
-//         },
-//     },
-//     components_MuiButton_containedSecondary: {
-//         backgroundColor: '#264431', // #264431
-//         color: '#FFFFFF', // White text color #FFFFFF
-//         '&:hover': {
-//             backgroundColor: '#1d3a2a', // #1d3a2a
-//         },
-//     },
-//     components_MuiButton_outlinedPrimary: {
-//         backgroundColor: '#264431', // #264431
-//         color: '#FFFFFF', // White text color #FFFFFF
-//         '&:hover': {
-//             backgroundColor: '#1d3a2a', // #2a2e51
-//         },
-//     },
-//     components_MuiButton_outlinedSecondary: {
-//         backgroundColor: '#264431', // #264431
-//         color: '#FFFFFF', // White text color #FFFFFF
-//         '&:hover': {
-//             backgroundColor: '#1d3a2a', // #1d3a2a
-//         },
-//     },
-
-//     components_MuiTextField_root: {
-//         '& .MuiOutlinedInput-root': {
-//             '& fieldset': {
-//                 borderColor: '#8A2BE2', // Blue Violet border color #8A2BE2
-//             },
-//             '&:hover fieldset': {
-//                 borderColor: '#DDA0DD', // Plum border color #DDA0DD
-//             },
-//             '&.Mui-focused fieldset': {
-//                 borderColor: '#FFFFFF',   // White border color #FFFFFF
-//             },
-//         },
-//     },
-//     components_MuiTextField_input: {
-//         color: '#FFFFFF', // White text color #FFFFFF
-//     },
-
-//     components_MuiTabList_root: {
-//         "& .MuiTab-root": {
-//             fontSize: "1rem", // Larger text
-//             fontWeight: "bold", // Make the text bold
-//             border: "2px solid transparent", // Default border
-//             borderRadius: "8px", // Rounded corners
-//             padding: "12px 24px",
-//             margin: "4px",
-//             transition: "0.3s",
-//             color: "#FFFFFF", // White text
-//         },
-//         "& .MuiTab-root.Mui-selected": {
-//             borderColor: "#FFFFFF", // White outline for the selected tab
-//             backgroundColor: "rgba(255,255,255,0.1)", // Slight highlight
-//         },
-//         "& .MuiTab-root:hover": {
-//             borderColor: "#888888", // Gray outline on hover
-//         },
-//     },
-
-//     components_Dropzone_root: {
-//         border: '2px dashed #8A2BE2', // Blue Violet border #8A2BE2
-//         padding: '20px',
-//         textAlign: 'center',
-//         cursor: 'pointer',
-//         backgroundColor: '#364b61', // Medium dark shade of cyan-blue #364b61
-//         transition: 'background-color 0.3s ease-in-out',
-//         color: '#FFFFFF', // White text color   #FFFFFF
-//     },
-//     components_Dropzone_active: {
-//         backgroundColor: '#8A2BE2', // Blue Violet when dragging #8A2BE2
-//         borderColor: '#DDA0DD', // Plum border color #DDA0DD
-//     },
-//     trackerPageStyles: {
-//         tabsContainer: {
-//             borderBottom: 2,
-//             borderColor: "primary.main",
-//             backgroundColor: "#1E1E1E",
-//             borderRadius: "8px",
-//             padding: "8px",
-//             display: "flex",
-//             justifyContent: "center",
-//         },
-//         tabList: {
-//             "& .MuiTab-root": {
-//                 fontSize: "1rem",
-//                 fontWeight: "bold",
-//                 border: "2px solid transparent",
-//                 borderRadius: "8px",
-//                 padding: "12px 24px",
-//                 margin: "4px",
-//                 transition: "0.3s",
-//                 color: "#FFFFFF",
-//             },
-//             "& .MuiTab-root.Mui-selected": {
-//                 borderColor: "#FFFFFF",
-//                 backgroundColor: "rgba(255,255,255,0.1)",
-//             },
-//             "& .MuiTab-root:hover": {
-//                 borderColor: "#888888",
-//             },
-//         },
-//         tabPanelBox: {
-//             display: "flex",
-//             justifyContent: "space-between",
-//             gap: 4,
-//             width: "100%",
-//         },
-//         chartBox: {
-//             width: "50%",
-//             minWidth: 600,
-//         },
-//         reportBox: {
-//             width: "100%",
-//             minWidth: 600,
-//             mt: 4,
-//         },
-//         trackerBox: {
-//             border: "2px solid #ddd",
-//             borderRadius: "8px",
-//             padding: "16px",
-//             backgroundColor: "#1E1E1E",
-//             width: "50%",
-//         },
-//     },
-// };
 
 export const THEME_LIGHT = {
     // Primary color palette
@@ -323,9 +31,10 @@ export const THEME_LIGHT = {
     button_hover: '#333333', // Dark Charcoal hover color #333333
     button_disabled: '#383838', // Dark Gray for disabled buttons #383838
     button_disabledText: '#A6A6A6', // Light Gray for disabled text #A6A6A6 
-    // Progress indicator color palette
+    // Other controls
     progressIndicator_main: '#8A2BE2', // Vibrant Purple #8A2BE2
-
+    menu_divider: '#FFFFFF', // White divider color #FFFFFF
+    tooltip_background: '#FFFFFF', // White tooltip background #FFFFFF
     // Typography
     typography_fontFamily: 'Arial, sans-serif',
     typography_h1: { fontSize: '48px', fontWeight: 700 },
@@ -531,33 +240,39 @@ export const THEME_LIGHT = {
     },
     trackerPageStyles: {
         tabsContainer: {
-            borderBottom: 2,
-            borderColor: "#FFFFFF", // White border color #FFFFFF
-            backgroundColor: "#1E1E1E", // Dark Gray background #1E1E1E
+            borderBottom: 1,
+            borderColor: "#FFFFFF", // White border color
+            backgroundColor: "#1E1E1E", // Dark Gray background
             borderRadius: "8px",
             padding: "2px",
             display: "flex",
             justifyContent: "center",
+            alignItems: "center", // Ensures proper alignment
+            height: "30px", // Set explicit height
+            minHeight: "30px", // Ensures it doesn't shrink
+            maxHeight: "50px", // Optional: Prevents excessive growth
         },
         tabList: {
             "& .MuiTab-root": {
-                fontSize: "1rem",
+                fontSize: "0.85rem",
+                minWidth: "80px",
                 fontWeight: "bold",
                 border: "2px solid transparent",
                 borderRadius: "8px",
-                padding: "12px 24px",
+                padding: "8px 16px", // Reduce padding to shrink tab size
                 margin: "4px",
+                minHeight: "30px", // Match height of container
                 transition: "0.3s",
-                color: "#FFFFFF",   // White text color #FFFFFF
+                color: "#FFFFFF",
             },
-            "& .MuiTab-root.Mui-selected": {
-                borderColor: "#FFFFFF", // White outline for the selected tab #FFFFFF
-                backgroundColor: "rgba(255,255,255,0.1)",
+            "& .MuiTabs-root": {
+                minHeight: "30px"
             },
-            "& .MuiTab-root:hover": {
-                borderColor: "#888888", // Gray outline on hover #888888
+            "& .MuiTabs-indicator": {
+                height: "1px",
             },
         },
+        
         tabPanelBox: {
             display: "flex",
             justifyContent: "space-between",
@@ -669,7 +384,7 @@ export const THEME_DARK = {
         padding: "1px 4px", //  Controls cell padding (affects row height)
         color: "#FFFFFF",
         borderBottom: "1px solid #1E1E2E",
-        fontSize: "14px", //  Sets a default font size for table cells
+        fontSize: "12px !important", //  Sets a default font size for table cells
         fontFamily: "Arial, sans-serif", //  Ensure font consistency
     },
 
@@ -679,7 +394,7 @@ export const THEME_DARK = {
         backgroundColor: '#1E1E2E', //  Header background color #3a3e61
         color: "#FFFFFF",
         padding: "14px 16px", //  Increase header row height
-        fontSize: "16px", //  Larger font size for headers
+        fontSize: "14px", //  Larger font size for headers
         position: "sticky", //  Ensures column headers remain visible
         top: 0, //  Keeps it at the top
         zIndex: 3, //  Higher than rows to prevent overlap
@@ -687,7 +402,7 @@ export const THEME_DARK = {
 
     components_MuiDataGrid_defaultProps: {
         rowHeight: 40,
-        pageSize: 25,
+        pageSize: 100,
         pageSizeOptions: [10, 25, 100, { value: -1, label: 'All' }],
         checkboxSelection: true,
         disableSelectionOnClick: true,
@@ -708,24 +423,25 @@ export const THEME_DARK = {
     components_MuiDataGrid_columnHeaders: {
         backgroundColor: "#1E1E2E", //  Header background color #264431
         color: "#FFFFFF",
-        fontSize: "16px",
+        fontSize: "14px", // Use this font size for headers!
         fontWeight: "bold",
         textTransform: "uppercase",
     },
     components_MuiDataGrid_row: {
         "&:nth-of-type(even)": {
-            backgroundColor: '#2C2C3C', //  Alternating row color #3e596c
+            backgroundColor: '#2C2C3C', //  Alternating row color #2C2C3C
         },
         "&:hover": {
-            backgroundColor: '#393939', //  Hover effect color #8A2BE2
+            backgroundColor: '#393939', //  Hover effect color #393939
         },
     },
     components_MuiDataGrid_cell: {
-        borderColor: "#1E1E2E !important", //  Purple cell borders #8A2BE2
+        borderColor: "#1E1E2E !important", //  Cell borders #1E1E2E !important
+        fontSize: "12px", //  Sets a default font size for table cells
     },
 
     components_MuiDataGrid_columnSeparator: {
-        color: "#1E1E2E !important", //  Purple column separator color #8A2BE2
+        color: "#1E1E2E !important", //  Purple column separator color #1E1E2E !important
     },
     components_MuiDataGridfooter_Container: {
         backgroundColor: "#1E1E2E", //  Footer background color #264431
@@ -791,16 +507,17 @@ export const THEME_DARK = {
         border: '2px dashed #8A2BE2', // Blue Violet border #8A2BE2
         padding: '5px',
         textAlign: 'center',
+        WrapText: 'wrap',
         cursor: 'pointer',
         backgroundColor: '#242424', // Dark Gray background #242424
         transition: 'background-color 0.3s ease-in-out',
         color: '#FFFFFF', // White text color   #FFFFFF
         borderRadius: "8px",
         width: "100%",
-        maxWidth: 400,
-        minHeight: 80,
+        maxWidth: 300,
+        minHeight: 40,
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         alignItems: "center",
         justifyContent: "center"
     },
@@ -814,18 +531,21 @@ export const THEME_DARK = {
             borderColor: "#FFFFFF",
             backgroundColor: "#1E1E1E",
             borderRadius: "8px",
-            padding: "8px",
+            padding: "1px",
             display: "flex",
             justifyContent: "center",
         },
         tabList: {
             "& .MuiTab-root": {
                 fontSize: "1rem",
+                minWidth: "80px",
                 fontWeight: "bold",
                 border: "2px solid transparent",
                 borderRadius: "8px",
-                padding: "12px 24px",
+                padding: "8px 16px",
                 margin: "4px",
+                height: "8px",
+                minHeight: "8px",
                 transition: "0.3s",
                 color: "#FFFFFF",
             },
@@ -846,18 +566,18 @@ export const THEME_DARK = {
         chartBox: {
             width: "50%",
             minWidth: 600,
-            mt: 4,
+            mt: 1,
         },
         reportBox: {
             width: "100%",
             minWidth: 600,
             height: 600,
-            mt: 4,
+            mt: 1,
         },
         trackerBox: {
             border: "2px solid #ddd",
             borderRadius: "8px",
-            padding: "16px",
+            padding: "12px",
             backgroundColor: "#1E1E1E",// #1E1E1E
             width: "100%",
         },
@@ -866,9 +586,9 @@ export const THEME_DARK = {
             textAlign: 'center',
             backgroundColor: '#242424', // Dark Gray background #242424
             borderRadius: "8px",
-            width: "100%",
+            width: "20%",
             maxWidth: 400,
-            minHeight: 80,
+            minHeight: 20,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -912,73 +632,6 @@ export const COMMON_SETTINGS = {
     typography_body4_italic: { fontSize: '12px', fontStyle: 'italic' },
     typography_body4_underline: { fontSize: '12px', textDecoration: 'underline' },
 
-    trackerPageStyles: {
-        tabsContainer: {
-            borderBottom: 2,
-            borderColor: "#FFFFFF",
-            backgroundColor: "#1E1E1E",
-            borderRadius: "8px",
-            padding: "8px",
-            display: "flex",
-            justifyContent: "center",
-        },
-        tabList: {
-            "& .MuiTab-root": {
-                fontSize: "1rem",
-                fontWeight: "bold",
-                border: "2px solid transparent",
-                borderRadius: "8px",
-                padding: "12px 24px",
-                margin: "4px",
-                transition: "0.3s",
-                color: "#FFFFFF",
-            },
-            "& .MuiTab-root.Mui-selected": {
-                borderColor: "#FFFFFF",
-                backgroundColor: "rgba(255,255,255,0.1)",
-            },
-            "& .MuiTab-root:hover": {
-                borderColor: "#888888",
-            },
-        },
-        tabPanelBox: {
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 4,
-            width: "100%",
-        },
-        chartBox: {
-            width: "50%",
-            minWidth: 600,
-            mt: 4,
-        },
-        reportBox: {
-            width: "100%",
-            minWidth: 600,
-            mt: 4,
-        },
-        trackerBox: {
-            display: "flex",
-            flexDirection: "column",
-            border: "2px solid #ddd",
-            borderRadius: "8px",
-            padding: "16px",
-            backgroundColor: "#1E1E1E",
-            width: "100%",
-        },
-        tracker_Drop_Zone_Arrow: {
-            textAlign: 'left',
-            borderRadius: "8px",
-            width: "100%",
-            maxWidth: 400,
-            minHeight: 80,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center"
-
-        },
-    },
     // Spacing
     spacing: 4, // Default spacing unit
 

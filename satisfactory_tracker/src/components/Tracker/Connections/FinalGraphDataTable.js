@@ -67,19 +67,17 @@ const FinalGraphDataTable = ({ graphData }) => {
       <Box sx={{ display: "flex", width: "100%" }}>
         <Typography variant="h6">Final graphData: Nodes</Typography>
         <DataGrid
+          density="compact"
           rows={nodeRows}
           columns={nodeColumns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 50]}
         />
       </Box>
       <Box sx={{ display: "flex", width: "100%" }}>
         <Typography variant="h6">Final graphData: Links</Typography>
-        <DataGrid
+        <DataGrid          
+          density="compact"
           rows={linkRows}
           columns={linkColumns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 50]}
         />
       </Box>
     </Box>

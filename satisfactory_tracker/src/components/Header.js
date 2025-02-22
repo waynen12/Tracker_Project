@@ -1,5 +1,5 @@
 // Use this file to compare proposed changes before implementing them
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 import { ReactComponent as DiscordIcon } from '../assets/icons/discord-icon.svg';
 import { ReactComponent as GitHubIcon } from '../assets/icons/github-mark-white.svg';
 import { Box, Typography, Button, IconButton, Tooltip, Menu, MenuItem, Divider } from '@mui/material';
@@ -18,10 +18,15 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Contribute Icon
 import ForumIcon from '@mui/icons-material/Forum'; // Discord Alternative
 import CodeIcon from '@mui/icons-material/Code';
-import { Comment, Discord, AttachMoney } from '@mui/icons-material';
+import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
+import { Comment, Discord, AttachMoney, Favorite } from '@mui/icons-material';
 import PaidIcon from '@mui/icons-material/Paid';
 import { useTheme } from '@mui/material/styles';
 import UserSettingsPage from '../pages/UserSettingsPage';
+import { useLocation } from "react-router-dom";
+import MenuIcon from '@mui/icons-material/Menu';
+import { useMediaQuery } from '@mui/material';
 
 axios.defaults.withCredentials = true;
 
@@ -30,15 +35,24 @@ const Header = () => {
     const { user, logout } = React.useContext(UserContext); // Access user and logout function
     const navigate = useNavigate();
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const location = useLocation();
+    const [navAnchorEl, setNavAnchorEl] = useState(null); // For navigation menu
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const bannerRef = useRef(null);
 
-    // Dropdown state
-    const [anchorEl, setAnchorEl] = useState(null);
-    const handleMenuOpen = (event) => {
-        setAnchorEl(event.currentTarget);
+    const handleMenuOpen = (event) => setMenuAnchorEl(event.currentTarget);
+    const handleMenuClose = () => setMenuAnchorEl(null);
+
+
+    const pageTitles = {
+        "/": "Home",
+        "/data": "Data Management",
+        "/dependencies": "Parts & Recipes",
+        "/tracker": "My Tracker",
     };
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
+
+    // Get the current page title, default to "Satisfactory Tracker" if route not found
+    const currentPageTitle = pageTitles[location.pathname] || "Satisfactory Tracker";
 
     const handleLogout = async () => {
         try {
@@ -59,211 +73,146 @@ const Header = () => {
 
     return (
         <Box sx={{
-            width: '100%',
-            padding: theme.spacing(2),
+            position: "sticky",
+            top: 0,
+            width: "100%",
+            zIndex: 1100,
             backgroundColor: theme.palette.primary.secondary,
-            color: theme.palette.primary.contrastText,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between', // Distribute items: banner on the left, user section on the right
-            position: 'sticky',  // Makes it stay at the top
-            top: 0,  // Sticks to the top
-            zIndex: 1000,  // Ensures it stays above other content
-            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)" // Optional: Adds a shadow for better visibility
+            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
         }}>
-            {/* Left Section: Banner & Navigation Links */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, width: "fit-content" }}>
-                {/* Banner Image */}
-                <Tooltip title="Satisfactory Tracker - Home">
-                    <a href="/">
-                        <img
-                            src="images/app/Satisfactory_Tracker_Banner.png"
-                            alt="Banner"
-                            style={{ height: '60px', maxWidth: '100%' }}
-                        />
-                    </a>
-                </Tooltip>
-                {/* </Box> */}
-
-                {/* Navigation Buttons */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: "fit-content", width: "fit-content", whiteSpace: "nowrap" }}>
-                    <Button
-                        variant="outlined"
-                        fontSize="small"
-                        startIcon={<HomeIcon />}
-                        //color= {theme.palette.secondary.main}
-                        component={Link}
-                        to="/"
-                    //onClick={handleHomeClick}
-                    // sx={{
-                    //     color: 'primary.contrastText',
-                    //     backgroundColor: "secondary.main",
-                    //     borderColor: 'primary.contrastText',
-                    //     '&:hover': {
-                    //         borderColor: 'primary.contrastText',
-                    //     },
-                    // }}
-                    >
-                        Home
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        // fontSize="small"
-                        startIcon={<TableViewIcon />}
-                        // backgroundColor="secondary.main"
-                        // color="secondary.contrastText"
-                        component={Link}
-                        to="/data"
-                    //onClick={handleDataManagementClick}
-                    // sx={{
-                    //     color: 'primary.contrastText',
-                    //     backgroundColor: "secondary.main",
-                    //     borderColor: 'primary.contrastText',
-                    //     '&:hover': {
-                    //         borderColor: 'primary.contrastText',
-                    //     },
-                    // }}
-                    >
-                        Data Management
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        fontSize="small"
-                        startIcon={<TuneIcon />}
-                        // backgroundColor="secondary.main"
-                        // color="secondary.contrastText"
-                        component={Link}
-                        to="/dependencies"
-                    //onClick={handleDependenciesClick}
-                    // sx={{
-                    //     color: 'primary.contrastText',
-                    //     backgroundColor: "secondary.main",
-                    //     borderColor: 'primary.contrastText',
-                    //     '&:hover': {
-                    //         borderColor: 'primary.contrastText',
-                    //     },
-                    // }}
-                    >
-                        Dependencies
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        fontSize="small"
-                        startIcon={<AssessmentIcon />}
-                        // backgroundColor="secondary.main"
-                        // color="secondary.contrastText"
-                        component={Link}
-                        to="/tracker"
-                    //onClick={handleTrackerClick}
-                    // sx={{
-                    //     color: 'primary.contrastText',
-                    //     backgroundColor: "secondary.main",
-                    //     borderColor: 'primary.contrastText',
-                    //     '&:hover': {
-                    //         borderColor: 'primary.contrastText',
-                    //     },
-                    // }}
-                    >
-                        Tracker
-                    </Button>
+            {/* Top Section: Menu (Left), Banner (Center), User Info (Right) */}
+            <Box sx={{
+                width: '100%',
+                padding: theme.spacing(2),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+            }}>
+                {/* Left Section: Menu */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }} onClick={handleMenuOpen}>
+                    <IconButton color="inherit" sx={{ fontSize: 32 }}>
+                        <MenuIcon sx={{ fontSize: 32 }} />
+                    </IconButton>
+                    <Typography variant="h4" sx={{ color: theme.palette.primary.contrastText }}>Menu</Typography>
+                </Box>
+    
+                {/* Center Section: Banner */}
+                <Box sx={{ display: "flex", justifyContent: "center", flexGrow: 1 }}>
+                    <Tooltip title="Satisfactory Tracker - Home">
+                        <a href="/">
+                            <img src="images/app/Satisfactory_Tracker_Banner.png" alt="Banner"
+                                style={{ height: '60px', maxWidth: "100%" }} />
+                        </a>
+                    </Tooltip>
+                </Box>
+    
+                {/* Right Section: User Info & Login/Logout */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    {user ? (
+                        <Typography variant="h5" align="center">Logged in as:<br />{user.username}</Typography>
+                    ) : (
+                        <Typography variant="h5">Log In</Typography>
+                    )}
+                    <Tooltip title={user ? "Logout" : "Login"} arrow>
+                        <IconButton color="inherit" onClick={user ? handleLogout : handleLogin}>
+                            {user ? <LogoutIcon /> : <LoginIcon />}
+                        </IconButton>
+                    </Tooltip>
                 </Box>
             </Box>
-
-            {/* Right Section: User Info & Actions */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: "fit-content" }}>
-
-
-                {/* Settings & User Info */}
+    
+            {/* Hamburger Menu */}
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left"
+                }}
+                transformOrigin={{
+                    vertical: "top",
+                    horizontal: "left"
+                }}
+            >
+                {/* Navigation Links */}
+                <MenuItem component={Link} to="/" onClick={handleMenuClose}>
+                    <HomeIcon sx={{ marginRight: 1 }} /> Home
+                </MenuItem>
+    
+                {/* Only show Data Management if user is an admin */}
+                {user?.role === "admin" && (
+                    <MenuItem
+                        component={Link}
+                        to="/data"
+                        onClick={handleMenuClose}
+                    >
+                        Data Management
+                    </MenuItem>
+                )}
+    
+                <MenuItem component={Link} to="/dependencies" onClick={handleMenuClose}>
+                    <LibraryAddIcon sx={{ marginRight: 1 }} /> Parts & Recipes
+                </MenuItem>
+                <MenuItem component={Link} to="/tracker" onClick={handleMenuClose}>
+                    <StackedLineChartIcon sx={{ marginRight: 1 }} /> Tracker
+                </MenuItem>
+    
+                <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
+    
+                {/* User Section */}
                 {user ? (
                     <>
-                        <Typography variant="h2">
-                            Welcome, {user.username}!
-                        </Typography>
-                        {/* Contribute Dropdown */}
-                        <Tooltip title="Contribute" arrow> 
-                            <IconButton onClick={handleMenuOpen} color="inherit">
-                                <FavoriteIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-                            {/* Section 1 - Help make the site better */}
-                            <MenuItem disabled><b>Help make the site better</b></MenuItem>
-                            <MenuItem component="a" href="https://your-discord-link.com" target="_blank">
-                                <DiscordIcon style={{ width: 24, height: 24, marginRight: 8 }} />
-                                Join Discord
-                            </MenuItem>
-                            <MenuItem component="a" href="https://github.com/your-repo" target="_blank">
-                                <GitHubIcon
-                                    style={{
-                                        width: 24,
-                                        height: 24,
-                                        marginRight: 8,
-                                        overflow: "visible",
-                                        verticalAlign: "middle"
-                                    }}
-                                />
-                                GitHub Repository
-                            </MenuItem>
-                            <MenuItem component="a" href="https://your-feedback-form.com" target="_blank">
-                                <Comment sx={{ marginRight: 1 }} /> Leave a Comment
-                            </MenuItem>
-
-                            <Divider />
-
-                            {/* Section 2 - Support me */}
-                            <MenuItem disabled><b>Support me</b></MenuItem>
-                            <MenuItem component="a" href="https://paypal.me/your-link" target="_blank">
-                                <AttachMoney sx={{ marginRight: 1 }} /> Donate through PayPal
-                            </MenuItem>
-                            <MenuItem component="a" href="https://patreon.com/your-link" target="_blank">
-                                <PaidIcon sx={{ marginRight: 1 }} /> Pledge on Patreon
-                            </MenuItem>
-                        </Menu>
-
-                        <Tooltip title="Settings" arrow>
-                            <IconButton onClick={() => setSettingsOpen(true)} color="inherit"
-                                >
-                            
-                                <SettingsIcon />
-                            
-                            </IconButton>
-                        </Tooltip>
-                        <UserSettingsPage open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-                        <Tooltip title="Logout" arrow>
-                            <IconButton
-                                component={Link} to="/"
-                                color="inherit"
-                                aria-label="clickable-button"
-                                onClick={handleLogout}
-                            >
-                                <LogoutIcon />
-
-                            </IconButton>
-                        </Tooltip>
+                        <MenuItem disabled>Logged in as: {user.username}</MenuItem>
+                        <Divider />
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/settings">
+                            <SettingsIcon sx={{ marginRight: 1 }} /> Settings
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => { handleLogout(); handleMenuClose(); }}
+                            component={Link}
+                            to="/"
+                        >
+                            <LogoutIcon sx={{ marginRight: 1 }} /> Logout
+                        </MenuItem>
                     </>
                 ) : (
-                    <>
-                        <Typography variant="h3">Not Logged In</Typography>
-                        <Button
-                            variant="outlined"
-                            startIcon={<LoginIcon />}
-                            onClick={handleLogin}
-                        // sx={{
-                        //     color: 'primary.contrastText',
-                        //     backgroundColor: 'secondary.main',
-                        //     borderColor: 'primary.contrastText',
-                        //     '&:hover': {
-                        //         borderColor: 'primary.contrastText',
-                        //     },
-                        // }}
-                        >
-                            Login
-                        </Button>
-                    </>
+                    <MenuItem
+                        onClick={() => { handleLogin(); handleMenuClose(); }}
+                    >
+                        <LoginIcon sx={{ marginRight: 1 }} /> Login
+                    </MenuItem>
                 )}
-            </Box>
+    
+                <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
+    
+                {/* Contribute Section */}
+                <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help make the site better</b></MenuItem>
+                <MenuItem component="a" href="https://your-discord-link.com" target="_blank">
+                    <DiscordIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                    Join Discord
+                </MenuItem>
+                <MenuItem component="a" href="https://github.com/your-repo" target="_blank">
+                    <GitHubIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                    GitHub Repository
+                </MenuItem>
+                <MenuItem component="a" href="https://your-feedback-form.com" target="_blank">
+                    <Comment sx={{ marginRight: 1 }} /> Leave a Comment
+                </MenuItem>
+    
+                <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
+    
+                {/* Support Section */}
+                <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help keep the site running</b></MenuItem>
+                <MenuItem component="a" href="https://paypal.me/your-link" target="_blank">
+                    <AttachMoney sx={{ marginRight: 1 }} /> Donate through PayPal
+                </MenuItem>
+                <MenuItem component="a" href="https://patreon.com/your-link" target="_blank">
+                    <PaidIcon sx={{ marginRight: 1 }} /> Pledge on Patreon
+                </MenuItem>
+            </Menu>
         </Box>
     );
-};
+};    
 
 export default Header;

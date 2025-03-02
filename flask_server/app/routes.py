@@ -15,7 +15,7 @@ from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Lev
 from sqlalchemy.exc import SQLAlchemyError
 from . import db
 from .build_tree import build_tree
-from .build_connection_graph import detect_cycles, format_graph_for_frontend, traverse_factory_graph, build_factory_graph
+from .build_connection_graph import format_graph_for_frontend, build_factory_graph
 from flask import request, flash, redirect, url_for
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
@@ -42,7 +42,7 @@ spec.loader.exec_module(config)
 
 logger = setup_logger("routes")
 
-logger.info(f"Config Path: {config_path}")  
+#logger.info(f"Config Path: {config_path}")  
 
 # Use the imported config variables
 REACT_BUILD_DIR = config.REACT_BUILD_DIR
@@ -68,7 +68,7 @@ ALLOWED_EXTENSIONS = config.ALLOWED_EXTENSIONS
 # Simulated processing tracker
 PROCESSING_STATUS = {}
 
-logger.info(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
+#logger.info(f"UPLOAD_FOLDER: {UPLOAD_FOLDER}")
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -276,11 +276,11 @@ def build_tree_route():
     visited = request.args.get('visited')
 
     if not part_id:
-        logger.error("part_id is required")
+        logger.error("❌ part_id is required")
         return jsonify({"error": "part_id is required"}), 400
     
     result = build_tree(part_id, recipe_name, target_quantity, visited)
-    logger.info(f"Build Tree Result: {result}")
+    #logger.info(f"Build Tree Result: {result}")
     return jsonify(result)
 
 @main.route('/api/<table_name>', methods=['GET'])
@@ -400,7 +400,7 @@ def get_recipe_id(part_id):
         logger.info(f"Query result: {recipe}")
         return jsonify([dict(row._mapping) for row in recipe])
     except Exception as e:
-        logger.error(f"Error fetching recipe ID for part_id {part_id} and recipe_name {recipe_name}: {e}")
+        logger.error(f"❌ Error fetching recipe ID for part_id {part_id} and recipe_name {recipe_name}: {e}")
         return jsonify({"error": "Failed to fetch recipe ID"}), 500
 
 @main.route('/api/alternate_recipe', methods=['GET'])
@@ -475,7 +475,7 @@ def get_tracker_reports():
 
         return jsonify(reports), 200
     except Exception as e:
-        logger.error(f"Error generating tracker reports: {e}")
+        logger.error(f"❌ Error generating tracker reports: {e}")
         return jsonify({"error": "Failed to generate tracker reports"}), 500
 
 @main.route('/api/tracker_add', methods=['POST'])
@@ -536,7 +536,7 @@ def get_tracker_data():
         tracker_data = db.session.execute(text(tracker_data_query), {"user_id": user_id}).fetchall()
         return jsonify([dict(row._mapping) for row in tracker_data])
     except Exception as e:
-        logger.error(f"Error fetching tracker data: {e}")
+        logger.error(f"❌ Error fetching tracker data: {e}")
         return jsonify({"error": "Failed to fetch tracker data"}), 500
     
 @main.route('/api/tracker_data/<int:tracker_id>', methods=['DELETE'])
@@ -574,7 +574,7 @@ def update_tracker_item(tracker_id):
         db.session.commit()
         return jsonify({"message": "Tracker item updated successfully"}), 200
     except Exception as e:
-        logger.error(f"Error updating tracker item: {e}")
+        logger.error(f"❌ Error updating tracker item: {e}")
         return jsonify({"error": "Failed to update tracker item"}), 500
 
 @main.route('/api/selected_recipes', methods=['GET'])
@@ -592,7 +592,7 @@ def get_selected_recipes():
         selected_recipes = db.session.execute(text(query), {"user_id": user_id}).fetchall()
         return jsonify([dict(row._mapping) for row in selected_recipes])
     except Exception as e:
-        logger.error(f"Error fetching selected recipes: {e}")
+        logger.error(f"❌ Error fetching selected recipes: {e}")
         return jsonify({"error": "Failed to fetch selected recipes"}), 500
     
 @main.route('/api/selected_recipes', methods=['POST'])
@@ -618,7 +618,7 @@ def add_or_update_selected_recipe():
         db.session.commit()
         return jsonify({"message": "Selected recipe updated successfully"}), 200
     except Exception as e:
-        logger.error(f"Error updating selected recipe: {e}")
+        logger.error(f"❌ Error updating selected recipe: {e}")
         return jsonify({"error": "Failed to update selected recipe"}), 500
     
 @main.route('/api/selected_recipes/<int:recipe_id>', methods=['DELETE'])
@@ -640,7 +640,7 @@ def delete_selected_recipe(recipe_id):
         
         return jsonify({"message": "Selected recipe deleted successfully"}), 200
     except Exception as e:
-        logger.error(f"Error deleting selected recipe: {e}")
+        logger.error(f"❌ Error deleting selected recipe: {e}")
         return jsonify({"error": "Failed to delete selected recipe"}), 500
 
 @main.route('/api/log', methods=['POST'])
@@ -851,7 +851,7 @@ def get_production_report():
             #logger.info(f"Save File Actual: {part_production[save_part_name]['actual']}")
         return jsonify(part_production), 200
     except Exception as e:
-        logger.error(f"Error generating production report: {e}")
+        logger.error(f"❌ Error generating production report: {e}")
         return jsonify({"error": "Failed to generate production report"}), 500
     
 @main.route('/api/machine_usage_report', methods=['POST'])
@@ -938,7 +938,7 @@ def get_machine_usage_report():
         return jsonify(cleaned_machine_usage), 200
 
     except Exception as e:
-        logger.error(f"Error generating machine usage report: {e}")
+        logger.error(f"❌ Error generating machine usage report: {e}")
         return jsonify({"error": "Failed to generate machine usage report"}), 500
     
 @main.route('/api/conveyor_levels', methods=['GET'])
@@ -1015,7 +1015,7 @@ def get_machine_connections():
         connections = db.session.execute(query).fetchall()
         return jsonify([dict(row._mapping) for row in connections])
     except Exception as e:
-        logger.error(f"Error fetching machine connections: {e}")
+        logger.error(f"❌ Error fetching machine connections: {e}")
         return jsonify({"error": "Failed to fetch machine connections"}), 500
 
 @main.route('/api/connection_graph', methods=['GET'])
@@ -1026,11 +1026,12 @@ def get_connection_graph():
         #logger.info(f"Generating machine connections for user ID: {user_id}")
         graph, metadata = build_factory_graph(user_id)
         formatted_graph = format_graph_for_frontend(graph, metadata)
+
         #logger.debug(f"Formatted Graph {formatted_graph}")
         return jsonify(formatted_graph)
     
     except Exception as e:
-        logger.error(f"Error generating factory graph: {e}")
+        logger.error(f"❌ Error generating factory graph: {e}")
         return jsonify({"error": "Failed to generate connection graph"}), 500
     
 @main.route('/api/machine_metadata', methods=['GET'])
@@ -1054,7 +1055,7 @@ def get_machine_metadata():
         return jsonify([dict(row._mapping) for row in metadata])
 
     except Exception as e:
-        logger.error(f"Error fetching machine metadata: {e}")
+        logger.error(f"❌ Error fetching machine metadata: {e}")
         return jsonify({"error": "Failed to fetch machine metadata"}), 500
 
 
@@ -1083,3 +1084,58 @@ def get_pipe_network():
         logger.error(f"❌ Error fetching pipe network data for user {user_id}: {e}")
         return jsonify({"error": "Failed to retrieve pipe network data"}), 500
 
+@main.route('/api/user_connection_data', methods=['GET'])
+@login_required
+def get_user_connection_data():
+    """Fetches stored processed connection data for the logged-in user."""
+    try:
+        user_id = current_user.id
+        query = text("SELECT * FROM user_connection_data WHERE user_id = :user_id order by id")
+        connections = db.session.execute(query, {"user_id": user_id}).fetchall()
+
+        #logger.debug(f"🔍 Connection data for user {user_id}: {connections}")
+        # Ensure API response structure matches frontend expectation
+        response_data = {
+            "nodes": [],
+            "links": []
+        }
+
+        if connections:
+            response_data["links"] = [dict(row._mapping) for row in connections]
+
+        #logger.debug(f"🔍 Response data: {response_data}")
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        logger.error(f"❌ Error fetching stored connection data: {e}")
+        return jsonify({"nodes": [], "links": []}), 500
+    
+@main.route('/api/user_pipe_data', methods=['GET'])
+@login_required
+def get_user_pipe_data():
+    """Fetches stored processed pipe network data for the logged-in user."""
+    try:
+        user_id = current_user.id
+        query = text("""
+            SELECT * FROM user_pipe_data WHERE user_id = :user_id ORDER BY id
+        """)
+        pipes = db.session.execute(query, {"user_id": user_id}).fetchall()
+
+        # Ensure API response structure matches frontend expectation
+        response_data = {
+            "nodes": [],  # Not used yet, but keeping structure consistent
+            "links": []
+        }
+
+        if pipes:
+            response_data["links"] = [dict(row._mapping) for row in pipes]
+            # logger.debug("****************************************BACKEND PIPE DATA****************************************")
+            # logger.debug(f"🔍 Pipe data response: {response_data}")
+            # logger.debug("****************************************END OF BACKEND PIPE DATA****************************************")
+
+        # logger.debug(f"🔍 Pipe data response: {response_data}")
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        logger.error(f"❌ Error fetching stored pipe data: {e}")
+        return jsonify({"nodes": [], "links": []}), 500

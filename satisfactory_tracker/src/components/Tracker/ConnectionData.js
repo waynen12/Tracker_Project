@@ -19,15 +19,16 @@ import { DataGrid } from "@mui/x-data-grid";
 
 const ConnectionData = () => {
     const theme = useTheme();
+    const [graphData, setGraphData] = useState({ nodes: [], links: [] });//useUserContext();
+    const [loading, setLoading] = useState(false)//(!graphData);
+    const { showAlert } = useAlert();
+
     const [tableData, setTableData] = useState([]);
-    const { graphData, setGraphData } = useUserContext();
     const [totalRecords, setTotalRecords] = useState(0);
     const [loadedRecords, setLoadedRecords] = useState(0);
     const [updateQueue, setUpdateQueue] = useState([]);
     const [updatedLinks, setUpdatedLinks] = useState([]);
-    const [loading, setLoading] = useState(false)//(!graphData);
-    const { showAlert } = useAlert();
-
+    
     const machineIcons = {
         Miner: require("../../assets/icons/buildings/Miner_Mk1.png"),
         Smelter: require("../../assets/icons/buildings/Smelter.png"),
@@ -134,66 +135,76 @@ const ConnectionData = () => {
     };
 
     useEffect(() => {
-        if (graphData.nodes.length > 0 && graphData.links.length > 0) { return; }
+        logToBackend("🔍 Loading" + loading, "DEBUG");
+        if (loading) return; // ✅ Prevent multiple calls if already loading
+    
         const fetchGraphData = async () => {
             try {
+                logToBackend("🔍 Fetching stored connection data...", "DEBUG");
                 setLoading(true);
-                const response = await axios.get(API_ENDPOINTS.connection_graph);
+                const response = await axios.get(API_ENDPOINTS.user_connection_data); // ✅ Fetch from DB
                 const { nodes, links } = response.data;
+    
+                // ✅ Store only if the data is non-empty
+                if (nodes.length > 0 || links.length > 0) {
+                    setGraphData({ nodes, links });
+                }
 
-                setGraphData({ nodes, links });
-                setTotalRecords(links.length);  // ✅ Only track links since they take longest to load
+                // logToBackend("🔍 Fetched stored connection data:", "DEBUG", response.data);
+                // logToBackend("🔍 *********************graphData:*****************", "DEBUG");
+                // logToBackend(graphData, "DEBUG");
+                // logToBackend("🔍 *********************graphData.links:*****************", "DEBUG");
+                // logToBackend(graphData.links, "DEBUG");
+                // logToBackend("🔍 *********************graphData.nodes:*****************", "DEBUG");
+                // logToBackend(graphData.nodes, "DEBUG");
                 setLoading(false);
             } catch (error) {
-                console.error("❌ Error fetching preprocessed graph:", error);
-                showAlert("error", "Failed to load graph data!");
+                console.error("❌ Error fetching stored connection data:", error);
+                showAlert("error", "Failed to load connection data!");
                 setLoading(false);
             }
         };
-
+    
         fetchGraphData();
-    }, [graphData]);
+    }, []); // ✅ Empty dependency array ensures it only runs once on mount
 
     return (
         <Box>
             {loading ? (
                 <Box sx={{ textAlign: "center", padding: 2 }}>
-                    <Typography variant="body1">Loading graph data...</Typography>
-                    <Typography variant="body1_italic" sx={{ display: "block" }}>This may take a few moments </Typography>
-                    <Typography variant="body1_underline" sx={{ color: "red", display: "block" }}>DO NOT REFRESH YOUR BROWSWER</Typography>
                     <CircularProgress />
                 </Box>
             ) : (
                 <Box sx={theme.trackerPageStyles.reportBox}>
-                {/* <Box sx={{ height: 600, width: "100%" }}> */}
                     <DataGrid density="compact"
                         rows={graphData.links.map((link, index) => ({
                             id: `link-${index}`,
-                            type: link.type === "pipe" ? "Pipe" : "Conveyor",
+                            type: link.connection_type,
                             source_component: link.source_component,
                             source_level: link.source_level,
                             source_reference_id: link.source_reference_id,
                             target_component: link.target_component,
                             target_level: link.target_level,
                             target_reference_id: link.target_reference_id,
-                            info: link.label,
+                            direction: link.direction || "Unknown",
                             info: link.label,
                             produced_item: link.produced_item,
                             conveyor_speed: link.conveyor_speed,
                         }))}
                         columns={[
-                            { field: "id", headerName: "ID", width: 150 },
-                            { field: "type", headerName: "Type", width: 150 },
-                            { field: "source_component", headerName: "Source", width: 180 },
-                            { field: "source_level", headerName: "Source Level", width: 120 },
-                            { field: "source_reference_id", headerName: "Source ID", width: 150 },
-                            { field: "target_component", headerName: "Target", width: 180 },
-                            { field: "target_level", headerName: "Target Level", width: 120 },
-                            { field: "target_reference_id", headerName: "Target ID", width: 150 },
-                            { field: "produced_item", headerName: "Produced Item", width: 200 },
-                            { field: "conveyor_speed", headerName: "Conveyor Speed", width: 200 },
-                            { field: "info", headerName: "Details", flex: 1 },
-                            
+                            { field: "id", headerName: "ID", width: 150, sortable: false },
+                            { field: "type", headerName: "Type", width: 150, sortable: false },
+                            { field: "source_component", headerName: "Source", width: 180, sortable: false },
+                            { field: "source_level", headerName: "Source Level", width: 120, sortable: false },
+                            { field: "source_reference_id", headerName: "Source ID", width: 150, sortable: false },
+                            { field: "target_component", headerName: "Target", width: 180, sortable: false },
+                            { field: "target_level", headerName: "Target Level", width: 120, sortable: false },
+                            { field: "target_reference_id", headerName: "Target ID", width: 150, sortable: false },
+                            { field: "direction", headerName: "Direction", width: 120, sortable: false },
+                            { field: "info", headerName: "Info", flex: 1, sortable: false },
+                            { field: "produced_item", headerName: "Produced Item", width: 200, sortable: false },
+                            { field: "conveyor_speed", headerName: "Conveyor Speed", width: 200, sortable: false },
+                            { field: "info", headerName: "Details", flex: 1, sortable: false },
                         ]}                        
                     />
                 </Box>

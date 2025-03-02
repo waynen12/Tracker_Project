@@ -25,7 +25,7 @@ const Footer = () => {
             {/* Attribution */}
             <Typography variant="body4" sx={{ marginBottom: 1 }}>
                 The assets come from Satisfactory or from websites created and owned by Coffee Stain Studios, who hold the copyright of Satisfactory.
-                All trademarks and registered trademarks present in the image are proprietary to Coffee Stain Studios. <br />
+                All trademarks and registered trademarks present in the images are proprietary to Coffee Stain Studios. <br />
                 Logo by Discord:{" "}
                 <Link href="https://cdn.brandfetch.io/idM8Hlme1a/theme/light/symbol.svg?c=1bx1741179184944id64Mup7aclPAE1lkv&t=1668075053047"
                     target="_blank"
@@ -43,6 +43,7 @@ const Footer = () => {
                     underline="hover">
                     View GitHub Logos
                 </Link>
+                <br />
                 <Link href="https://www.flaticon.com/free-icons/question-mark" title="question-mark icons"
                     target="_blank"
                     rel="noopener noreferrer"

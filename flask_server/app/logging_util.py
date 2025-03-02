@@ -33,9 +33,9 @@ def setup_logger(name):
     logger.setLevel(logging.DEBUG)
 
     # Clear existing handlers to avoid duplication
-    print(f"Handlers before clearing: {logger.handlers}")
+    #print(f"Handlers before clearing: {logger.handlers}")
     logger.handlers.clear()
-    print(f"Handlers after clearing: {logger.handlers}")
+    #print(f"Handlers after clearing: {logger.handlers}")
 
     # Ensure no propagation to parent loggers
     logger.propagate = False

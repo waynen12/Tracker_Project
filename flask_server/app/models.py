@@ -263,3 +263,54 @@ class User_Save_Pipes(db.Model):
     fluid_type = db.Column(db.String(300), nullable=True)  # Type of fluid
     connection_points = db.Column(db.Text, nullable=True)  # JSON list of connections
 
+class Project_Assembly_Phases(db.Model):
+    __tablename__ = 'project_assembly_phases'
+    id = db.Column(db.Integer, primary_key=True)
+    phase_id = db.Column(db.Integer, nullable=False)
+    phase_name = db.Column(db.String(100), nullable=False)
+    phase_description = db.Column(db.String(200), nullable=True)
+    phase_part_id = db.Column(db.Integer, db.ForeignKey('part.id'), nullable=False)
+    phase_part_quantity = db.Column(db.Float, nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('phase_id', 'phase_name', 'phase_part_id', name='unique_project_phase'),
+    )
+
+class User_Connection_Data(db.Model):
+    __tablename__ = 'user_connection_data'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    source_component = db.Column(db.String(300), nullable=False)  # Machine, conveyor or pipe name
+    source_level = db.Column(db.String(50), nullable=True)  # Mk level if applicable
+    source_reference_id = db.Column(db.String(100), nullable=True)
+    target_component = db.Column(db.String(300), nullable=False)  # Connected machine, conveyor or pipe name
+    target_level = db.Column(db.String(50), nullable=True)
+    target_reference_id = db.Column(db.String(100), nullable=True)
+    connection_type = db.Column(db.String(50), nullable=False)  # "Pipe" or "Conveyor"
+    produced_item = db.Column(db.String(200), nullable=True)  # Item being transported
+    conveyor_speed = db.Column(db.Float, nullable=True)  # Conveyor belt speed if applicable
+    direction = db.Column(db.String(50), nullable=True)  # Direction of the connection
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    __table_args__ = (
+        db.Index('idx_user_connection', 'user_id', 'source_component', 'target_component'),        
+    )
+
+class User_Pipe_Data(db.Model):
+    __tablename__ = 'user_pipe_data'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pipe_network = db.Column(db.String(300), nullable=False)  # Unique pipe network identifier
+    source_component = db.Column(db.String(300), nullable=False)  # Machine or pipe name
+    source_level = db.Column(db.String(50), nullable=True)  # Mk level if applicable
+    source_reference_id = db.Column(db.String(100), nullable=True)
+    target_component = db.Column(db.String(300), nullable=False)  # Connected machine or pipe name
+    target_level = db.Column(db.String(50), nullable=True) # Mk level if applicable
+    target_reference_id = db.Column(db.String(100), nullable=True)
+    connection_type = db.Column(db.String(50), nullable=False)  # "Pipe"
+    produced_item = db.Column(db.String(200), nullable=True)  # Item being transported
+    pipe_flow_rate = db.Column(db.Float, nullable=True)  # pipe flow rate if applicable
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    __table_args__ = (
+        db.Index('idx_user_connection', 'user_id', 'source_component', 'target_component'),        
+    )

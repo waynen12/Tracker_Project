@@ -5,7 +5,8 @@ import satisfactory_save as s
 import re
 from . import db
 from .logging_util import setup_logger
-from .models import Machine, Recipe_Mapping, Resource_Node, User_Save, User_Save_Conveyors, User_Save_Connections, Recipe, Part, Conveyor_Level, Conveyor_Supply, User_Save_Pipes
+from .build_connection_graph import build_factory_graph
+from .models import Machine, Recipe_Mapping, Resource_Node, User_Save, User_Save_Conveyors, User_Save_Connections, Recipe, Part, Conveyor_Level, Conveyor_Supply, User_Save_Pipes, User_Connection_Data, User_Pipe_Data
 
 logger = setup_logger("read_save_file")
 
@@ -113,7 +114,7 @@ def extract_conveyor_chain_info(chain_obj):
         
         return output_data
     except Exception as e:
-        logger.error(f"Error extracting conveyor chain info: Error {e}")
+        logger.error(f"❌ Error extracting conveyor chain info: Error {e}")
         return None
 
 def process_conveyor_chain_components(save_file_path):
@@ -131,7 +132,7 @@ def process_conveyor_chain_components(save_file_path):
         try:
             chain_objects = save.getObjectsByClass("/Script/FactoryGame.FGConveyorChainActor")
         except Exception as e:
-            logger.error(f"Error extracting conveyor chain info: {e}")
+            logger.error(f"❌ Error extracting conveyor chain info: {e}")
             return conveyor_chains
 
 
@@ -142,7 +143,7 @@ def process_conveyor_chain_components(save_file_path):
                 if chain_info is not None:
                     conveyor_chains.append(chain_info)
             except Exception as e:
-                logger.error(f"Error extracting conveyor chain info: {e}")
+                logger.error(f"❌ Error extracting conveyor chain info: {e}")
                 continue
 
         output_dir = Path("output")
@@ -223,7 +224,7 @@ def process_save_file(save_file_path, current_user):
     insert into the user_save table, and save a JSON output for reference.
     """
   
-    logger.info(f"PROCESSING save file: {save_file_path}")
+    logger.info(f"📝 PROCESSING save file: {save_file_path}")
     progress = "Starting"
     try:
         user_id = current_user
@@ -245,6 +246,18 @@ def process_save_file(save_file_path, current_user):
         db.session.commit()
         logger.info(f"🗑️ Deleted old User_Save for user {user_id}")
         
+        db.session.query(User_Connection_Data).filter(User_Connection_Data.user_id == user_id).delete()
+        db.session.commit()
+        logger.info(f"🗑️ Deleted old User_Connection_Data records for user {user_id}")
+
+        db.session.query(User_Save_Pipes).filter(User_Save_Pipes.user_id == user_id).delete()
+        db.session.commit()
+        logger.info(f"🗑️ Deleted old User_Save_Pipes records for user {user_id}")
+
+        db.session.query(User_Pipe_Data).filter(User_Pipe_Data.user_id == user_id).delete()
+        db.session.commit()
+        logger.info(f"🗑️ Deleted old User_Pipe_Data records for user {user_id}")
+
         progress = "Deleted old records"
         
         # Fetch all machine class names from the database
@@ -312,8 +325,8 @@ def process_save_file(save_file_path, current_user):
                 if str(e) == "invalid unordered_map<K, T> key":
                     continue  # Skip this class if the key is invalid
                 else:
-                    logger.error(f"Error extracting objects for class {class_name}, Progress {progress}: {e}")
-                continue
+                    logger.error(f"❌ Error extracting objects for class {class_name}, Progress {progress}: {e}")
+                
        
         try:
             db.session.commit()
@@ -393,10 +406,16 @@ def process_save_file(save_file_path, current_user):
             save = s.SaveGame(save_file_path)
             pipe_objects = save.getObjectsByClass("/Script/FactoryGame.FGPipeNetwork")
 
-            for obj in pipe_objects:
-                pipe_data = extract_pipe_network_data(obj)
-                if pipe_data["instance_name"]:  # Ensure valid data
-                    pipe_networks.append(pipe_data)
+        
+            if not pipe_objects:
+                logger.info("🚫 No pipe networks found."
+                            "Skipping pipe network extraction.")
+            else:
+                logger.info(f"🔍 Found {len(pipe_objects)} pipe networks.")
+                for obj in pipe_objects:
+                    pipe_data = extract_pipe_network_data(obj)
+                    if pipe_data["instance_name"]:  # Ensure valid data
+                        pipe_networks.append(pipe_data)
 
             # Save extracted pipe data to a JSON file for debugging
             output_dir = Path("output")
@@ -408,7 +427,11 @@ def process_save_file(save_file_path, current_user):
             logger.info(f"✅ Pipe network data saved to {output_file_path}")
 
         except Exception as e:
-            logger.error(f"❌ Error extracting pipe network data: {e}")
+            if str(e) == "invalid unordered_map<K, T> key":
+                logger.debug("Skipping pipe network extraction due to invalid key.")
+                pass
+            else: 
+                logger.error(f"❌ Error extracting pipe network data: {e}")
 
         # Insert pipe networks into the database
         try:
@@ -429,6 +452,13 @@ def process_save_file(save_file_path, current_user):
 
         except Exception as e:
             logger.error(f"❌ Error saving pipe network data: {e}")
+
+        try:
+            # Build the factory graph and store it in the user_connection_data table
+            build_factory_graph(current_user)
+            logger.info("✅ Stored processed connections in user_connection_data")
+        except Exception as e:
+            logger.error(f"❌ Error building and saving factory graph: {e}")
 
     except Exception as e:
         logger.error(f"❌ Error processing file {save_file_path}, Progress: {progress}: {e}")

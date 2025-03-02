@@ -38,5 +38,7 @@ export const API_ENDPOINTS = {
   machine_connections: `${flask_port}/api/machine_connections`,
   connection_graph: `${flask_port}/api/connection_graph`,
   machine_metadata: `${flask_port}/api/machine_metadata`,
-  pipe_network: `${flask_port}/api/pipe_network`,  
+  pipe_network: `${flask_port}/api/pipe_network`,
+  user_connection_data : `${flask_port}/api/user_connection_data`,
+  user_pipe_data : `${flask_port}/api/user_pipe_data`,
   };

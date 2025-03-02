@@ -12,6 +12,7 @@ import logToBackend from "../services/logService";
 import ProductionChart from "../components/Tracker/ProductionChart";
 import MachineChart from "../components/Tracker/MachineChart";
 import ConnectionData from "../components/Tracker/ConnectionData";
+import PipeData from "../components/Tracker/PipeData";
 import { useTheme } from "@mui/material/styles";
 import { useAlert } from "../context/AlertContext";
 import { motion } from "framer-motion";
@@ -249,7 +250,7 @@ const TrackerPage = () => {
       setUploadStatus("Upload failed. Please try again.");
       setUploadSuccess(false);
       setUploading(false);
-      const logerrorMessage = "TrackerPage: File upload failed" + error;
+      const logerrorMessage = "❌ TrackerPage: File upload failed" + error;
       logToBackend(logerrorMessage, "ERROR");
       showAlert("error", "File upload failed. Please try again.");
     }
@@ -356,6 +357,8 @@ const TrackerPage = () => {
             {/* Animated Upload State */}
             {uploading ? (
               <>
+                <Typography variant="body3">Extracting save file data...This may take a few moments</Typography>
+                <Typography variant="body3_underline" sx={{ color: "orange" }}>DO NOT REFRESH YOUR BROWSWER</Typography>
                 <CircularProgress color="progressIndicator.main" />
               </>
             ) : uploadSuccess === true ? (
@@ -381,9 +384,10 @@ const TrackerPage = () => {
           <TabList onChange={handleChange} aria-label="Tracker Sections" sx={theme.trackerPageStyles.tabList}>
             <Tab label="Charts" value="1" />
             <Tab label="Save File Data" value="2" />
-            <Tab label="Connection Data" value="3" />
-            <Tab label="Main Tables" value="4" />
-            <Tab label="Dependency Data" value="5" />
+            <Tab label="Conveyor Network" value="3" />
+            <Tab label="Pipe Network" value="4" />
+            <Tab label="Main Tables" value="5" />
+            <Tab label="Dependency Data" value="6" />
           </TabList>
         </Box>
 
@@ -434,7 +438,7 @@ const TrackerPage = () => {
           </Box>
         </TabPanel>
 
-        {/* Graph Panel */}
+        {/* Conveyor Network */}
         <TabPanel value="3">
           <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
@@ -450,8 +454,24 @@ const TrackerPage = () => {
           </Box>
         </TabPanel>
 
-        {/* Main Tables Section */}
+        {/* Pipe Network */}
         <TabPanel value="4">
+          <Box sx={theme.trackerPageStyles.tabPanelBox}>
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <>
+
+                <Box sx={theme.trackerPageStyles.reportBox}>
+                  <PipeData/>
+                </Box>
+              </>
+            )}
+          </Box>
+        </TabPanel>
+
+        {/* Main Tables Section */}
+        <TabPanel value="5">
           <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
               <CircularProgress />
@@ -470,7 +490,7 @@ const TrackerPage = () => {
         </TabPanel>
 
         {/* Dependency Data Panel */}
-        <TabPanel value="5">
+        <TabPanel value="6">
           <Box sx={theme.trackerPageStyles.tabPanelBox}>
             {loading ? (
               <CircularProgress />

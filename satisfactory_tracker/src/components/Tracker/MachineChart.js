@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Box, Typography } from "@mui/material";
 import logToBackend from "../../services/logService";
 
-const barSize = 16; // Adjust bar height here
+const barSize = 18; // Adjust bar height here
 
 const MachineChart = ({ data }) => {
   if (!data || Object.keys(data).length === 0) {
@@ -50,8 +50,8 @@ const MachineChart = ({ data }) => {
   // Normalized chart data: ${JSON.stringify(normalizedChartData, null, 2)}`, "INFO");
 
   return (
-    <Box sx={{ border: "2px solid #ddd", borderRadius: "4px", padding: "4px", backgroundColor: "#1E1E1E", width: "100%" }}>
-      <Typography variant="h2" sx={{ textAlign: "center", width: "100%" }}>
+    <Box sx={{ border: "2px solid #ddd", borderRadius: "8px", padding: "8px", backgroundColor: "#1E1E1E", width: "100%" }}>
+      <Typography variant="h3" sx={{ textAlign: "center", width: "100%" }}>
         Actual vs. Target Machines <br /> (Count)
       </Typography>
       <ResponsiveContainer width="100%" height={500}>  {/* !!!!! Always set height! */}

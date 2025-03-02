@@ -227,7 +227,7 @@ export const THEME_LIGHT = {
         color: '#FFFFFF', // White text color   #FFFFFF
         borderRadius: "8px",
         width: "100%",
-        maxWidth: 600,
+        maxWidth: 800,
         minHeight: 120,
         display: "flex",
         flexDirection: "column",
@@ -514,7 +514,7 @@ export const THEME_DARK = {
         color: '#FFFFFF', // White text color   #FFFFFF
         borderRadius: "8px",
         width: "100%",
-        maxWidth: 300,
+        maxWidth: 500,
         minHeight: 40,
         display: "flex",
         flexDirection: "row",

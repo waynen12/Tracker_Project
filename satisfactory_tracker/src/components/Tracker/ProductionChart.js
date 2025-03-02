@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Box, Typography } from "@mui/material";
 import logToBackend from "../../services/logService";
 
-const barSize = 11.5; // Adjust bar height here
+const barSize = 18; // Adjust bar height here
 
 const ProductionChart = ({ data }) => {
   if (!data || Object.keys(data).length === 0) {
@@ -40,12 +40,12 @@ const ProductionChart = ({ data }) => {
     .filter(d => d.RealTargetPPM > 0) // Ensure valid values
 
   return (
-    <Box sx={{ border: "2px solid #ddd", borderRadius: "1px", padding: "1px", backgroundColor: "#1E1E1E", width: "100%" }}>
-      <Typography variant="h2" sx={{ textAlign: "center", width: "100%" }}>
+    <Box sx={{ border: "2px solid #ddd", borderRadius: "8px", padding: "8px", backgroundColor: "#1E1E1E", width: "100%" }}>
+      <Typography variant="h3" sx={{ textAlign: "center", width: "100%" }}>
         Actual vs. Target Production <br /> (Parts Per Minute)
       </Typography>
-      <ResponsiveContainer width="100%" height={1500}>
-        <BarChart layout="vertical" data={normalizedChartData} width={100} margin={{ top: 10, right: 100, left: 0, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={2500}>
+        <BarChart layout="vertical" data={normalizedChartData} width={100} margin={{ top: 10, right: 100, left: -8, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             type="number"
@@ -59,7 +59,7 @@ const ProductionChart = ({ data }) => {
             width={250}
             orientation="left"
             height={barSize * normalizedChartData.length}
-            tick={{ fontSize: barSize - 2, fill: "#FFFFFF" }}
+            tick={{ fontSize: barSize - 4, fill: "#FFFFFF" }}
             interval={0}
           />
           <Tooltip content={({ active, payload, label }) => {

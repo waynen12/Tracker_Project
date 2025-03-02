@@ -127,8 +127,7 @@ const DependencyTreePage = () => {
             console.log("Fetched Tree Data:", response.data, treeData);
         } catch (error) {
             setError("Failed to fetch dependency tree. Check console for details.");
-            logToBackend("Error fetching dependency tree: " + error, "ERROR");
-            console.error("Error fetching dependency tree:", error);
+            logToBackend("❌ Error fetching dependency tree: " + error, "ERROR");           
         }
     };
 

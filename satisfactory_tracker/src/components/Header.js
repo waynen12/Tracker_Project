@@ -2,7 +2,7 @@
 import React, { useEffect, useContext, useState, useRef } from 'react';
 import { ReactComponent as DiscordIcon } from '../assets/icons/discord-icon.svg';
 import { ReactComponent as GitHubIcon } from '../assets/icons/github-mark-white.svg';
-import { Box, Typography, Button, IconButton, Tooltip, Menu, MenuItem, Divider } from '@mui/material';
+import { Box, Typography, Button, IconButton, Tooltip, Menu, MenuItem, Divider, Tab, Table } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../apiConfig';
@@ -27,6 +27,13 @@ import UserSettingsPage from '../pages/UserSettingsPage';
 import { useLocation } from "react-router-dom";
 import MenuIcon from '@mui/icons-material/Menu';
 import { useMediaQuery } from '@mui/material';
+import TesterRequestModal from "../pages/TesterRequestModal";
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import GitHubIssueModal from "../pages/GitHubIssueModal.js";
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
+
+
+
 
 axios.defaults.withCredentials = true;
 
@@ -39,9 +46,10 @@ const Header = () => {
     const [navAnchorEl, setNavAnchorEl] = useState(null); // For navigation menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const bannerRef = useRef(null);
-
     const handleMenuOpen = (event) => setMenuAnchorEl(event.currentTarget);
     const handleMenuClose = () => setMenuAnchorEl(null);
+    const [testerModalOpen, setTesterModalOpen] = useState(false);
+    const [issueModalOpen, setIssueModalOpen] = useState(false);
 
 
     const pageTitles = {
@@ -83,19 +91,32 @@ const Header = () => {
             {/* Top Section: Menu (Left), Banner (Center), User Info (Right) */}
             <Box sx={{
                 width: '100%',
-                padding: theme.spacing(2),
+                padding: theme.spacing(1),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
             }}>
-                {/* Left Section: Menu */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }} onClick={handleMenuOpen}>
-                    <IconButton color="inherit" sx={{ fontSize: 32 }}>
-                        <MenuIcon sx={{ fontSize: 32 }} />
-                    </IconButton>
-                    <Typography variant="h4" sx={{ color: theme.palette.primary.contrastText }}>Menu</Typography>
+                {/* Left Section: Menu + Report Issue Button */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={handleMenuOpen}>
+                        <IconButton color="inherit" sx={{ fontSize: 32 }}>
+                            <MenuIcon sx={{ fontSize: 32 }} />
+                        </IconButton>
+                        <Typography variant="h4" sx={{ color: theme.palette.primary.contrastText }}>Menu</Typography>
+                    </Box>
+
+                    {/* ✅ Only show if user is logged in */}
+                    {user && (
+                        <>
+                            <Button variant="contained" color="warning" onClick={() => setIssueModalOpen(true)}>
+                                Report an Issue
+                            </Button>
+                            <GitHubIssueModal open={issueModalOpen} onClose={() => setIssueModalOpen(false)} />
+                        </>
+                    )}
                 </Box>
-    
+
+
                 {/* Center Section: Banner */}
                 <Box sx={{ display: "flex", justifyContent: "center", flexGrow: 1 }}>
                     <Tooltip title="Satisfactory Tracker - Home">
@@ -105,7 +126,7 @@ const Header = () => {
                         </a>
                     </Tooltip>
                 </Box>
-    
+
                 {/* Right Section: User Info & Login/Logout */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     {user ? (
@@ -120,8 +141,8 @@ const Header = () => {
                     </Tooltip>
                 </Box>
             </Box>
-    
-            {/* Hamburger Menu */}
+
+            {/* Navigation Menu */}
             <Menu
                 anchorEl={menuAnchorEl}
                 open={Boolean(menuAnchorEl)}
@@ -139,27 +160,34 @@ const Header = () => {
                 <MenuItem component={Link} to="/" onClick={handleMenuClose}>
                     <HomeIcon sx={{ marginRight: 1 }} /> Home
                 </MenuItem>
-    
-                {/* Only show Data Management if user is an admin */}
+
+                {/* Only show Data Management and Tester Management if user is an admin */}
                 {user?.role === "admin" && (
-                    <MenuItem
-                        component={Link}
-                        to="/data"
-                        onClick={handleMenuClose}
-                    >
-                        Data Management
-                    </MenuItem>
+                    <>
+                        <MenuItem component={Link} to="/data" onClick={handleMenuClose}                    >
+                            <TableViewIcon sx={{ marginRight: 1 }} /> Data Management
+                        </MenuItem>
+                        <MenuItem component={Link} to="/admin/testers" onClick={handleMenuClose}                    >
+                            <PersonSearchIcon sx={{ marginRight: 1 }} /> Tester Request Management
+                        </MenuItem>
+                    </>
+
                 )}
-    
-                <MenuItem component={Link} to="/dependencies" onClick={handleMenuClose}>
-                    <LibraryAddIcon sx={{ marginRight: 1 }} /> Parts & Recipes
-                </MenuItem>
-                <MenuItem component={Link} to="/tracker" onClick={handleMenuClose}>
-                    <StackedLineChartIcon sx={{ marginRight: 1 }} /> Tracker
-                </MenuItem>
-    
+
+                {/* Restricted Menu Items - Only visible if logged in */}
+                {user && (
+                    <>
+                        <MenuItem component={Link} to="/dependencies" onClick={handleMenuClose}>
+                            <LibraryAddIcon sx={{ marginRight: 1 }} /> Parts & Recipes
+                        </MenuItem>
+                        <MenuItem component={Link} to="/tracker" onClick={handleMenuClose}>
+                            <StackedLineChartIcon sx={{ marginRight: 1 }} /> Tracker
+                        </MenuItem>
+
+
+                    </>
+                )}
                 <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
-    
                 {/* User Section */}
                 {user ? (
                     <>
@@ -167,6 +195,9 @@ const Header = () => {
                         <Divider />
                         <MenuItem onClick={handleMenuClose} component={Link} to="/settings">
                             <SettingsIcon sx={{ marginRight: 1 }} /> Settings
+                        </MenuItem>
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/help">
+                            <HelpCenterIcon sx={{ marginRight: 1 }} /> Help & Guides
                         </MenuItem>
                         <MenuItem
                             onClick={() => { handleLogout(); handleMenuClose(); }}
@@ -183,36 +214,51 @@ const Header = () => {
                         <LoginIcon sx={{ marginRight: 1 }} /> Login
                     </MenuItem>
                 )}
-    
+
                 <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
-    
-                {/* Contribute Section */}
-                <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help make the site better</b></MenuItem>
-                <MenuItem component="a" href="https://your-discord-link.com" target="_blank">
-                    <DiscordIcon style={{ width: 24, height: 24, marginRight: 8 }} />
-                    Join Discord
-                </MenuItem>
-                <MenuItem component="a" href="https://github.com/your-repo" target="_blank">
-                    <GitHubIcon style={{ width: 24, height: 24, marginRight: 8 }} />
-                    GitHub Repository
-                </MenuItem>
-                <MenuItem component="a" href="https://your-feedback-form.com" target="_blank">
-                    <Comment sx={{ marginRight: 1 }} /> Leave a Comment
-                </MenuItem>
-    
-                <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
-    
-                {/* Support Section */}
-                <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help keep the site running</b></MenuItem>
-                <MenuItem component="a" href="https://paypal.me/your-link" target="_blank">
-                    <AttachMoney sx={{ marginRight: 1 }} /> Donate through PayPal
-                </MenuItem>
-                <MenuItem component="a" href="https://patreon.com/your-link" target="_blank">
-                    <PaidIcon sx={{ marginRight: 1 }} /> Pledge on Patreon
-                </MenuItem>
+
+                {/* Restricted Menu Items - Only visible if logged in */}
+                {user && (
+                    <>
+                        {/* Contribute Section */}
+                        <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help make the site better</b></MenuItem>
+                        <MenuItem component="a" href="https://your-discord-link.com" target="_blank">
+                            <DiscordIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                            Join Discord
+                        </MenuItem>
+                        <MenuItem component="a" href="https://github.com/your-repo" target="_blank">
+                            <GitHubIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                            GitHub Repository
+                        </MenuItem>
+                        <MenuItem component="a" href="https://your-feedback-form.com" target="_blank">
+                            <Comment sx={{ marginRight: 1 }} /> Leave a Comment
+                        </MenuItem>
+
+                        <Divider sx={{ borderColor: theme.palette.primary.contrastText, borderWidth: "2px", opacity: 0.7 }} />
+
+                        {/* Support Section */}
+                        <MenuItem disabled><Favorite sx={{ marginRight: 1, color: "red" }} /> <b>Help keep the site running</b></MenuItem>
+                        <MenuItem component="a" href="https://paypal.me/your-link" target="_blank">
+                            <AttachMoney sx={{ marginRight: 1 }} /> Donate through PayPal
+                        </MenuItem>
+                        <MenuItem component="a" href="https://patreon.com/your-link" target="_blank">
+                            <PaidIcon sx={{ marginRight: 1 }} /> Pledge on Patreon
+                        </MenuItem>
+                    </>
+                )}
+
+                {/* Tester Request Button (Always Visible) */}
+                {!user && (
+                    <>
+                        <Divider />
+                        <MenuItem onClick={() => setTesterModalOpen(true)}>
+                            <FavoriteIcon sx={{ marginRight: 1, color: "red" }} /> Request Tester Access
+                        </MenuItem>
+                    </>
+                )}
             </Menu>
         </Box>
     );
-};    
+};
 
 export default Header;

@@ -11,7 +11,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import math
 import json
-from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Level, Node_Purity, Resource_Node, UserSettings, User_Save_Pipes
+from .models import User, Tracker, User_Save, Part, Recipe, Machine, Machine_Level, Node_Purity, Resource_Node, UserSettings, User_Save_Pipes, User_Tester_Registrations
 from sqlalchemy.exc import SQLAlchemyError
 from . import db
 from .build_tree import build_tree
@@ -31,6 +31,8 @@ from google.auth.transport.requests import AuthorizedSession
 import jwt
 from datetime import datetime, timedelta, timezone
 from .logging_util import setup_logger
+import secrets
+import base64
 # from .read_save_file import process_save_file  # Import the processing function
 
 config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../config.py'))
@@ -49,6 +51,10 @@ REACT_BUILD_DIR = config.REACT_BUILD_DIR
 REACT_STATIC_DIR = config.REACT_STATIC_DIR
 SECRET_KEY = config.SECRET_KEY
 # Construct the absolute path to the config file
+
+GITHUB_TOKEN = config.GITHUB_TOKEN 
+GITHUB_REPO = config.GITHUB_REPO
+GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/contents/screenshots"
 
 main = Blueprint(
     'main',
@@ -105,42 +111,44 @@ def catchall(path):
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
-    logger.info(f"Login Request Method: {request.method}")
     if request.method == 'POST':
-        logger.info("Login route called: POST METHOD")
-        data = request.get_json()  # Handle JSON payload from React
+        data = request.get_json()
         email = data.get('email')
         password = data.get('password')
 
         user = User.query.filter_by(email=email).first()
-        logger.info(f"Retrieved User: {user}")
-        if user and check_password_hash(user.password, password):
-            logger.info(f"User {user.username} has been found.")
-            login_user(user) 
-            logger.info(f"User {user.username} has been logged in.")
-            # Generate a JWT token with user ID and expiry date of 30 days
-            # TODO: Store the token in a secure HttpOnly cookie
-            token = jwt.encode({
+
+        if not user or not check_password_hash(user.password, password):
+            return jsonify({"message": "Invalid email or password."}), 401
+
+        # ✅ Instead of just sending 403, send user ID too
+        if user.must_change_password:
+            return jsonify({
+                "message": "Password reset required",
+                "must_change_password": True,
+                "user_id": user.id  # Pass user_id to the frontend!
+            }), 403
+
+        login_user(user) 
+        
+        # ✅ Generate JWT Token (Same as before)
+        token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.now(timezone.utc) + timedelta(days=30)
-            }, SECRET_KEY, algorithm='HS256')
-            return jsonify({
-                "message": "Login successful!",
-                "token": token,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role
-                }
-            }), 200
-        else:
-            return jsonify({"message": "Invalid email or password."}), 401
+        }, SECRET_KEY, algorithm='HS256')
+
+        return jsonify({
+            "message": "Login successful!",
+            "token": token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role
+            }
+        }), 200
+
     elif request.method == 'GET':
-        logger.info("Login route called: GET METHOD")
-        logger.info(f"Getting User Information: {current_user}")
-        logger.info(f"User is authenticated:{current_user.is_authenticated}")        
-        
         user_info = {
             "is_authenticated": current_user.is_authenticated,
             "id": current_user.id if current_user.is_authenticated else None,
@@ -152,6 +160,7 @@ def login():
             "message": "Please log in via the POST method.",
             "current_user": user_info
         }), 401
+
         
 @main.route('/check_login', methods=['POST'])
 @login_required
@@ -1139,3 +1148,216 @@ def get_user_pipe_data():
     except Exception as e:
         logger.error(f"❌ Error fetching stored pipe data: {e}")
         return jsonify({"nodes": [], "links": []}), 500
+
+@main.route('/api/tester_registration', methods=['GET','POST'])
+def tester_registration():
+    """Handles tester registration requests."""
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get('email')
+        username = data.get('username')
+        fav_thing = data.get('fav_satisfactory_thing')
+        reason = data.get('reason')
+        recaptcha_token = data.get('recaptcha_token')
+
+        if not email or not username or not fav_thing or not reason:
+            return jsonify({"error": "All fields are required."}), 400
+
+        # Verify reCAPTCHA with Google API
+        # Verify reCAPTCHA
+        verify_url = 'https://www.google.com/recaptcha/api/siteverify'
+        response = requests.post(verify_url, data={
+            'secret': API_KEY,
+            'response': recaptcha_token
+        })
+        result = response.json()
+
+        if not result.get('success'):
+            return jsonify({"error": "reCAPTCHA validation failed. Please try again."}), 400
+
+        # Check if email or username is already registered
+        existing_request = User_Tester_Registrations.query.filter(
+            (User_Tester_Registrations.email_address == email) | 
+            (User_Tester_Registrations.username == username)
+        ).first()
+        if existing_request:
+            return jsonify({"error": "You have already submitted a tester request."}), 400
+
+        # Save tester request to database
+        new_request = User_Tester_Registrations(
+            email_address=email,
+            username=username,
+            fav_satisfactory_thing=fav_thing,
+            reason=reason,
+            is_approved=False,  # Default to not approved
+            reviewed_at=None  # Not reviewed yet
+        )
+
+        db.session.add(new_request)
+        db.session.commit()
+    return jsonify({"message": "Your request has been submitted. We will contact you if selected."}), 200
+
+@main.route('/api/tester_count', methods=['GET'])
+def get_tester_count():
+    """Returns the total number of tester applications."""
+    count = db.session.query(User_Tester_Registrations).count()
+    return jsonify({"count": count})
+
+@main.route('/api/tester_requests', methods=['GET'])
+def get_tester_requests():
+    """Fetch all tester requests, including approved and rejected ones."""
+    requests = User_Tester_Registrations.query.all()
+    return jsonify([
+        {
+            "id": req.id,
+            "email": req.email_address,
+            "username": req.username,
+            "fav_thing": req.fav_satisfactory_thing,
+            "reason": req.reason,
+            "is_approved": req.is_approved,
+            "reviewed_at": req.reviewed_at,
+        }
+        for req in requests
+    ])
+
+@main.route('/api/tester_approve/<int:id>', methods=['POST'])
+def approve_tester(id):
+    """Marks a tester request as approved and creates a user account with a temporary password."""
+    tester = User_Tester_Registrations.query.get(id)
+    if not tester:
+        return jsonify({"error": "Tester not found"}), 404
+
+    # Generate a temporary password
+    temp_password = secrets.token_urlsafe(8)  # Example: 'Xyz12345'
+    hashed_password = generate_password_hash(temp_password, method='pbkdf2:sha256')
+
+    # Create user account in the users table
+    new_user = User(
+        email=tester.email_address,
+        username=tester.username,
+        password=hashed_password,
+        must_change_password=True  # Force password reset on first login
+    )
+
+    db.session.add(new_user)
+    current_time = datetime.now().strftime('%d/%m/%y %H:%M:%S')
+    tester.is_approved = True
+    tester.reviewed_at = current_time  # Use formatted datetime string
+    db.session.commit()
+
+    return jsonify({
+        "message": "Tester approved and user account created.",
+        "temp_password": temp_password  # ⚠️ Only for testing; send securely via email later
+    })
+
+@main.route('/api/tester_reject/<int:id>', methods=['POST'])
+def reject_tester(id):
+    """Marks a tester request as rejected without deleting it."""
+    tester = User_Tester_Registrations.query.get(id)
+    if not tester:
+        return jsonify({"error": "Tester not found"}), 404
+
+    tester.is_approved = False  # Keep it false (default)
+    
+    # Get the current time formatted as dd/mm/yy hh:mm:ss
+    current_time = datetime.now().strftime('%d/%m/%y %H:%M:%S')
+    tester.reviewed_at = current_time  # Mark as reviewed
+    db.session.commit()
+    return jsonify({"message": "Tester request rejected"})
+
+@main.route('/api/change_password', methods=['POST'])
+def change_password():
+    """Allows a user to change their password using the correct user_id."""
+    data = request.get_json()
+    
+    logger.debug(f"Raw request data: {data}")  # Log everything Flask receives
+
+    user_id = data.get('user_id')
+    new_password = data.get('password')
+
+    logger.debug(f"Extracted User ID: {user_id}")
+
+    if not user_id:
+        return jsonify({"error": "User ID is required."}), 400
+
+    if not new_password or len(new_password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters long."}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    # ✅ Correctly update the user's password
+    user.password = generate_password_hash(new_password, method="pbkdf2:sha256")
+    user.must_change_password = False
+    db.session.commit()
+
+    return jsonify({"message": "Password updated successfully! You can now log in with your new password."}), 200
+
+@main.route('/api/github_issue', methods=['POST'])
+def create_github_issue():
+    """Creates a new issue on GitHub from the modal form."""
+    data = request.get_json()
+    title = data.get("title")
+    description = data.get("description")
+    labels = data.get("labels", ["bug"])  # Default to "bug" if no label is selected
+
+    if not title or not description:
+        return jsonify({"error": "Title and description are required."}), 400
+
+    # GitHub API URL
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
+
+    # GitHub API request headers
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Issue payload
+    payload = {
+        "title": title,
+        "body": description,
+        "labels": labels
+    }
+
+    # Send request to GitHub
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 201:
+        return jsonify({"message": "Issue created successfully!", "issue_url": response.json()["html_url"]}), 201
+    else:
+        logger.error(f"Failed to create issue: {response.json()}")
+        return jsonify({"error": "Failed to create issue", "details": response.json()}), 400
+    
+@main.route('/api/upload_screenshot', methods=['POST'])
+def upload_screenshot():
+    """Uploads a screenshot to GitHub and returns the image URL."""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+    filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}"
+    
+    # Convert image to Base64 for GitHub API
+    file_content = base64.b64encode(file.read()).decode('utf-8')
+
+    # GitHub API payload
+    payload = {
+        "message": f"Upload screenshot {filename}",
+        "content": file_content
+    }
+
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Upload to GitHub
+    response = requests.put(f"{GITHUB_API_URL}/{filename}", json=payload, headers=headers)
+
+    if response.status_code == 201:
+        file_url = response.json()["content"]["download_url"]
+        return jsonify({"image_url": file_url}), 201
+    else:
+        return jsonify({"error": "Failed to upload screenshot", "details": response.json()}), 400

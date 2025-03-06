@@ -41,4 +41,11 @@ export const API_ENDPOINTS = {
   pipe_network: `${flask_port}/api/pipe_network`,
   user_connection_data : `${flask_port}/api/user_connection_data`,
   user_pipe_data : `${flask_port}/api/user_pipe_data`,
+  tester_registration: `${flask_port}/api/tester_registration`,
+  tester_count: `${flask_port}/api/tester_count`,
+  tester_requests: `${flask_port}/api/tester_requests`,
+  tester_approve: `${flask_port}/api/tester_approve`,
+  tester_reject: `${flask_port}/api/tester_reject`,
+  change_password: `${flask_port}/api/change_password`,
+  github_issue: `${flask_port}/api/github_issue`,
   };

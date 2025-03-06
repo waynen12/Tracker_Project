@@ -55,6 +55,9 @@ RECAPTCHA_API_KEY = os.getenv('RECAPTCHA_API_KEY')
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER')  # Define upload folder for save files
 ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS')  # Define allowed file extensions
 
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") # GitHub Personal Access Token
+GITHUB_REPO = os.getenv("GITHUB_REPO") # GitHub Repository
+
 # Table and column whitelist
 VALID_TABLES = {'alternate_recipe', 'data_validation', 'machine', 'machine_level', 'miner_supply', 'node_purity', 'part', 'power_shards', 
                 'recipe', 'recipe_mapping', 'resource_node', 'tracker', 'user', 'user_save', 'user_selected_recipe', 'conveyor_level' , 'user_save_connections', 'user_save_conveyors'

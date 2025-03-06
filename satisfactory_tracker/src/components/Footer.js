@@ -9,17 +9,21 @@ const Footer = () => {
     const theme = useTheme();
 
     return (
+        // position: "sticky",
+        // zIndex: 1100,
         <Box
+            component="footer"
             sx={{
                 width: "100%",
                 padding: "16px",
                 backgroundColor: theme.palette.primary.secondary,
+                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
                 color: "primary.contrastText",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
-                marginTop: "auto", // Pushes footer to bottom
+                marginTop: "auto",
             }}
         >
             {/* Attribution */}
@@ -63,7 +67,7 @@ const Footer = () => {
                 <Link href="/privacy-policy" color="inherit" underline="none">
                     <PolicyIcon sx={{ fontSize: 24 }} /> Privacy Policy
                 </Link>
-                
+
             </Box>
 
             {/* Copyright Notice */}

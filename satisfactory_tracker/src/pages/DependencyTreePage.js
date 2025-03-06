@@ -1107,8 +1107,8 @@ const DependencyTreePage = () => {
                 {[
                     { id: "alternateRecipes", label: "Alternate Recipes" },
                     { id: "visualiseTree", label: "Visualise Tree", disabled: !treeData },
-                    { id: "tracker", label: "Tracker" },
-                    { id: "spiderDiagram", label: "Spider Diagram" }
+                    // { id: "tracker", label: "Tracker" },
+                    // { id: "spiderDiagram", label: "Spider Diagram" }
                 ].map((tab) => (
                     <Button
                         key={tab.id}

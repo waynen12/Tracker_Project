@@ -8,8 +8,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(100), nullable=False)
-    is_verified = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(100), nullable=False, default='user')
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    must_change_password = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.role}')"
@@ -314,3 +315,15 @@ class User_Pipe_Data(db.Model):
     __table_args__ = (
         db.Index('idx_user_connection', 'user_id', 'source_component', 'target_component'),        
     )
+
+class User_Tester_Registrations(db.Model):
+    __tablename__ = 'user_tester_registrations'
+    id = db.Column(db.Integer, primary_key=True)
+    email_address = db.Column(db.String(200), nullable=False)
+    username = db.Column(db.String(150), nullable=False)
+    fav_satisfactory_thing = db.Column(db.Text(300), nullable=False)
+    reason = db.Column(db.Text(300), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    is_approved = db.Column(db.Boolean, default=False)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    db.UniqueConstraint('email_address', 'username', name='unique_tester_registration')

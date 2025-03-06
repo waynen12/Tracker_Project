@@ -16,6 +16,10 @@ import { UserProvider } from './context/UserContext';
 import TrackerPage from './pages/TrackerPage';
 import ProtectedRoute from './components/ProtectedRoute.js';
 import UserSettings from './pages/UserSettingsPage';
+import TesterManagementPage from './pages/TesterManagementPage.js';
+import ChangePasswordPage from './pages/ChangePasswordPage.js';
+import HelpPage from './pages/HelpPage.js';
+import { Box } from "@mui/material"; // Import Box
 
 
 
@@ -26,24 +30,34 @@ function App() {
         <ThemeProvider theme={theme}>
           <CssBaseline /> {/* Provides default styling reset */}
           <Router>
-            <Header />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route element={<ProtectedRoute />} />
-              <Route path="/data" element={<DataManagementPage />} />
-              <Route path="/dependencies" element={<DependencyTreePage />} />
-              <Route path="/tracker" element={<TrackerPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/settings" element={<UserSettings />} />
-            </Routes>
+            {/* 🔹 Wrap the entire app inside a flex container */}
+            <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+              <Header />
+
+              {/* 🔹 This ensures content expands & pushes the footer down */}
+              <Box sx={{ flex: "1 0 auto", display: "flex", flexDirection: "column" }}>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route element={<ProtectedRoute />} />
+                  <Route path="/data" element={<DataManagementPage />} />
+                  <Route path="/dependencies" element={<DependencyTreePage />} />
+                  <Route path="/tracker" element={<TrackerPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/settings" element={<UserSettings />} />
+                  <Route path="/admin/testers" element={<TesterManagementPage />} />
+                  <Route path="/change-password" element={<ChangePasswordPage />} />
+                  <Route path="/help" element={<HelpPage />} />
+                </Routes>
+              </Box>
+
+              <Footer />
+            </Box>
           </Router>
-          <Footer />
         </ThemeProvider>
       </AlertProvider>
     </UserProvider>
   );
 }
-
 
 export default App;

@@ -109,7 +109,7 @@ def catchall(path):
     logger.info("CATCH-ALL - Serving React app index.html")
     return send_from_directory(REACT_BUILD_DIR, 'index.html')
 
-@main.route('/login', methods=['GET', 'POST'])
+@main.route('/api/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         data = request.get_json()
@@ -162,7 +162,7 @@ def login():
         }), 401
 
         
-@main.route('/check_login', methods=['POST'])
+@main.route('/api/check_login', methods=['POST'])
 @login_required
 def check_login():
     data = request.get_json()
@@ -188,7 +188,7 @@ def check_login():
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token."}), 401
             
-@main.route('/signup', methods=['GET', 'POST'])
+@main.route('/api/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         data = request.get_json()  # Parse JSON payload
@@ -229,7 +229,7 @@ def signup():
         flash('Account successfully created!', 'info')        
     return jsonify({"message": "Account created successfully."}), 201
 
-@main.route('/logout')
+@main.route('/api/logout')
 @login_required
 def logout():
     logout_user()    
@@ -676,7 +676,7 @@ def log_message():
     logger.log(log_level, f"Frontend: {message}")
     return jsonify({"message": "Log recorded"}), 200
 
-@main.route("/upload_sav", methods=["POST"])
+@main.route("/api/upload_sav", methods=["POST"])
 def upload_sav():
     from app.read_save_file import process_save_file  # Move import inside the function to avoid circular import
     if "file" not in request.files:
@@ -708,12 +708,12 @@ def upload_sav():
 
     return jsonify({"message": f"File '{filename}' uploaded successfully!", "processing_id": processing_id}), 200
 
-@main.route("/processing_status/<processing_id>", methods=["GET"])
+@main.route("/api/processing_status/<processing_id>", methods=["GET"])
 def get_processing_status(processing_id):
     status = PROCESSING_STATUS.get(processing_id, "unknown")
     return jsonify({"status": status})
 
-@main.route("/user_save", methods=["GET"])
+@main.route("/api/user_save", methods=["GET"])
 def get_user_save():
     user_id = current_user.id
     user_saves = (

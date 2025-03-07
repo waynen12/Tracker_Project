@@ -84,7 +84,7 @@ def process_connection_components(save_file_path):
         try:
             with open(output_file_path, 'w') as outfile:
                 json.dump(connection_components, outfile, indent=4)
-            logger.info(f"✅ Connection data JSON saved to {output_file_path}")
+            #logger.info(f"✅ Connection data JSON saved to {output_file_path}")
         except Exception as e:
             logger.error(f"❌ Error saving connection JSON output: {e}")
         
@@ -153,7 +153,7 @@ def process_conveyor_chain_components(save_file_path):
         try:
             with open(output_file_path, 'w') as outfile:
                 json.dump(conveyor_chains, outfile, indent=4)
-            logger.info(f"✅ Conveyor chain data JSON saved to {output_file_path}")
+            #logger.info(f"✅ Conveyor chain data JSON saved to {output_file_path}")
         except Exception as e:
             logger.error(f"❌ Error saving conveyor chain JSON output: {e}")
         
@@ -336,14 +336,14 @@ def process_save_file(save_file_path, current_user):
             logger.error(f"❌ ERROR DURING COMMIT: {e}")
 
         # Save extracted data to JSON for reference
-        logger.info("📝 Saving output data to JSON...")
+        #logger.info("📝 Saving output data to JSON...")
         output_dir = Path("output")
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file_path = output_dir / f"{os.path.basename(save_file_path)}.json"
         try:
             with open(output_file_path, 'w') as outfile:
                 json.dump(output_data, outfile, indent=4)
-            logger.info(f"✅ Output JSON saved to {output_file_path}")
+            #logger.info(f"✅ Output JSON saved to {output_file_path}")
             progress = "Saved output JSON"
         except Exception as e:
             logger.error(f"❌ Error saving JSON output: {e}")
@@ -428,7 +428,7 @@ def process_save_file(save_file_path, current_user):
 
         except Exception as e:
             if str(e) == "invalid unordered_map<K, T> key":
-                logger.debug("Skipping pipe network extraction due to invalid key.")
+                #logger.debug("Skipping pipe network extraction due to invalid key.")
                 pass
             else: 
                 logger.error(f"❌ Error extracting pipe network data: {e}")

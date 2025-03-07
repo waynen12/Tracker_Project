@@ -492,7 +492,7 @@ def get_tracker_reports():
 def add_to_tracker():
     logger.info("Adding part and recipe to tracker")
     if not current_user.is_authenticated:
-        logger.info(f"{current_user}, User is not authenticated")
+        #logger.info(f"{current_user}, User is not authenticated")
         return jsonify({"error": "User is not authenticated"}), 401
     
     data = request.json
@@ -504,7 +504,7 @@ def add_to_tracker():
     if not part_id or not recipe_id:
         return jsonify({"error": "Part ID and Recipe ID are required"}), 400
 
-    logger.info(f"Current user: {current_user}")
+    #(f"Current user: {current_user}")
     # Check if the part and recipe are already in the user's tracker
     existing_entry = Tracker.query.filter_by(part_id=part_id, recipe_id=recipe_id, user_id=current_user.id).first()
     logger.info(f"Existing entry: {existing_entry}")
@@ -524,10 +524,10 @@ def add_to_tracker():
         created_at=current_time,
         updated_at=current_time
     )
-    logger.info(f"New tracker entry: {new_tracker_entry}")
+    #logger.info(f"New tracker entry: {new_tracker_entry}")
     db.session.add(new_tracker_entry)
     db.session.commit()
-    logger.info(f"Part and recipe added to tracker successfully, {part_id}, {recipe_id}")
+    #logger.info(f"Part and recipe added to tracker successfully, {part_id}, {recipe_id}")
     return jsonify({"message": "Part and recipe added to tracker successfully"}), 200
 
 @main.route('/api/tracker_data', methods=['GET'])
@@ -563,7 +563,7 @@ def delete_tracker_item(tracker_id):
         db.session.commit()
         return jsonify({"message": "Tracker item deleted successfully"}), 200
     except Exception as e:
-        logger.info(f"Error deleting tracker item: {e}")
+        logger.error(f"Error deleting tracker item: {e}")
         return jsonify({"error": "Failed to delete tracker item"}), 500
     
 @main.route('/api/tracker_data/<int:tracker_id>', methods=['PUT'])
@@ -1270,12 +1270,12 @@ def change_password():
     """Allows a user to change their password using the correct user_id."""
     data = request.get_json()
     
-    logger.debug(f"Raw request data: {data}")  # Log everything Flask receives
+    #logger.debug(f"Raw request data: {data}")  # Log everything Flask receives
 
     user_id = data.get('user_id')
     new_password = data.get('password')
 
-    logger.debug(f"Extracted User ID: {user_id}")
+    #logger.debug(f"Extracted User ID: {user_id}")
 
     if not user_id:
         return jsonify({"error": "User ID is required."}), 400

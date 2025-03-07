@@ -69,8 +69,8 @@ def setup_logger(name):
 
     # Log the startup
     logger.info("Application started. Logger initialized.")
-    print(f"Logger handlers: {logger.handlers}")
-    print(f"Logger {name} propagation: {logger.propagate}")
+    #print(f"Logger handlers: {logger.handlers}")
+    #print(f"Logger {name} propagation: {logger.propagate}")
 
     return logger
 

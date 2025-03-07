@@ -81,16 +81,16 @@ const HomePage = () => {
                         🚧 Closed Testing Phase 🚧
                     </Typography>
                     <Typography variant="body1">
-                        I'm currently looking for a small number of dedicated Satisfactory players to help test this tool.
-                        If you’d like to participate, submit a request below!
+                        In the near future I'll be looking for a small number of dedicated Satisfactory players to help test this tool.
+                        If you’d like to participate, keep checking back for updates!
                     </Typography>
-                    <Button
+                    {/* <Button
                         variant="contained"
                         sx={{ marginTop: theme.spacing(2) }}
                         onClick={() => setTesterModalOpen(true)}
                     >
                         Request Tester Access
-                    </Button>
+                    </Button> */}
                     {user?.role === "admin" && (
                         <>
                             <Typography variant="body2" sx={{ marginTop: theme.spacing(1) }}>

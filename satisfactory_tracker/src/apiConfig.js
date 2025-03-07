@@ -3,7 +3,7 @@ import logToBackend from "./services/logService";
 let flask_port = "";
 
 if (process.env.RUN_MODE_LOCATION === 'prod') {
-  flask_port = "http://192.168.50.33:5000";
+  flask_port = "https://satisfactorytracker.com/api"; 
   // logToBackend("apiConfig.js - Run Mode:" + process.env.RUN_MODE_LOCATION, "INFO");
 } else {
   flask_port = "http://localhost:5000";

@@ -42,7 +42,7 @@
     "client": "react-scripts start",
     "server": "python flask_server/run.py",
     "stop": "node bar.js",
-    "build": "npm run build --prefix satisfactory_tracker",
+    "build": "react-scripts build",
     "test": "npm run test --prefix satisfactory_tracker",
     "eject": "npm run eject --prefix satisfactory_tracker"
   },

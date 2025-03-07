@@ -111,56 +111,71 @@ def catchall(path):
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
+    logger.debug("Login route called")
+    try:
+        if request.method == 'POST':
+            logger.debug("Login route called via POST method")
+            data = request.get_json()
+            email = data.get('email')
+            password = data.get('password')
 
-        user = User.query.filter_by(email=email).first()
+            logger.debug(f"About to query for user with email: {email}")
 
-        if not user or not check_password_hash(user.password, password):
-            return jsonify({"message": "Invalid email or password."}), 401
+            user = User.query.filter_by(email=email).first()
 
-        # ✅ Instead of just sending 403, send user ID too
-        if user.must_change_password:
+            logger.debug(f"User Found: {user}")
+
+            if not user or not check_password_hash(user.password, password):
+                logger.debug("Invalid email or password")
+                return jsonify({"message": "Invalid email or password."}), 401
+
+            # ✅ Instead of just sending 403, send user ID too
+            if user.must_change_password:
+                return jsonify({
+                    "message": "Password reset required",
+                    "must_change_password": True,
+                    "user_id": user.id  # Pass user_id to the frontend!
+                }), 403
+
+            
+            login_user(user) 
+            logger.debug("Login successful, generating JWT token")
+
+            # ✅ Generate JWT Token (Same as before)
+            token = jwt.encode({
+                'user_id': user.id,
+                'exp': datetime.now(timezone.utc) + timedelta(days=30)
+            }, SECRET_KEY, algorithm='HS256')
+
+            logger.debug(f"returning user info: {user.id}, {user.username}, {user.email}, {user.role}")
             return jsonify({
-                "message": "Password reset required",
-                "must_change_password": True,
-                "user_id": user.id  # Pass user_id to the frontend!
-            }), 403
+                "message": "Login successful!",
+                "token": token,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role
+                }
+            }), 200
 
-        login_user(user) 
-        
-        # ✅ Generate JWT Token (Same as before)
-        token = jwt.encode({
-            'user_id': user.id,
-            'exp': datetime.now(timezone.utc) + timedelta(days=30)
-        }, SECRET_KEY, algorithm='HS256')
-
-        return jsonify({
-            "message": "Login successful!",
-            "token": token,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role
+        elif request.method == 'GET':
+            logger.debug("Login route called via GET method")
+            user_info = {
+                "is_authenticated": current_user.is_authenticated,
+                "id": current_user.id if current_user.is_authenticated else None,
+                "username": current_user.username if current_user.is_authenticated else None,
+                "email": current_user.email if current_user.is_authenticated else None,
+                "role": current_user.role if current_user.is_authenticated else None
             }
-        }), 200
-
-    elif request.method == 'GET':
-        user_info = {
-            "is_authenticated": current_user.is_authenticated,
-            "id": current_user.id if current_user.is_authenticated else None,
-            "username": current_user.username if current_user.is_authenticated else None,
-            "email": current_user.email if current_user.is_authenticated else None,
-            "role": current_user.role if current_user.is_authenticated else None
-        }
-        return jsonify({
-            "message": "Please log in via the POST method.",
-            "current_user": user_info
-        }), 401
-
+            logger.debug(f"Current User: {user_info}")
+            return jsonify({
+                "message": "Please log in via the POST method.",
+                "current_user": user_info
+            }), 401
+    except Exception as e:
+        logger.error(f"Error logging in: {e}")
+        return jsonify({"error": "An error occurred while logging in."}), 500
         
 @main.route('/check_login', methods=['POST'])
 @login_required

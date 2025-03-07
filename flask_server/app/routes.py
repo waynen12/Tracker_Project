@@ -109,75 +109,60 @@ def catchall(path):
     logger.info("CATCH-ALL - Serving React app index.html")
     return send_from_directory(REACT_BUILD_DIR, 'index.html')
 
-@main.route('/login', methods=['GET', 'POST'])
+@main.route('/api/login', methods=['GET', 'POST'])
 def login():
-    logger.debug("Login route called")
-    try:
-        if request.method == 'POST':
-            logger.debug("Login route called via POST method")
-            data = request.get_json()
-            email = data.get('email')
-            password = data.get('password')
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
 
-            logger.debug(f"About to query for user with email: {email}")
+        user = User.query.filter_by(email=email).first()
 
-            user = User.query.filter_by(email=email).first()
+        if not user or not check_password_hash(user.password, password):
+            return jsonify({"message": "Invalid email or password."}), 401
 
-            logger.debug(f"User Found: {user}")
-
-            if not user or not check_password_hash(user.password, password):
-                logger.debug("Invalid email or password")
-                return jsonify({"message": "Invalid email or password."}), 401
-
-            # ✅ Instead of just sending 403, send user ID too
-            if user.must_change_password:
-                return jsonify({
-                    "message": "Password reset required",
-                    "must_change_password": True,
-                    "user_id": user.id  # Pass user_id to the frontend!
-                }), 403
-
-            
-            login_user(user) 
-            logger.debug("Login successful, generating JWT token")
-
-            # ✅ Generate JWT Token (Same as before)
-            token = jwt.encode({
-                'user_id': user.id,
-                'exp': datetime.now(timezone.utc) + timedelta(days=30)
-            }, SECRET_KEY, algorithm='HS256')
-
-            logger.debug(f"returning user info: {user.id}, {user.username}, {user.email}, {user.role}")
+        # ✅ Instead of just sending 403, send user ID too
+        if user.must_change_password:
             return jsonify({
-                "message": "Login successful!",
-                "token": token,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role
-                }
-            }), 200
+                "message": "Password reset required",
+                "must_change_password": True,
+                "user_id": user.id  # Pass user_id to the frontend!
+            }), 403
 
-        elif request.method == 'GET':
-            logger.debug("Login route called via GET method")
-            user_info = {
-                "is_authenticated": current_user.is_authenticated,
-                "id": current_user.id if current_user.is_authenticated else None,
-                "username": current_user.username if current_user.is_authenticated else None,
-                "email": current_user.email if current_user.is_authenticated else None,
-                "role": current_user.role if current_user.is_authenticated else None
-            }
-            logger.debug(f"Current User: {user_info}")
-            return jsonify({
-                "message": "Please log in via the POST method.",
-                "current_user": user_info
-            }), 401
-    except Exception as e:
-        logger.error(f"Error logging in: {e}")
-        return jsonify({"error": "An error occurred while logging in."}), 500
+        login_user(user) 
         
-@main.route('/check_login', methods=['POST'])
+        # ✅ Generate JWT Token (Same as before)
+        token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.now(timezone.utc) + timedelta(days=30)
+        }, SECRET_KEY, algorithm='HS256')
+
+        return jsonify({
+            "message": "Login successful!",
+            "token": token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role
+            }
+        }), 200
+
+    elif request.method == 'GET':
+        user_info = {
+            "is_authenticated": current_user.is_authenticated,
+            "id": current_user.id if current_user.is_authenticated else None,
+            "username": current_user.username if current_user.is_authenticated else None,
+            "email": current_user.email if current_user.is_authenticated else None,
+            "role": current_user.role if current_user.is_authenticated else None
+        }
+        return jsonify({
+            "message": "Please log in via the POST method.",
+            "current_user": user_info
+        }), 401
+
+        
+@main.route('/api/check_login', methods=['POST'])
 @login_required
 def check_login():
     data = request.get_json()
@@ -203,7 +188,7 @@ def check_login():
     except jwt.InvalidTokenError:
         return jsonify({"message": "Invalid token."}), 401
             
-@main.route('/signup', methods=['GET', 'POST'])
+@main.route('/api/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         data = request.get_json()  # Parse JSON payload
@@ -244,7 +229,7 @@ def signup():
         flash('Account successfully created!', 'info')        
     return jsonify({"message": "Account created successfully."}), 201
 
-@main.route('/logout')
+@main.route('/api/logout')
 @login_required
 def logout():
     logout_user()    
@@ -691,7 +676,7 @@ def log_message():
     logger.log(log_level, f"Frontend: {message}")
     return jsonify({"message": "Log recorded"}), 200
 
-@main.route("/upload_sav", methods=["POST"])
+@main.route("/api/upload_sav", methods=["POST"])
 def upload_sav():
     from app.read_save_file import process_save_file  # Move import inside the function to avoid circular import
     if "file" not in request.files:
@@ -723,12 +708,12 @@ def upload_sav():
 
     return jsonify({"message": f"File '{filename}' uploaded successfully!", "processing_id": processing_id}), 200
 
-@main.route("/processing_status/<processing_id>", methods=["GET"])
+@main.route("/api/processing_status/<processing_id>", methods=["GET"])
 def get_processing_status(processing_id):
     status = PROCESSING_STATUS.get(processing_id, "unknown")
     return jsonify({"status": status})
 
-@main.route("/user_save", methods=["GET"])
+@main.route("/api/user_save", methods=["GET"])
 def get_user_save():
     user_id = current_user.id
     user_saves = (

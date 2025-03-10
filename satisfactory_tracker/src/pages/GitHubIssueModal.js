@@ -103,7 +103,13 @@ const GitHubIssueModal = ({ open, onClose }) => {
 ${description}
 
 **Uploaded Files:**  
-${uploadedImageUrls.length > 0 ? uploadedImageUrls.map((url) => `📎 [View File](${url})`).join("\n") : "No files uploaded"}
+${uploadedImageUrls.length > 0 
+  ? uploadedImageUrls.map((url) => {
+      const filename = url.split("/").pop(); // Extract filename from URL
+      return `📎 [View File - ${filename}](${url})`;
+    }).join("\n") 
+  : "No files uploaded"}
+
 
 ---
 **Browser Info:**  

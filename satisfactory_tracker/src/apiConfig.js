@@ -2,12 +2,22 @@ import logToBackend from "./services/logService";
 
 let flask_port = "";
 
-if (process.env.RUN_MODE_LOCATION === 'prod') {
-  flask_port = "https://satisfactorytracker.com/api"; 
-  // logToBackend("apiConfig.js - Run Mode:" + process.env.RUN_MODE_LOCATION, "INFO");
+console.log("API_CONFIG: process.env.REACT_APP_RUN_MODE is " + process.env.REACT_APP_RUN_MODE);
+if (process.env.REACT_APP_RUN_MODE === 'prod') {
+  console.log("API_CONFIG: Running in production mode " + process.env.REACT_APP_RUN_MODE);
+} else {
+  console.log("API_CONFIG: Running in development mode " + process.env.REACT_APP_RUN_MODE);
+}
+
+
+if (process.env.REACT_APP_RUN_MODE === 'prod') {
+  flask_port = "https://dev.satisfactorytracker.com";
+  // logToBackend("apiConfig.js - Run Mode:" + process.env.REACT_APP_RUN_MODE, "INFO");
 } else {
   flask_port = "http://localhost:5000";
 }
+
+console.log("API_CONFIG: Flask port is " + flask_port);
 
 export const API_ENDPOINTS = {
   tables: `${flask_port}/api/tables`,  
@@ -48,4 +58,5 @@ export const API_ENDPOINTS = {
   tester_reject: `${flask_port}/api/tester_reject`,
   change_password: `${flask_port}/api/change_password`,
   github_issue: `${flask_port}/api/github_issue`,
+  upload_screenshot: `${flask_port}/api/upload_screenshot`,
   };

@@ -2,42 +2,62 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# # Logging config
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
-
+logging.basicConfig(level=logging.DEBUG)
 # Base directory of the project
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-#print(basedir)
+print(f"BASE DIRECTORY: {basedir}")
 
 # Load environment variables from .env file
-dotenv_path = os.path.join(basedir, ".env")
+dotenv_path = os.path.join(basedir, "satisfactory_tracker", ".env")
 load_dotenv()
 
-class Config:
-    RUN_MODE = os.getenv('RUN_MODE_LOCATION')
-    #print(f'RUN_MODE_LOCATION: {RUN_MODE_LOCATION}')
+# for key in os.environ:
+#     print(f"{key}: {os.getenv(key)}")
+# print(f"Loaded .env from: {dotenv_path}")
+# logging.debug(f"Loaded .env from: {dotenv_path}")
 
-# Set DB config values based on RUN_MODE_LOCATION
+# Print a test variable to verify loading (Remove after testing)
+# print(f"Loaded GITHUB_REPO: {os.getenv('GITHUB_REPO')}")
+
+class Config:
+    RUN_MODE = os.getenv('REACT_APP_RUN_MODE', '')
+
+print(f"Config.RUN_MODE: {Config.RUN_MODE}")    
+logging.debug(f"Config.RUN_MODE: {Config.RUN_MODE}")
+
+# print(f"os.getenv REACT_APP_RUN_MODE: {os.getenv('REACT_APP_RUN_MODE')}")
+# logging.debug(f"os.getenv REACT_APP_RUN_MODE: {os.getenv('REACT_APP_RUN_MODE')}")
+
+# Set DB config values based on REACT_APP_RUN_MODE
 if Config.RUN_MODE == 'local':
+    # print("Entering local condition")
+    # logging.debug("Entering local condition")
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 elif Config.RUN_MODE == 'docker':
+    # print("Entering docker condition")
+    # logging.debug("Entering docker condition")
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_DOCKER')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "app", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "app", "build", "static")}'
 elif Config.RUN_MODE == 'prod':
+    # print("Entering prod condition")
+    # logging.debug("Entering prod condition")
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_PROD')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 elif Config.RUN_MODE == 'prod_local':
+    # print("Entering prod_local condition")
+    # logging.debug("Entering prod_local condition")
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI_PROD_LOCAL')
     REACT_BUILD_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build")}'
     REACT_STATIC_DIR = f'{os.path.join(basedir, "satisfactory_tracker", "build", "static")}'
 else:
-    # Throw an error if the RUN_MODE_LOCATION is not set
-    raise ValueError('RUN_MODE_LOCATION environment variable not set. Please set RUN_MODE_LOCATION to "local", "docker", "prod", or "prod_local"')
+    # Throw an error if the REACT_APP_RUN_MODE is not set
+    # print(f"ERROR: REACT_APP_RUN_MODE is not set: {Config.RUN_MODE} (type: {type(Config.RUN_MODE)})")
+    logging.error(f"ERROR: REACT_APP_RUN_MODE is not set: {Config.RUN_MODE} (type: {type(Config.RUN_MODE)})")
+    raise ValueError('REACT_APP_RUN_MODE environment variable not set. Please set REACT_APP_RUN_MODE to "local", "docker", "prod", or "prod_local"')
 
 #print(f'SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}')
 

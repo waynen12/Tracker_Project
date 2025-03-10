@@ -5,6 +5,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from "../apiConfig";
 import { UserContext } from '../context/UserContext'; // Import the UserContext
 import { useTheme } from '@mui/material/styles';
+import logToBackend from '../services/logService';
 
 axios.defaults.withCredentials = true;
 
@@ -21,7 +22,8 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
+    // logToBackend("Attempting to login" + API_ENDPOINTS.login, "DEBUG");
+    // console.log("Attempting to login " + API_ENDPOINTS.login);
     try {
       const response = await axios.post(API_ENDPOINTS.login, { email, password });
 
@@ -29,6 +31,8 @@ const LoginPage = () => {
       const userInfo = response.data.user;
       const authToken = response.data.token;
 
+      // logToBackend("Found user info: " + userInfo, "DEBUG");
+      // console.log("Found user info: " + userInfo);
       // Update global user state using UserContext
       login(userInfo, authToken);
 

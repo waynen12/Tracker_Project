@@ -111,9 +111,12 @@ const Header = () => {
                             <Button variant="contained" color="warning" onClick={() => setIssueModalOpen(true)}>
                                 Report an Issue
                             </Button>
-                            <GitHubIssueModal open={issueModalOpen} onClose={() => setIssueModalOpen(false)} />
+                            {issueModalOpen && (  // ✅ Only render when open
+                                <GitHubIssueModal open={issueModalOpen} onClose={() => setIssueModalOpen(false)} />
+                            )}
                         </>
                     )}
+
                 </Box>
 
 

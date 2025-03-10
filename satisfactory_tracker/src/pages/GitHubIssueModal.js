@@ -4,6 +4,9 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../apiConfig";
 import { UserContext } from '../context/UserContext';
 import logToBackend from "../services/logService";
+import { useLocation } from "react-router-dom";
+import { useDropzone } from "react-dropzone";
+import { useCallback } from "react";
 
 const GitHubIssueModal = ({ open, onClose }) => {
   const { user } = React.useContext(UserContext);
@@ -16,6 +19,27 @@ const GitHubIssueModal = ({ open, onClose }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  const location = useLocation();
+
+  const pageTitles = {
+    "/": "Home",
+    "/data": "Data Management",
+    "/dependencies": "Parts & Recipes",
+    "/tracker": "My Tracker",
+    "/admin/testers": "Testers Registration",
+  };
+
+  // Get the current page title, default to "Satisfactory Tracker" if route not found
+  const [currentPageTitle, setCurrentPageTitle] = useState(pageTitles[location.pathname] || "Satisfactory Tracker");
+
+  useEffect(() => {
+    if (open) {
+      setCurrentPageTitle(pageTitles[location.pathname] || "Satisfactory Tracker");
+      setTitle("");  // ✅ Reset title input
+      setDescription("");  // ✅ Reset description input
+      setLabels(["bug"]);  // ✅ Reset labels
+    }
+  }, [open, location.pathname]);  // ✅ Trigger when modal opens or route changes
 
   // Function to extract browser & OS from User-Agent
   const getBrowserInfo = () => {
@@ -32,8 +56,11 @@ const GitHubIssueModal = ({ open, onClose }) => {
     if (userAgent.includes("Mac OS")) os = "Mac OS";
     if (userAgent.includes("Linux")) os = "Linux";
 
-    return `Browser: ${browser} | OS: ${os} | Page: ${window.location.href}`;
+    return `Browser: ${browser} | OS: ${os} | Page: ${currentPageTitle}`;
   };
+
+
+
 
   // Inside `useEffect()`, replace the old `setBrowserInfo`
   useEffect(() => {
@@ -49,19 +76,20 @@ const GitHubIssueModal = ({ open, onClose }) => {
     setError("");
     setSuccessMessage("");
 
-    let uploadedImageUrl = "";
+    let uploadedImageUrls = [];
 
     // ✅ Upload image if one is selected
-    if (imageFile) {
+    // ✅ Upload all selected files
+    if (files.length > 0) {
       const formData = new FormData();
-      formData.append("file", imageFile);
+      files.forEach((file) => formData.append("file", file));
 
       try {
         const uploadResponse = await axios.post(API_ENDPOINTS.upload_screenshot, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
-        uploadedImageUrl = uploadResponse.data.image_url;
-        setImageUrl(uploadedImageUrl);
+        uploadedImageUrls = uploadResponse.data.image_urls || [];
+
       } catch (error) {
         setError("Failed to upload screenshot.");
         return;
@@ -74,8 +102,10 @@ const GitHubIssueModal = ({ open, onClose }) => {
 ---
 ${description}
 
----
+**Uploaded Files:**  
+${uploadedImageUrls.length > 0 ? uploadedImageUrls.map((url) => `📎 [View File](${url})`).join("\n") : "No files uploaded"}
 
+---
 **Browser Info:**  
 ${browserInfo}
 `;
@@ -93,14 +123,38 @@ ${browserInfo}
       setLabels(["bug"]);
     } catch (error) {
       setError(error.response?.data?.error || "Failed to create issue.");
-      logToBackend("Failed to create GitHub issue", error);
+      console.error("Failed to create GitHub issue", error);
+      // logToBackend("Failed to create GitHub issue", error);
     }
   };
 
+  const [files, setFiles] = useState([]);
 
+  // ✅ Handle Drop Event
+  const onDrop = useCallback((acceptedFiles) => {
+    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);  // ✅ Append new files
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: "image/*",
+    multiple: true,  // ✅ Allow multiple uploads
+  });
+
+  // ✅ Display File Previews
+  const filePreviews = files.map((file, index) => (
+    <Typography key={index} variant="body2">
+      📄 {file.name} ({(file.size / 1024).toFixed(2)} KB)
+    </Typography>
+  ));
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      disableEscapeKeyDown  // 🔹 Prevent closing with ESC key
+      sx={{ "& .MuiBackdrop-root": { pointerEvents: "none" } }}  // 🔹 Prevent clicking outside to close
+    >
       <Box sx={{
         position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
         bgcolor: "background.paper", padding: 4, borderRadius: 3, boxShadow: 24,
@@ -138,8 +192,22 @@ ${browserInfo}
             </FormControl>
 
             {/* ✅ Image Upload Field */}
-            <input type="file" accept="image/*" onChange={handleFileChange} style={{ marginTop: "10px" }} />
+            {/* <input type="file" accept="image/*" onChange={handleFileChange} style={{ marginTop: "10px" }} /> */}
+            <>
+              {/* ✅ Modern Drag & Drop Zone */}
+              <Box {...getRootProps()} sx={{
+                border: "2px dashed #ddd", padding: 3, textAlign: "center",
+                cursor: "pointer", borderRadius: 2, backgroundColor: isDragActive ? "#f0f8ff" : "transparent"
+              }}>
+                <input {...getInputProps()} />
+                <Typography variant="body2">
+                  {isDragActive ? "Drop the files here..." : "Drag & drop files here or click to select"}
+                </Typography>
+              </Box>
 
+              {/* ✅ Show File Previews */}
+              <Box sx={{ mt: 2 }}>{filePreviews}</Box>
+            </>
             {/* 🔹 Display Browser & URL Info */}
             <Typography variant="body2" sx={{ mt: 2, color: "gray", fontSize: "0.9rem" }}>
               <strong>Browser Info:</strong>
@@ -150,6 +218,14 @@ ${browserInfo}
 
             <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, backgroundColor: "#ff5722", "&:hover": { backgroundColor: "#e64a19" } }}>
               Submit
+            </Button>
+            <Button
+              onClick={onClose}
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2, float: "right", borderColor: "#ff5722", color: "#ff5722", "&:hover": { backgroundColor: "#ffe0b2" } }}
+            >
+              Close
             </Button>
           </form>
         )}

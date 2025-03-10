@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo  } from "react";
 import { ForceGraph2D } from "react-force-graph";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../apiConfig";
@@ -71,7 +71,7 @@ const ConnectionData = () => {
         Unknown: require("../../assets/icons/default.png")
     };
     const cachedIcons = useMemo(() => machineIcons, []);
-
+    
     const partIcons = {
         "Iron Ingot": "/icons/parts/Iron_Ingot.png",
         "Iron Rod": "/icons/parts/Iron_Rod.png",
@@ -134,13 +134,15 @@ const ConnectionData = () => {
         return graphData.links.length;
     };
 
+    // const cachedIcons = useMemo(() => machineIcons, []);
+
     useEffect(() => {
-        logToBackend("🔍 Loading" + loading, "DEBUG");
+        console.log("🔍 Loading" + loading);
         if (loading) return; // ✅ Prevent multiple calls if already loading
     
         const fetchGraphData = async () => {
             try {
-                logToBackend("🔍 Fetching stored connection data...", "DEBUG");
+                console.log("🔍 Fetching stored connection data...");
                 setLoading(true);
                 const response = await axios.get(API_ENDPOINTS.user_connection_data); // ✅ Fetch from DB
                 const { nodes, links } = response.data;

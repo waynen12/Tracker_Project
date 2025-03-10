@@ -56,11 +56,14 @@ const TrackerPage = () => {
   };
 
   const fetchTrackerReports = async () => {
+    console.log("Fetching tracker reports...");
     try {
       const response = await axios.get(API_ENDPOINTS.tracker_reports);
       setTrackerReports(response.data);
+      console.log("Tracker reports:", response.data);
 
       setFlattenedTreeData(flattenDependencyTrees(response.data));
+      console.log("Flattened tree data:", flattenedTreeData);
 
       return response.data;
 
@@ -251,7 +254,8 @@ const TrackerPage = () => {
       setUploadSuccess(false);
       setUploading(false);
       const logerrorMessage = "❌ TrackerPage: File upload failed" + error;
-      logToBackend(logerrorMessage, "ERROR");
+      // logToBackend(logerrorMessage, "ERROR");
+      console.error(logerrorMessage);
       showAlert("error", "File upload failed. Please try again.");
     }
   }, []);
@@ -270,11 +274,16 @@ const TrackerPage = () => {
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: ".sav",
-    multiple: false,
-  });
+  console.log("before dropzone declaration - useDropZone:", useDropzone);
+  const dropzone = useDropzone({ onDrop, accept: ".sav", multiple: false });
+  console.log("Dropzone Output:", dropzone);
+  const { getRootProps, getInputProps, isDragActive } = dropzone || {};
+
+  // const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  //   onDrop,
+  //   accept: ".sav",
+  //   multiple: false,
+  // });
 
   //  Define columns for DataGrid
   const userColumns = [

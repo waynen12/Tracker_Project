@@ -54,7 +54,7 @@ SECRET_KEY = config.SECRET_KEY
 
 GITHUB_TOKEN = config.GITHUB_TOKEN 
 GITHUB_REPO = config.GITHUB_REPO
-GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/contents/screenshots"
+GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/contents/closed_testing/issue_report_attachments" #contents/closed_testing/issue_report_attachments
 
 main = Blueprint(
     'main',
@@ -111,18 +111,23 @@ def catchall(path):
 
 @main.route('/api/login', methods=['GET', 'POST'])
 def login():
+    logging.info("Login route called")
     if request.method == 'POST':
+        logging.info("POST method called")
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
 
+        # logging.info(f"Email: {email}")
         user = User.query.filter_by(email=email).first()
-
+        # logging.info(f"User: {user}")
         if not user or not check_password_hash(user.password, password):
+            logging.info(f"Invalid email or password for user: {user}")
             return jsonify({"message": "Invalid email or password."}), 401
 
         # ✅ Instead of just sending 403, send user ID too
         if user.must_change_password:
+            logging.info(f"Password reset required for user: {user}")
             return jsonify({
                 "message": "Password reset required",
                 "must_change_password": True,
@@ -130,13 +135,15 @@ def login():
             }), 403
 
         login_user(user) 
-        
+        logging.info(f"User logged in successfully: {user}")
+
         # ✅ Generate JWT Token (Same as before)
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.now(timezone.utc) + timedelta(days=30)
         }, SECRET_KEY, algorithm='HS256')
 
+        logging.info(f"Token generated successfully")
         return jsonify({
             "message": "Login successful!",
             "token": token,
@@ -149,6 +156,8 @@ def login():
         }), 200
 
     elif request.method == 'GET':
+        logging.info("GET method called")
+        current_user = User.query.get(1)
         user_info = {
             "is_authenticated": current_user.is_authenticated,
             "id": current_user.id if current_user.is_authenticated else None,
@@ -156,6 +165,7 @@ def login():
             "email": current_user.email if current_user.is_authenticated else None,
             "role": current_user.role if current_user.is_authenticated else None
         }
+        logging.info(f"Current user: {user_info.username}")
         return jsonify({
             "message": "Please log in via the POST method.",
             "current_user": user_info
@@ -1332,32 +1342,39 @@ def create_github_issue():
     
 @main.route('/api/upload_screenshot', methods=['POST'])
 def upload_screenshot():
-    """Uploads a screenshot to GitHub and returns the image URL."""
+    """Uploads multiple screenshots to GitHub and returns the image URLs."""
+    
     if 'file' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
-    filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}"
-    
-    # Convert image to Base64 for GitHub API
-    file_content = base64.b64encode(file.read()).decode('utf-8')
+    files = request.files.getlist('file')  # ✅ Get multiple files
+    username = current_user.username  # ✅ Get username from Flask-Login
+    uploaded_urls = []
 
-    # GitHub API payload
-    payload = {
-        "message": f"Upload screenshot {filename}",
-        "content": file_content
-    }
+    for file in files:
+        safe_username = username.replace(" ", "_")  # Ensure safe filename
+        filename = f"{safe_username}_{datetime.now().strftime('%d-%m-%y_%H-%M-%S')}_{file.filename}"
+        
+        # Convert image to Base64 for GitHub API
+        file_content = base64.b64encode(file.read()).decode('utf-8')
 
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
+        # GitHub API payload
+        payload = {
+            "message": f"Upload screenshot {filename}",
+            "content": file_content
+        }
 
-    # Upload to GitHub
-    response = requests.put(f"{GITHUB_API_URL}/{filename}", json=payload, headers=headers)
+        headers = {
+            "Authorization": f"token {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github.v3+json"
+        }
 
-    if response.status_code == 201:
-        file_url = response.json()["content"]["download_url"]
-        return jsonify({"image_url": file_url}), 201
-    else:
-        return jsonify({"error": "Failed to upload screenshot", "details": response.json()}), 400
+        # Upload to GitHub
+        response = requests.put(f"{GITHUB_API_URL}/{filename}", json=payload, headers=headers)
+
+        if response.status_code == 201:
+            uploaded_urls.append(response.json()["content"]["download_url"])
+        else:
+            return jsonify({"error": "Failed to upload some files", "details": response.json()}), 400
+
+    return jsonify({"image_urls": uploaded_urls}), 201  # ✅ Return multiple URLs
